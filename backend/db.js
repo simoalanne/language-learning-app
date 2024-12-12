@@ -62,6 +62,17 @@ export const initDb = () => {
       )`,
     ];
     tables.forEach((table) => db.run(table));
-    console.log("Database initialized");
+    console.info("Database initialized")
   });
 };
+
+export const closeDb = () => {
+  db.close(err => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+    console.info("Database closed");
+  });
+};
+

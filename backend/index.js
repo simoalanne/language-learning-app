@@ -1,5 +1,5 @@
 import express from "express";
-import { initDb } from "./db.js";
+import { initDb, closeDb } from "./db.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -26,6 +26,7 @@ const setupShutdown = (server) => {
         process.exit(1);
       }
       console.info("Server shutdown");
+      closeDb();
       process.exit(0);
     });
   };
