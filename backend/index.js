@@ -1,9 +1,12 @@
 import express from "express";
 import { initDb, closeDb } from "./db.js";
+import wordGroupsRouter from "./routes/wordGroups.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
+
+app.use("/api/word-groups", wordGroupsRouter);
 
 app.get("/", (_, res) => {
   res.send("express server");
