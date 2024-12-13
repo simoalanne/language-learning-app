@@ -1,3 +1,4 @@
+import { json } from "express";
 import sqlite3 from "sqlite3";
 
 const db = new sqlite3.Database(":memory:");
@@ -172,27 +173,26 @@ export const addNewWordGroup = async (wordGroupObj) => {
 
   // add words to db and get the word IDs
   const wordIds = await Promise.all(
-    wordGroupObj.languages.map((languageObj, index) =>
-      insertData(
+    wordGroupObj.languages.map(async (languageObj, index) => {
+      return await insertData(
         "words",
         ["language_id", "primary_word"],
         [languageIds[index], languageObj.word]
-      )
-    )
+      );
+    })
   );
 
   // add synonyms to db for each word using the word IDs
   await Promise.all(
     wordGroupObj.languages.map(async (languageObj, index) => {
       await Promise.all(
-        languageObj.synonyms.map(
-          async (synonym) =>
-            await insertData(
-              "word_synonyms",
-              ["word_id", "word"],
-              [wordIds[index], synonym]
-            )
-        )
+        languageObj.synonyms.map(async (synonym) => {
+          await insertData(
+            "word_synonyms",
+            ["word_id", "word"],
+            [wordIds[index], synonym]
+          );
+        })
       );
     })
   );
@@ -238,4 +238,86 @@ export const addNewWordGroup = async (wordGroupObj) => {
 
   // finally return the group ID of the newly added word group.
   return { groupId };
+};
+
+/**
+ * Helper function to query the database and return all rows.
+ *
+ * @param {string} query - The SQL query to run.
+ * @param {any[]} params - The parameters to pass to the query if only specific rows are needed.
+ * @returns {Promise<Object[]>} - An array of rows or an empty array if no rows.
+ */
+const sqlQuery = (query, params = []) => {
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    });
+  });
+};
+
+/**
+ * Fetches all languages from the database.
+ *
+ * @returns {Promise<Object[]>} - An array of language objects or an empty array if no languages.
+ */
+
+export const getAllLanguages = async () =>
+  await sqlQuery("SELECT * FROM languages");
+/**
+ * Fetches all tags from the database.
+ *
+ * @returns {Promise<Object[]>} - An array of tag objects or an empty array if no tags.
+ */
+export const getAllTags = async () => await sqlQuery("SELECT * FROM tags");
+
+/**
+ * Fetches all difficulty levels from the database.
+ *
+ * @returns {Promise<Object[]>} - An array of difficulties or an empty array if no difficulties.
+ */
+export const getAllDifficultyLevels = async () =>
+  await sqlQuery("SELECT * FROM difficulty_levels");
+
+export const getWordGroupById = async (groupId) => {
+  const query = `
+    SELECT
+        words.id AS word_id,
+        words.primary_word,
+        languages.language_name,
+        GROUP_CONCAT(DISTINCT word_synonyms.word ORDER BY word_synonyms.word ASC) AS synonyms,
+        difficulty_levels.difficulty_value AS difficulty,
+        GROUP_CONCAT(DISTINCT tags.tag_name ORDER BY tags.tag_name ASC) AS tags
+    FROM
+        words
+    JOIN
+        languages ON words.language_id = languages.id
+    LEFT JOIN
+        word_synonyms ON words.id = word_synonyms.word_id
+    JOIN
+        word_groups ON words.id = word_groups.word_id
+    LEFT JOIN
+        word_group_difficulty ON word_groups.group_id = word_group_difficulty.word_group_id
+    LEFT JOIN
+        difficulty_levels ON word_group_difficulty.difficulty_id = difficulty_levels.id
+    LEFT JOIN
+        word_group_tags ON word_groups.group_id = word_group_tags.word_group_id
+    LEFT JOIN
+        tags ON word_group_tags.tag_id = tags.id
+    WHERE
+        word_groups.group_id = ?
+    GROUP BY
+        words.id, words.primary_word, languages.language_name, difficulty_levels.difficulty_value;
+  `;
+  const dbResponse = await sqlQuery(query, [groupId]);
+  const languages = dbResponse.map((row) => {
+    return {
+      languageName: row.language_name,
+      word: row.primary_word,
+      synonyms: row.synonyms ? row.synonyms.split(",") : [],
+    };
+  });
+  const tags = dbResponse[0].tags ? dbResponse[0].tags.split(",") : []; // tags are the same for all rows
+  const difficulty = dbResponse[0].difficulty; // difficulty is the same for all rows
+  return { languages, tags, difficulty };
 };
