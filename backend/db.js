@@ -256,6 +256,10 @@ const sqlQuery = (query, params = []) => {
   });
 };
 
+export const getAllWordGroupIds = async () => {
+  const groupIds =  await sqlQuery("SELECT DISTINCT group_id FROM word_groups");
+  return groupIds.map((row) => row.group_id);
+};
 /**
  * Fetches all languages from the database.
  *
@@ -313,7 +317,7 @@ export const getWordGroupById = async (groupId) => {
   if (dbResponse.length === 0) {
     console.error("No word group found with the given ID");
     return null;
-  };
+  }
   const translations = dbResponse.map((row) => {
     return {
       languageName: row.language_name,

@@ -3,7 +3,7 @@ POST http://localhost:3000/api/word-groups
 Content-Type: application/json
 
 {
-"languages": [
+"translations": [
   {"languageName": "English", "word": "Hello", "synonyms": ["Hi", "Hey"]}, 
   {"languageName": "Spanish", "word": "Holaa", "synonyms": ["ola", "saludo"]},
   {"languageName": "French", "word": "Bonjour", "synonyms": ["salut"]}
@@ -13,4 +13,4 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3000/api/word-groups/1
+GET http://localhost:3000/api/word-groups/
