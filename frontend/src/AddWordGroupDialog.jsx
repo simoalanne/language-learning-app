@@ -52,9 +52,7 @@ const AddWordGroupDialog = ({ setWordGroups }) => {
       translations: translations.map((translation) => ({
         languageName: translation.languageName,
         word: translation.word,
-        synonyms: translation.synonyms.filter(
-          (syn) => syn.trim() !== "" && !syn
-        ),
+        synonyms: translation.synonyms,
       })),
       tags: tags ? tags.split(",") : [],
       difficulty,
@@ -87,6 +85,8 @@ const AddWordGroupDialog = ({ setWordGroups }) => {
               {/* Language Field */}
               <TextField
                 label={`Language ${index + 1}`}
+                disabled={index < 2} // first two languages are fixed for now
+                required
                 value={translation.languageName}
                 onChange={(e) =>
                   handleTranslationChange(index, "languageName", e.target.value)
@@ -96,6 +96,7 @@ const AddWordGroupDialog = ({ setWordGroups }) => {
               />
               <TextField
                 label={"word"}
+                required
                 value={translation.word}
                 onChange={(e) =>
                   handleTranslationChange(index, "word", e.target.value)
@@ -132,7 +133,8 @@ const AddWordGroupDialog = ({ setWordGroups }) => {
 
           {/* Button to add new translation */}
           <Button
-            variant="outlined"
+            variant="contained"
+            fullWidth
             onClick={addTranslation}
             style={{ marginTop: "10px" }}
           >

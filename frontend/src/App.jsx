@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import AddWordGroupDialog from "./AddWordGroupDialog";
+import LearnWords from "./LearnWords";
 
 function App() {
   const [wordGroups, setWordGroups] = useState([]);
@@ -9,18 +10,17 @@ function App() {
   const fetchData = async (id) => {
     const response = await fetch(`${devUrl}/api/word-groups/${id || ""}`);
     const data = await response.json();
-    setWordGroups([data]);
+    setWordGroups(data);
   };
 
   useEffect(() => {
     fetchData();
   }, []);
-
+  
   return (
     <div>
-      <h1>App is ready now for sure</h1>
-      <p>{JSON.stringify(wordGroups)}</p>
       <AddWordGroupDialog setWordGroups={setWordGroups} />
+      <LearnWords wordGroups={wordGroups} />
     </div>
   );
 }

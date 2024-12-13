@@ -1,0 +1,10 @@
+.testQuestion {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  gap: 8px;
+}
+
+.testQuestion p {
+  font-size: 1.25rem;
+}
