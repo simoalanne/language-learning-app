@@ -148,7 +148,7 @@ const getNextGroupId = () => {
  * @param {Object} wordGroupObj - The word group object to be added.
  * @returns {Promise<Object>} - The group ID of the newly added word group.
  * @example const wordGroupObj = {
- * languages:
+ * translations: [
  * [
  * { languageName: "English", word: "Hello", synonyms: ["Hi"] },
  * { languageName: "Finnish", word: "Hei", synonyms: ["Moi"] },
@@ -162,31 +162,31 @@ export const addNewWordGroup = async (wordGroupObj) => {
 
   // Add languages to db that don't exist and get all the language IDs
   const languageIds = await Promise.all(
-    wordGroupObj.languages.map((languageObj) =>
+    wordGroupObj.translations.map((translations) =>
       getIdOrInsertNewData(
         "languages",
         "language_name",
-        languageObj.languageName
+        translations.languageName
       )
     )
   );
 
   // add words to db and get the word IDs
   const wordIds = await Promise.all(
-    wordGroupObj.languages.map(async (languageObj, index) => {
+    wordGroupObj.translations.map(async (translations, index) => {
       return await insertData(
         "words",
         ["language_id", "primary_word"],
-        [languageIds[index], languageObj.word]
+        [languageIds[index], translations.word]
       );
     })
   );
 
   // add synonyms to db for each word using the word IDs
   await Promise.all(
-    wordGroupObj.languages.map(async (languageObj, index) => {
+    wordGroupObj.translations.map(async (translations, index) => {
       await Promise.all(
-        languageObj.synonyms.map(async (synonym) => {
+        translations.synonyms.map(async (synonym) => {
           await insertData(
             "word_synonyms",
             ["word_id", "word"],
@@ -310,7 +310,11 @@ export const getWordGroupById = async (groupId) => {
         words.id, words.primary_word, languages.language_name, difficulty_levels.difficulty_value;
   `;
   const dbResponse = await sqlQuery(query, [groupId]);
-  const languages = dbResponse.map((row) => {
+  if (dbResponse.length === 0) {
+    console.error("No word group found with the given ID");
+    return null;
+  };
+  const translations = dbResponse.map((row) => {
     return {
       languageName: row.language_name,
       word: row.primary_word,
@@ -319,5 +323,5 @@ export const getWordGroupById = async (groupId) => {
   });
   const tags = dbResponse[0].tags ? dbResponse[0].tags.split(",") : []; // tags are the same for all rows
   const difficulty = dbResponse[0].difficulty; // difficulty is the same for all rows
-  return { languages, tags, difficulty };
+  return { translations, tags, difficulty };
 };

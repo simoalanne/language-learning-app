@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react"
+import "./App.css"
+import axios from 'axios'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [wordGroups, setWordGroups] = useState("")
+  const devUrl = "http://localhost:3000"
+
+  const addData = async (wordGroupObj) => {
+    console.log("addData", wordGroupObj)
+    await axios.post(`${devUrl}/api/word-groups`, wordGroupObj)
+  }
+  
+  const fetchData = async (id) => {
+    const response = await fetch(`${devUrl}/api/word-groups/${id}`)
+    const data = await response.json()
+    setWordGroups(data)
+  };
+
+  useEffect(() => {
+    const wordGroupObj = {
+      "translations": [
+        { languageName: "English", word: "it works", synonyms: ["it functions"] },
+        { languageName: "Spanish", word: "funciona", synonyms: ["trabaja"] },
+        { languageName: "Finnish", word: "se toimii", synonyms: ["se toimii"] }
+      ],
+      tags: ["expressions"],
+      difficulty: 1
+    }
+    addData(wordGroupObj).then(() => fetchData(1))
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div>
+    <h1>App is ready now for sure</h1>
+    <p>{JSON.stringify(wordGroups)}</p>
+    </div>
+  );
+};
 
 export default App
