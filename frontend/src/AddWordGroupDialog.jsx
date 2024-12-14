@@ -1,3 +1,4 @@
+/* eslint react/prop-types: */
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -60,7 +61,6 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
     };
     console.log("wordgroupObj to submit", wordGroupObj);
 
-    // Send the request to the backend
     await axios.post("http://localhost:3000/api/word-groups", wordGroupObj);
     setOpen(false);
     resetDialog();
@@ -86,10 +86,11 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
               <Autocomplete
                 key={index}
                 freeSolo
-                // Dropdown options are all languages that have been used previously and are in the database.
-                // Then languages that are already used in the current word group are not shown.
+                // dropdown options are all languages that have been used previously and
+                // are not already in the translations array
                 options={languageNames.filter(
-                  (lang) => !translations.map((t) => t.languageName).includes(lang)
+                  (lang) =>
+                    !translations.map((t) => t.languageName).includes(lang)
                 )}
                 value={translation.languageName || ""}
                 onChange={(_, newValue) =>
@@ -103,7 +104,13 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
                     required
                     fullWidth
                     style={{ marginBottom: "10px" }}
-                    onChange={(e) => handleTranslationChange(index, "languageName", e.target.value)}
+                    onChange={(e) =>
+                      handleTranslationChange(
+                        index,
+                        "languageName",
+                        e.target.value
+                      )
+                    }
                   />
                 )}
               />
