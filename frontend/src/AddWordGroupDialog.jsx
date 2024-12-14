@@ -15,18 +15,17 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
   const [warnings, setWarnings] = useState([false, false]);
 
   const languageNames = languageList.map((lang) => lang.name).sort();
-
+  // isEdited is used to not show the error message for an empty language field
+  // when the user has not had a chance to edit it yet
+  const initialTranslations = [
+    { languageName: "English", word: "", synonyms: [], isEdited: false },
+    { languageName: "Finnish", word: "", synonyms: [], isEdited: false },
+  ];
   // intially there will be two translations as that's obviously the minimum
-  const [translations, setTranslations] = useState([
-    { languageName: "English", word: "", synonyms: [] },
-    { languageName: "Finnish", word: "", synonyms: [] },
-  ]);
+  const [translations, setTranslations] = useState(initialTranslations);
 
   const resetDialog = () => {
-    setTranslations([
-      { languageName: "English", word: "", synonyms: [] },
-      { languageName: "Finnish", word: "", synonyms: [] },
-    ]);
+    setTranslations(initialTranslations);
     setTags("");
     setDifficulty("");
     setWarnings([false, false]);
@@ -36,13 +35,13 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
   const [difficulty, setDifficulty] = useState("");
 
   const isInvalidLanguage = (language) => {
-    if (language.trim() === "") {
-      return { invalid: true, message: "Language cannot be empty" };
+    if (!language || language.trim() === "") {
+      return { invalid: true, message: "Language cannot be empty!" };
     }
     if (!languageNames.includes(language)) {
       return {
         invalid: true,
-        message: "Invalid language! Select the language from the list",
+        message: "Invalid language! Select a valid language from the dropdown list.",
       };
     }
 
@@ -74,6 +73,7 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
   const handleTranslationChange = (index, field, value) => {
     console.log("changing", index, field, value);
     const newTranslations = [...translations];
+    newTranslations[index].isEdited = true; 
     newTranslations[index][field] = value;
     setTranslations(newTranslations);
     if (field === "word") {
@@ -94,7 +94,7 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
   const addTranslation = () => {
     setTranslations([
       ...translations,
-      { languageName: "", word: "", synonyms: [] },
+      { languageName: "", word: "", synonyms: [], isEdited: false },
     ]);
     setWarnings([...warnings, false]);
   };
@@ -167,8 +167,9 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
                     variant="standard"
                     required
                     fullWidth
-                    error={isInvalidLanguage(translation.languageName).invalid}
+                    error={translations[index].isEdited && isInvalidLanguage(translation.languageName).invalid}
                     helperText={
+                      translations[index].isEdited &&
                       isInvalidLanguage(translation.languageName).message
                     }
                     style={{ marginBottom: "10px" }}
