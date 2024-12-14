@@ -8,7 +8,6 @@ const wordGroupsRouter = express.Router();
 
 wordGroupsRouter.get("/", async (_, res) => {
   const ids = await getAllWordGroupIds();
-  console.log("got ids", ids);
   const wordGroups = await Promise.all(
     ids.map(async (id) => await getWordGroupById(id))
   );
@@ -35,7 +34,6 @@ wordGroupsRouter.get("/:id", async (req, res) => {
 wordGroupsRouter.post("/", async (req, res) => {
   try {
     const wordGroupObj = req.body;
-    console.log("received word group", wordGroupObj);
     const response = await addNewWordGroup(wordGroupObj);
     res.send(response);
   } catch (error) {

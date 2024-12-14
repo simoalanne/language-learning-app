@@ -267,7 +267,7 @@ export const getAllWordGroupIds = async () => {
  */
 
 export const getAllLanguages = async () =>
-  await sqlQuery("SELECT * FROM languages");
+  await sqlQuery("SELECT language_name FROM languages");
 /**
  * Fetches all tags from the database.
  *
@@ -315,7 +315,6 @@ export const getWordGroupById = async (groupId) => {
   `;
   const dbResponse = await sqlQuery(query, [groupId]);
   if (dbResponse.length === 0) {
-    console.error("No word group found with the given ID");
     return null;
   }
   const translations = dbResponse.map((row) => {

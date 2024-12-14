@@ -5,21 +5,24 @@ import LearnWords from "./LearnWords";
 
 function App() {
   const [wordGroups, setWordGroups] = useState([]);
-  const devUrl = "http://localhost:3000";
+  const [languages, setLanguages] = useState([]);
 
-  const fetchData = async (id) => {
-    const response = await fetch(`${devUrl}/api/word-groups/${id || ""}`);
+  const fetchData = async (url, setFunction) => {
+    const baseUrl = "http://localhost:3000/api";
+    const response = await fetch(`${baseUrl}/${url}`);
     const data = await response.json();
-    setWordGroups(data);
+    console.log(data);
+    setFunction(data);
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData("word-groups/", setWordGroups);
+    fetchData("languages", setLanguages);
   }, []);
   
   return (
     <div>
-      <AddWordGroupDialog setWordGroups={setWordGroups} />
+      <AddWordGroupDialog setWordGroups={setWordGroups} languageNames={languages.map((lang) => lang.languageName)} />
       <LearnWords wordGroups={wordGroups} />
     </div>
   );

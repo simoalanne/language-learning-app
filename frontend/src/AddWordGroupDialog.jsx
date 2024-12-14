@@ -4,10 +4,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
 import { useState } from "react";
 import axios from "axios";
 
-const AddWordGroupDialog = ({ setWordGroups }) => {
+const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
   const [open, setOpen] = useState(false);
 
   // intially there will be two translations as that's obviously the minimum
@@ -82,17 +83,29 @@ const AddWordGroupDialog = ({ setWordGroups }) => {
         <DialogContent>
           {translations.map((translation, index) => (
             <div key={index} style={{ marginTop: "10px" }}>
-              {/* Language Field */}
-              <TextField
-                label={`Language ${index + 1}`}
-                disabled={index < 2} // first two languages are fixed for now
-                required
-                value={translation.languageName}
-                onChange={(e) =>
-                  handleTranslationChange(index, "languageName", e.target.value)
+              <Autocomplete
+                key={index}
+                freeSolo
+                // Dropdown options are all languages that have been used previously and are in the database.
+                // Then languages that are already used in the current word group are not shown.
+                options={languageNames.filter(
+                  (lang) => !translations.map((t) => t.languageName).includes(lang)
+                )}
+                value={translation.languageName || ""}
+                onChange={(_, newValue) =>
+                  handleTranslationChange(index, "languageName", newValue)
                 }
-                fullWidth
-                style={{ marginBottom: "10px" }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Language"
+                    variant="standard"
+                    required
+                    fullWidth
+                    style={{ marginBottom: "10px" }}
+                    onChange={(e) => handleTranslationChange(index, "languageName", e.target.value)}
+                  />
+                )}
               />
               <TextField
                 label={"word"}
