@@ -6,6 +6,7 @@ import LearnWords from "./LearnWords";
 function App() {
   const [wordGroups, setWordGroups] = useState([]);
   const [languages, setLanguages] = useState([]);
+  const [words, setWords] = useState([]);
 
   const fetchData = async (url, setFunction) => {
     const baseUrl = "http://localhost:3000/api";
@@ -18,11 +19,17 @@ function App() {
   useEffect(() => {
     fetchData("word-groups/", setWordGroups);
     fetchData("languages", setLanguages);
+    fetchData("words", setWords);
   }, []);
-  
+
   return (
     <div>
-      <AddWordGroupDialog setWordGroups={setWordGroups} languageNames={languages.map((lang) => lang.languageName)} />
+      <AddWordGroupDialog
+        setWordGroups={setWordGroups}
+        words={words}
+        setWords={setWords}
+        languageNames={languages.map((lang) => lang.languageName)}
+      />
       <LearnWords wordGroups={wordGroups} />
     </div>
   );

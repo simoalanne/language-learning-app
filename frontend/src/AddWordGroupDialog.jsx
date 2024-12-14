@@ -8,9 +8,13 @@ import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useState } from "react";
 import axios from "axios";
+import languageList from "./util/languageList";
 
-const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
+const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
   const [open, setOpen] = useState(false);
+  const [warnings, setWarnings] = useState([false, false]);
+
+  const languageNames = languageList.map((lang) => lang.name).sort();
 
   // intially there will be two translations as that's obviously the minimum
   const [translations, setTranslations] = useState([
@@ -25,16 +29,66 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
     ]);
     setTags("");
     setDifficulty("");
+    setWarnings([false, false]);
   };
 
   const [tags, setTags] = useState("");
   const [difficulty, setDifficulty] = useState("");
+
+  const isInvalidLanguage = (language) => {
+    if (language.trim() === "") {
+      return { invalid: true, message: "Language cannot be empty" };
+    }
+    if (!languageNames.includes(language)) {
+      return {
+        invalid: true,
+        message: "Invalid language! Select the language from the list",
+      };
+    }
+
+    const occurrences = translations.filter(
+      (t) => t.languageName === language
+    ).length;
+    return {
+      invalid: occurrences > 1,
+      message: occurrences > 1 ? "Language already used elsewhere!" : "",
+    };
+  };
+
+  const isValidForm = () => {
+    let valid = true;
+    translations.forEach((translation) => {
+      if (isInvalidLanguage(translation.languageName).invalid) {
+        valid = false;
+      }
+      if (translation.word.trim() === "") {
+        valid = false;
+      }
+    });
+    if (isNaN(difficulty)) {
+      valid = false;
+    }
+    return valid;
+  };
 
   const handleTranslationChange = (index, field, value) => {
     console.log("changing", index, field, value);
     const newTranslations = [...translations];
     newTranslations[index][field] = value;
     setTranslations(newTranslations);
+    if (field === "word") {
+      const word = value;
+      const languageName = translations[index].languageName;
+      const wordAlreadyUsed = words.some(
+        (w) => w.word === word && w.languageName === languageName
+      );
+      const newWarnings = [...warnings];
+      newWarnings[index] = wordAlreadyUsed;
+      setWarnings(newWarnings);
+      if (wordAlreadyUsed) {
+        console.log(`word ${word} already used in ${languageName}`);
+      }
+    }
   };
 
   const addTranslation = () => {
@@ -42,11 +96,14 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
       ...translations,
       { languageName: "", word: "", synonyms: [] },
     ]);
+    setWarnings([...warnings, false]);
   };
 
   const removeTranslation = (index) => {
     const newTranslations = translations.filter((_, i) => i !== index);
     setTranslations(newTranslations);
+    const newWarnings = warnings.filter((_, i) => i !== index);
+    setWarnings(newWarnings);
   };
 
   const onSubmit = async () => {
@@ -64,6 +121,14 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
     await axios.post("http://localhost:3000/api/word-groups", wordGroupObj);
     setOpen(false);
     resetDialog();
+    setWords((prevWords) => [
+      ...prevWords,
+      ...translations.map((t, index) => ({
+        id: Math.max(...prevWords.map((w) => w.id), 0) + index + 1, // id is the highest id + index + 1
+        word: t.word,
+        languageName: t.languageName,
+      })),
+    ]);
     setWordGroups((prevWordGroups) => [...prevWordGroups, wordGroupObj]);
   };
 
@@ -85,7 +150,6 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
             <div key={index} style={{ marginTop: "10px" }}>
               <Autocomplete
                 key={index}
-                freeSolo
                 // dropdown options are all languages that have been used previously and
                 // are not already in the translations array
                 options={languageNames.filter(
@@ -103,6 +167,10 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
                     variant="standard"
                     required
                     fullWidth
+                    error={isInvalidLanguage(translation.languageName).invalid}
+                    helperText={
+                      isInvalidLanguage(translation.languageName).message
+                    }
                     style={{ marginBottom: "10px" }}
                     onChange={(e) =>
                       handleTranslationChange(
@@ -117,12 +185,34 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
               <TextField
                 label={"word"}
                 required
+                error={warnings[index]}
+                helperText={
+                  warnings[index] &&
+                  "Warning: You have already used this word on another word group!"
+                }
                 value={translation.word}
                 onChange={(e) =>
                   handleTranslationChange(index, "word", e.target.value)
                 }
                 fullWidth
+                // Disgusting code to change the error code from red to orange because the error is a warning
+                // And the material ui does not have a warning prop separate from error.
                 style={{ marginBottom: "10px" }}
+                sx={{
+                  "& .MuiFormLabel-root.Mui-error": {
+                    color: "#D35400", // Error label color
+                  },
+                  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
+                    {
+                      borderColor: "#D35400", // Error border color
+                    },
+                  "& .MuiFormHelperText-root.Mui-error": {
+                    color: "#D35400", // Error helper text color
+                  },
+                  "& .MuiFormLabel-asterisk": {
+                    color: warnings[index] && "#D35400", // Required asterisk color
+                  },
+                }}
               />
               <TextField
                 label={"word synonyms (separated by commas)"}
@@ -156,6 +246,7 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
             variant="contained"
             fullWidth
             onClick={addTranslation}
+            disabled={translations.length >= languageList.length} // disable button if all languages have been used
             style={{ marginTop: "10px" }}
           >
             Add Another Translation
@@ -174,6 +265,10 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
           <TextField
             label="Difficulty"
             value={difficulty}
+            error={isNaN(difficulty)}
+            helperText={
+              isNaN(difficulty) && "Difficulty must be a number or blank!"
+            }
             onChange={(e) => setDifficulty(e.target.value)}
             fullWidth
             style={{ marginTop: "20px" }}
@@ -188,7 +283,9 @@ const AddWordGroupDialog = ({ setWordGroups, languageNames }) => {
           >
             Cancel
           </Button>
-          <Button onClick={onSubmit}>Submit</Button>
+          <Button disabled={!isValidForm()} onClick={onSubmit}>
+            Submit
+          </Button>
         </DialogActions>
       </Dialog>
     </div>

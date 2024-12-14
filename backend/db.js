@@ -283,6 +283,12 @@ export const getAllTags = async () => await sqlQuery("SELECT * FROM tags");
 export const getAllDifficultyLevels = async () =>
   await sqlQuery("SELECT * FROM difficulty_levels");
 
+export const getAllWords = async () => {
+  const query = `SELECT words.id, words.primary_word as word, languages.language_name as languageName
+  FROM words JOIN languages ON words.language_id = languages.id`;
+  return await sqlQuery(query);
+};
+
 export const getWordGroupById = async (groupId) => {
   const query = `
     SELECT

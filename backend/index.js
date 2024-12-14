@@ -2,6 +2,7 @@ import express from "express";
 import { initDb, closeDb } from "./db.js";
 import wordGroupsRouter from "./routes/wordGroups.js";
 import languagesRouter from "./routes/languages.js";
+import wordsRouter from "./routes/words.js";
 import cors from "cors";
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(cors());
 
 app.use("/api/word-groups", wordGroupsRouter);
 app.use("/api/languages", languagesRouter);
+app.use("/api/words", wordsRouter);
 
 app.get("/", (_, res) => {
   res.send("express server");
