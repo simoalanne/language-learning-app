@@ -283,7 +283,9 @@ export const getAllTags = async () => await sqlQuery("SELECT * FROM tags");
  * @returns {Promise<Object[]>} - An array of difficulties or an empty array if no difficulties.
  */
 export const getAllDifficultyLevels = async () =>
-  await sqlQuery("SELECT difficulty_value AS difficulty FROM difficulty_levels");
+  await sqlQuery(
+    "SELECT difficulty_value AS difficulty FROM difficulty_levels"
+  );
 
 export const getAllWords = async () => {
   const query = `SELECT words.id, words.primary_word as word, languages.language_name as languageName
@@ -296,6 +298,29 @@ export const deleteWordGroupById = async (groupId) => {
   return new Promise((resolve, reject) => {
     db.run(query, [groupId], (err) => {
       if (err) return reject(err);
+      resolve();
+    });
+  });
+};
+
+export const deleteAllWordGroups = async () => {
+  const queries = [
+    `DELETE FROM word_groups`,
+    `DELETE FROM words`,
+    `DELETE FROM languages`,
+    `DELETE FROM word_synonyms`,
+    `DELETE FROM word_group_difficulty`,
+    `DELETE FROM difficulty_levels`,
+    `DELETE FROM tags`,
+    `DELETE FROM word_group_tags`,
+  ];
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      queries.forEach((query) => {
+        db.run(query, (err) => {
+          if (err) return reject(err);
+        });
+      });
       resolve();
     });
   });

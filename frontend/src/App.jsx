@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import AddWordGroupDialog from "./AddWordGroupDialog";
 import LearnWords from "./LearnWords";
+import DeleteWordGroups from "./DeleteWordGroups";
 
 function App() {
   const [wordGroups, setWordGroups] = useState([]);
@@ -22,7 +23,8 @@ function App() {
   }, []);
 
   return (
-    <div>
+    <div className="App">
+      <h1>Welcome to the learn languages app!</h1>
       <AddWordGroupDialog
         setWordGroups={setWordGroups}
         words={words}
@@ -30,6 +32,12 @@ function App() {
         languageNames={languages.map((lang) => lang.languageName)}
       />
       <LearnWords wordGroups={wordGroups} />
+      <DeleteWordGroups
+        wordGroups={wordGroups}
+        setWordGroups={setWordGroups}
+        setLanguages={setLanguages}
+        setWords={setWords}
+      />
     </div>
   );
 }

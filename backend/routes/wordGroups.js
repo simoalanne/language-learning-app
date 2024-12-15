@@ -4,6 +4,7 @@ import {
   getWordGroupById,
   getAllWordGroupIds,
   deleteWordGroupById,
+  deleteAllWordGroups,
 } from "../db.js";
 const wordGroupsRouter = express.Router();
 
@@ -40,6 +41,16 @@ wordGroupsRouter.post("/", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");
+  }
+});
+
+wordGroupsRouter.delete("/", async (_, res) => {
+  try {
+    await deleteAllWordGroups();
+    res.json({ message: "All word groups deleted" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error });
   }
 });
 
