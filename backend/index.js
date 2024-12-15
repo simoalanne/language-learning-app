@@ -4,6 +4,7 @@ import wordGroupsRouter from "./routes/wordGroups.js";
 import languagesRouter from "./routes/languages.js";
 import wordsRouter from "./routes/words.js";
 import cors from "cors";
+import difficultiesRouter from "./routes/difficulties.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,6 +14,7 @@ app.use(cors());
 app.use("/api/word-groups", wordGroupsRouter);
 app.use("/api/languages", languagesRouter);
 app.use("/api/words", wordsRouter);
+app.use("/api/difficulties", difficultiesRouter);
 
 app.get("/", (_, res) => {
   res.send("express server");

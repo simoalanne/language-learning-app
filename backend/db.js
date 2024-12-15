@@ -281,7 +281,7 @@ export const getAllTags = async () => await sqlQuery("SELECT * FROM tags");
  * @returns {Promise<Object[]>} - An array of difficulties or an empty array if no difficulties.
  */
 export const getAllDifficultyLevels = async () =>
-  await sqlQuery("SELECT * FROM difficulty_levels");
+  await sqlQuery("SELECT difficulty_value AS difficulty FROM difficulty_levels");
 
 export const getAllWords = async () => {
   const query = `SELECT words.id, words.primary_word as word, languages.language_name as languageName

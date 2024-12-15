@@ -107,6 +107,7 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
   };
 
   const onSubmit = async () => {
+    console.log("tags are", tags);
     const wordGroupObj = {
       translations: translations.map((translation) => ({
         languageName: translation.languageName,
