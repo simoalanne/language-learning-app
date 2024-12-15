@@ -15,6 +15,8 @@ const db = new sqlite3.Database(":memory:");
  * - word_group_tags: Links word groups to tags.
  */
 export const initDb = () => {
+  // TODO: hard code available languages and difficulties like 1-5.
+  // Makes it easier to manage the data.
   db.serialize(() => {
     const createTableQueries = [
       `CREATE TABLE languages (
@@ -27,13 +29,13 @@ export const initDb = () => {
         primary_word TEXT NOT NULL
       )`,
       `CREATE TABLE word_synonyms (
-        word_id INTEGER REFERENCES words (id),
+        word_id INTEGER REFERENCES words (id) ON DELETE CASCADE,
         word TEXT NOT NULL,
         PRIMARY KEY (word_id, word)
       )`,
       `CREATE TABLE word_groups (
         group_id INTEGER,
-        word_id INTEGER REFERENCES words (id),
+        word_id INTEGER REFERENCES words (id) ON DELETE CASCADE,
         PRIMARY KEY (group_id, word_id)
       )`,
       `CREATE TABLE difficulty_levels (
@@ -41,16 +43,16 @@ export const initDb = () => {
         difficulty_value INTEGER NOT NULL
       )`,
       `CREATE TABLE word_group_difficulty (
-        word_group_id INTEGER REFERENCES word_groups (group_id),
+        word_group_id INTEGER REFERENCES word_groups (group_id) ON DELETE CASCADE,
         difficulty_id INTEGER REFERENCES difficulty_levels (id),
         PRIMARY KEY (word_group_id, difficulty_id)
       )`,
       `CREATE TABLE tags (
-        id INTEGER PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         tag_name TEXT NOT NULL
       )`,
       `CREATE TABLE word_group_tags (
-        word_group_id INTEGER REFERENCES word_groups (group_id),
+        word_group_id INTEGER REFERENCES word_groups (group_id) ON DELETE CASCADE,
         tag_id INTEGER REFERENCES tags (id),
         PRIMARY KEY (word_group_id, tag_id)
       )`,
@@ -257,7 +259,7 @@ const sqlQuery = (query, params = []) => {
 };
 
 export const getAllWordGroupIds = async () => {
-  const groupIds =  await sqlQuery("SELECT DISTINCT group_id FROM word_groups");
+  const groupIds = await sqlQuery("SELECT DISTINCT group_id FROM word_groups");
   return groupIds.map((row) => row.group_id);
 };
 /**
@@ -289,9 +291,20 @@ export const getAllWords = async () => {
   return await sqlQuery(query);
 };
 
+export const deleteWordGroupById = async (groupId) => {
+  const query = `DELETE FROM word_groups WHERE group_id = ?`;
+  return new Promise((resolve, reject) => {
+    db.run(query, [groupId], (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+};
+
 export const getWordGroupById = async (groupId) => {
   const query = `
     SELECT
+        word_groups.group_id,
         words.id AS word_id,
         words.primary_word,
         languages.language_name,
@@ -324,6 +337,7 @@ export const getWordGroupById = async (groupId) => {
     console.error("No word group found with the given ID");
     return null;
   }
+  const id = dbResponse[0].group_id;
   const translations = dbResponse.map((row) => {
     return {
       languageName: row.language_name,
@@ -333,5 +347,5 @@ export const getWordGroupById = async (groupId) => {
   });
   const tags = dbResponse[0].tags ? dbResponse[0].tags.split(",") : []; // tags are the same for all rows
   const difficulty = dbResponse[0].difficulty; // difficulty is the same for all rows
-  return { translations, tags, difficulty };
+  return { id, translations, tags, difficulty };
 };

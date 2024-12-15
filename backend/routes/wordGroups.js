@@ -3,6 +3,7 @@ import {
   addNewWordGroup,
   getWordGroupById,
   getAllWordGroupIds,
+  deleteWordGroupById,
 } from "../db.js";
 const wordGroupsRouter = express.Router();
 
@@ -39,6 +40,20 @@ wordGroupsRouter.post("/", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");
+  }
+});
+
+wordGroupsRouter.delete("/:id", async (req, res) => {
+  try {
+    const groupId = parseInt(req.params.id);
+    if (isNaN(groupId)) {
+      return res.status(400).json({ error: "Invalid group ID" });
+    }
+    await deleteWordGroupById(groupId);
+    res.json({ message: `Word group ${groupId} deleted`} );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error });
   }
 });
 

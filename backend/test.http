@@ -4,7 +4,7 @@ Content-Type: application/json
 
 {
 "translations": [
-  {"languageName": "English", "word": "Hello", "synonyms": ["Hi", "Hey"]}, 
+  {"languageName": "English", "word": "Hello", "synonyms": ["Hi", "Hey"]},
   {"languageName": "Spanish", "word": "Holaa", "synonyms": ["ola", "saludo"]},
   {"languageName": "French", "word": "Bonjour", "synonyms": ["salut"]}
 ],
