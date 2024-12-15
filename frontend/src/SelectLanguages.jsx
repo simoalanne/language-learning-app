@@ -1,11 +1,12 @@
 /* eslint react/prop-types: 0 */
-import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { Select, MenuItem, FormControl, InputLabel, Button } from "@mui/material";
 import languageList from "./util/languageList";
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
 const SelectLanguages = ({ languages, setLanguages }) => {
   const dropDownMenu = (index) => {
     return (
-      <FormControl sx={{marginTop: "10px", width: "200px"}}>
+      <FormControl sx={{ marginTop: "10px", width: "200px" }}>
         <InputLabel id={`language-select-label-${index}`}>
           {index === 0 ? "Question language" : "Answer language"}
         </InputLabel>
@@ -32,11 +33,20 @@ const SelectLanguages = ({ languages, setLanguages }) => {
       </FormControl>
     );
   };
-
+  console.log(languages);
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       {dropDownMenu(0)}
       {dropDownMenu(1)}
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ marginTop: "10px" }}
+        startIcon={<SwapHorizIcon />}
+        onClick={() => setLanguages([languages[1], languages[0]])}
+      >
+        Swap languages
+      </Button>
     </div>
   );
 };
