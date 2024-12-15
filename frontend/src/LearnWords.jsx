@@ -113,7 +113,7 @@ const LearnWords = ({ wordGroups }) => {
   }, [wordGroups, selectedLanguages, selectedDifficulty, selectedTags]);
 
   const difficulties = wordGroups.map((group) => group.difficulty);
-  const uniqueDifficulties = [...new Set(difficulties)];
+  const uniqueDifficulties = [...new Set(difficulties)].filter(difficulty => difficulty !== "");
 
   console.log("test", test);
   return (
