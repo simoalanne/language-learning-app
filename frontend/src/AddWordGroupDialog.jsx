@@ -73,7 +73,7 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
   const handleTranslationChange = (index, field, value) => {
     console.log("changing", index, field, value);
     const newTranslations = [...translations];
-    newTranslations[index].isEdited = true; 
+    newTranslations[index].isEdited = true;
     newTranslations[index][field] = value;
     setTranslations(newTranslations);
     if (field === "word") {
@@ -119,7 +119,7 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
     };
     console.log("wordgroupObj to submit", wordGroupObj);
 
-    await axios.post("http://localhost:3000/api/word-groups", wordGroupObj);
+    await axios.post("/api/word-groups", wordGroupObj);
     setOpen(false);
     resetDialog();
     setWords((prevWords) => [

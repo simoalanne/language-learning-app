@@ -1,0 +1,39 @@
+# Node modules and logs
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# SQLite database files (optional if you're storing the database locally and don't want it in the image)
+*.db
+*.sqlite
+
+# Environment variables
+.env
+
+# Build artifacts and temporary files
+dist
+build
+tmp
+*.tmp
+
+# Docker-related files (if not needed inside the image)
+.dockerignore
+Dockerfile
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Test and coverage directories
+coverage/
+tests/
+__tests__/
+*.spec.js
+*.test.js

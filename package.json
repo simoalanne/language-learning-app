@@ -1,0 +1,19 @@
+
+{
+  "name": "fullstack-cp",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install-all": "npm install",
+    "start": "concurrently \"npm run start-frontend\" \"npm run start-backend\"",
+    "start-frontend": "npm run dev --workspace=frontend",
+    "start-backend": "npm start --workspace=backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

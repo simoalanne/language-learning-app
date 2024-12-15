@@ -9,8 +9,7 @@ function App() {
   const [words, setWords] = useState([]);
 
   const fetchData = async (url, setFunction) => {
-    const baseUrl = "http://localhost:3000/api";
-    const response = await fetch(`${baseUrl}/${url}`);
+    const response = await fetch(`api/${url}`);
     const data = await response.json();
     console.log(data);
     setFunction(data);
@@ -18,8 +17,8 @@ function App() {
 
   useEffect(() => {
     fetchData("word-groups/", setWordGroups);
-    fetchData("languages", setLanguages);
-    fetchData("words", setWords);
+    fetchData("languages/", setLanguages);
+    fetchData("words/", setWords);
   }, []);
 
   return (
