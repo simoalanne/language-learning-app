@@ -4,9 +4,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Button,
 } from "@mui/material";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import SwapLanguages from "./SwapLanguages";
 
 const SelectLanguages = ({
   languageNames,
@@ -23,7 +22,9 @@ const SelectLanguages = ({
         </InputLabel>
         <Select
           labelId={`language-select-label-${index}`}
-          id={`language-select-${index}`}
+          id="language-select"
+          name="language-select"
+          label={index === 0 ? "Question language" : "Answer language"}
           value={selectedLanguages[index]}
           onChange={(e) =>
             setSelectedLanguages((prevLanguages) => {
@@ -50,15 +51,10 @@ const SelectLanguages = ({
     <div style={{ display: "flex", flexDirection: "column" }}>
       <DropDownMenu index={0} />
       <DropDownMenu index={1} />
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ marginTop: "10px", width: "200px" }}
-        startIcon={<SwapHorizIcon />}
-        onClick={() => setSelectedLanguages(selectedLanguages.reverse())}
-      >
-        Swap languages
-      </Button>
+      <SwapLanguages
+        selectedLanguages={selectedLanguages}
+        setSelectedLanguages={setSelectedLanguages}
+      />
     </div>
   );
 };

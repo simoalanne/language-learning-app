@@ -5,11 +5,19 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
 import { useState } from "react";
 import axios from "axios";
+import { Select } from "@mui/material";
 
-const AddWordGroupDialog = ({ setWordGroups, words, setWords, languageNames }) => {
+const AddWordGroupDialog = ({
+  setWordGroups,
+  words,
+  setWords,
+  languageNames,
+}) => {
   const [open, setOpen] = useState(false);
   const [warnings, setWarnings] = useState([false, false]);
 
@@ -37,7 +45,8 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords, languageNames }) =
     if (!languageNames.includes(language)) {
       return {
         invalid: true,
-        message: "Invalid language! Select a valid language from the dropdown list.",
+        message:
+          "Invalid language! Select a valid language from the dropdown list.",
       };
     }
 
@@ -141,41 +150,40 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords, languageNames }) =
         <DialogContent>
           {translations.map((translation, index) => (
             <div key={index} style={{ marginTop: "10px" }}>
-              <Autocomplete
-                key={index}
-                // dropdown options are all languages that have been used previously and
-                // are not already in the translations array
-                options={languageNames.filter(
-                  (lang) =>
-                    !translations.map((t) => t.languageName).includes(lang)
-                )}
-                value={translation.languageName || ""}
-                onChange={(_, newValue) =>
-                  handleTranslationChange(index, "languageName", newValue)
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Language"
-                    variant="standard"
-                    required
-                    fullWidth
-                    error={translations[index].isEdited && isInvalidLanguage(translation.languageName).invalid}
-                    helperText={
-                      translations[index].isEdited &&
-                      isInvalidLanguage(translation.languageName).message
-                    }
-                    style={{ marginBottom: "10px" }}
-                    onChange={(e) =>
-                      handleTranslationChange(
-                        index,
-                        "languageName",
-                        e.target.value
-                      )
-                    }
-                  />
-                )}
-              />
+              <FormControl fullWidth>
+                <InputLabel id={`language-select-label-${index}`}>
+                  {`Language ${index + 1}`}
+                </InputLabel>
+                <Select
+                  labelId={`language-select-label-${index}`}
+                  id={`language-select-${index}`}
+                  name={`language-select-${index}`}
+                  label={`Language ${index + 1}`}
+                  value={translation.languageName}
+                  onChange={(e) =>
+                    handleTranslationChange(
+                      index,
+                      "languageName",
+                      e.target.value
+                    )
+                  }
+                  style={{ marginBottom: "10px" }}
+                >
+                  {languageNames
+                    .filter(
+                      (language) =>
+                        !translations
+                          .map((t, i) => i !== index && t.languageName) // if index is not the current index, include the language
+                          .includes(language) // if the language is not already used in another translation, include it
+                    )
+                    .map((language) => (
+                      <MenuItem key={language} value={language}>
+                        {language}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+
               <TextField
                 label={"word"}
                 required
