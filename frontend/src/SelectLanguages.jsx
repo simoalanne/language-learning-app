@@ -1,10 +1,21 @@
 /* eslint react/prop-types: 0 */
-import { Select, MenuItem, FormControl, InputLabel, Button } from "@mui/material";
-import languageList from "./util/languageList";
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import {
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+} from "@mui/material";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 
-const SelectLanguages = ({ languages, setLanguages }) => {
-  const dropDownMenu = (index) => {
+const SelectLanguages = ({
+  languageNames,
+  selectedLanguages,
+  setSelectedLanguages,
+}) => {
+  console.log("available languages", languageNames);
+  console.log("selected languages", selectedLanguages);
+  const DropDownMenu = ({ index }) => {
     return (
       <FormControl sx={{ marginTop: "10px", width: "200px" }}>
         <InputLabel id={`language-select-label-${index}`}>
@@ -13,37 +24,38 @@ const SelectLanguages = ({ languages, setLanguages }) => {
         <Select
           labelId={`language-select-label-${index}`}
           id={`language-select-${index}`}
-          value={languages[index]}
+          value={selectedLanguages[index]}
           onChange={(e) =>
-            setLanguages((prevLanguages) => {
+            setSelectedLanguages((prevLanguages) => {
               const newLanguages = [...prevLanguages];
               newLanguages[index] = e.target.value;
               return newLanguages;
             })
           }
         >
-          {languageList
-            .filter((lang) => lang.name !== languages[index === 0 ? 1 : 0]) // dont let user select same language for both
+          {languageNames
+            .filter(
+              (lang) => !selectedLanguages[index === 0 ? 1 : 0].includes(lang)
+            )
             .map((language) => (
-              <MenuItem key={language.name} value={language.name}>
-                {language.name}
+              <MenuItem key={language} value={language}>
+                {language}
               </MenuItem>
             ))}
         </Select>
       </FormControl>
     );
   };
-  console.log(languages);
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      {dropDownMenu(0)}
-      {dropDownMenu(1)}
+      <DropDownMenu index={0} />
+      <DropDownMenu index={1} />
       <Button
         variant="contained"
         color="primary"
-        sx={{ marginTop: "10px" }}
+        sx={{ marginTop: "10px", width: "200px" }}
         startIcon={<SwapHorizIcon />}
-        onClick={() => setLanguages([languages[1], languages[0]])}
+        onClick={() => setSelectedLanguages(selectedLanguages.reverse())}
       >
         Swap languages
       </Button>

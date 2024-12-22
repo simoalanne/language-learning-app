@@ -1,5 +1,5 @@
 import express from "express";
-import { getAllLanguages } from "../db.js";
+import { getAllLanguages } from "../database/db.js";
 const languagesRouter = express.Router();
 
 languagesRouter.get("/", async (_, res) => {

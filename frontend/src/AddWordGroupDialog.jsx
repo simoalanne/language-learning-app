@@ -8,13 +8,11 @@ import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useState } from "react";
 import axios from "axios";
-import languageList from "./util/languageList";
 
-const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
+const AddWordGroupDialog = ({ setWordGroups, words, setWords, languageNames }) => {
   const [open, setOpen] = useState(false);
   const [warnings, setWarnings] = useState([false, false]);
 
-  const languageNames = languageList.map((lang) => lang.name).sort();
   // isEdited is used to not show the error message for an empty language field
   // when the user has not had a chance to edit it yet
   const initialTranslations = [
@@ -27,12 +25,10 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
   const resetDialog = () => {
     setTranslations(initialTranslations);
     setTags("");
-    setDifficulty("");
     setWarnings([false, false]);
   };
 
   const [tags, setTags] = useState("");
-  const [difficulty, setDifficulty] = useState("");
 
   const isInvalidLanguage = (language) => {
     if (!language || language.trim() === "") {
@@ -64,9 +60,6 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
         valid = false;
       }
     });
-    if (isNaN(difficulty)) {
-      valid = false;
-    }
     return valid;
   };
 
@@ -115,7 +108,6 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
         synonyms: translation.synonyms,
       })),
       tags: tags ? tags.split(",") : [],
-      difficulty,
     };
     console.log("wordgroupObj to submit", wordGroupObj);
 
@@ -197,8 +189,6 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
                   handleTranslationChange(index, "word", e.target.value)
                 }
                 fullWidth
-                // Disgusting code to change the error code from red to orange because the error is a warning
-                // And the material ui does not have a warning prop separate from error.
                 style={{ marginBottom: "10px" }}
                 sx={{
                   "& .MuiFormLabel-root.Mui-error": {
@@ -243,35 +233,20 @@ const AddWordGroupDialog = ({ setWordGroups, words, setWords }) => {
             </div>
           ))}
 
-          {/* Button to add new translation */}
           <Button
             variant="contained"
             fullWidth
             onClick={addTranslation}
-            disabled={translations.length >= languageList.length} // disable button if all languages have been used
+            disabled={translations.length >= languageNames.length} // disable button if all languages have been used
             style={{ marginTop: "10px" }}
           >
             Add Another Translation
           </Button>
 
-          {/* Tags field */}
           <TextField
             label="Tags (separated by commas)"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            fullWidth
-            style={{ marginTop: "20px" }}
-          />
-
-          {/* Difficulty field */}
-          <TextField
-            label="Difficulty"
-            value={difficulty}
-            error={isNaN(difficulty)}
-            helperText={
-              isNaN(difficulty) && "Difficulty must be a number or blank!"
-            }
-            onChange={(e) => setDifficulty(e.target.value)}
             fullWidth
             style={{ marginTop: "20px" }}
           />

@@ -31,7 +31,10 @@ function App() {
         setWords={setWords}
         languageNames={languages.map((lang) => lang.languageName)}
       />
-      <LearnWords wordGroups={wordGroups} />
+      <LearnWords
+        wordGroups={wordGroups}
+        languageNames={languages.map((lang) => lang.languageName)}
+      />
       <DeleteWordGroups
         wordGroups={wordGroups}
         setWordGroups={setWordGroups}

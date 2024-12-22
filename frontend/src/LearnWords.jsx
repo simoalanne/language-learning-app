@@ -11,10 +11,9 @@ import "./LearnWords.css";
 import "./QuestionCard";
 import QuestionCard from "./QuestionCard";
 import SelectLanguages from "./SelectLanguages";
-import SelectDifficulty from "./SelectDifficulty";
 import SelectTags from "./SelectTags";
 
-const LearnWords = ({ wordGroups }) => {
+const LearnWords = ({ wordGroups, languageNames }) => {
   const [testOpen, setTestOpen] = useState(false);
   const [test, setTest] = useState({ questions: [], answers: [] });
   const [resultsOpen, setResultsOpen] = useState(false);
@@ -25,7 +24,6 @@ const LearnWords = ({ wordGroups }) => {
     "English",
     "Finnish",
   ]);
-  const [selectedDifficulty, setSelectedDifficulty] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
 
   const handleAnswerChange = (index, value) => {
@@ -57,31 +55,25 @@ const LearnWords = ({ wordGroups }) => {
 
   const resetSettings = () => {
     setSelectedLanguages(["English", "Finnish"]);
-    setSelectedDifficulty("");
     setSelectedTags([]);
   };
 
   const canReset =
     selectedLanguages[0] !== "English" ||
     selectedLanguages[1] !== "Finnish" ||
-    selectedDifficulty !== "" ||
     selectedTags.length > 0;
 
   const testCanBeStarted = test.questions.length > 0;
 
   useEffect(() => {
-    console.log("useEffect called");
     const tagsFilteredGroups = wordGroups.filter(
       (group) =>
         selectedTags.length === 0 ||
         selectedTags.every((tag) => group.tags.includes(tag))
     );
 
-    const wordGroupsFilteredByDifficulty = tagsFilteredGroups.filter(
-      (group) => selectedDifficulty === group.difficulty || !selectedDifficulty
-    );
 
-    const questionsAndAnswers = wordGroupsFilteredByDifficulty
+    const questionsAndAnswers = tagsFilteredGroups
       .map((group) => {
         const filteredTranslations = group.translations.filter(
           (t) =>
@@ -110,10 +102,7 @@ const LearnWords = ({ wordGroups }) => {
       questions: testObj.map((t) => t.question),
       answers: testObj.map((t) => t.answers),
     });
-  }, [wordGroups, selectedLanguages, selectedDifficulty, selectedTags]);
-
-  const difficulties = wordGroups.map((group) => group.difficulty);
-  const uniqueDifficulties = [...new Set(difficulties)].filter(difficulty => difficulty !== "");
+  }, [wordGroups, selectedLanguages, selectedTags]);
 
   console.log("test", test);
   return (
@@ -160,13 +149,9 @@ const LearnWords = ({ wordGroups }) => {
         <DialogContent>
           <div style={{ display: "flex", flexDirection: "column" }}>
           <SelectLanguages
-            languages={selectedLanguages}
-            setLanguages={setSelectedLanguages}
-          />
-          <SelectDifficulty
-            difficulties={uniqueDifficulties}
-            setDifficulty={setSelectedDifficulty}
-            difficulty={selectedDifficulty}
+            languageNames={languageNames}
+            selectedLanguages={selectedLanguages}
+            setSelectedLanguages={setSelectedLanguages}
           />
           <SelectTags
             tags={wordGroups.flatMap((group) => group.tags)}

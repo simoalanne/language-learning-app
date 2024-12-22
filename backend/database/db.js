@@ -1,6 +1,4 @@
-import { json } from "express";
 import sqlite3 from "sqlite3";
-
 const db = new sqlite3.Database(":memory:");
 
 /**
@@ -9,14 +7,10 @@ const db = new sqlite3.Database(":memory:");
  * - words: Stores the primary word and its language id.
  * - word_synonyms: Stores synonyms for the primary word.
  * - word_groups: Links the word in all languages to a single group.
- * - difficulty_levels: Stores difficulty levels for words.
- * - word_group_difficulty: Links word groups to difficulty levels.
  * - tags: Stores tags related to a certain word group.
  * - word_group_tags: Links word groups to tags.
  */
 export const initDb = () => {
-  // TODO: hard code available languages and difficulties like 1-5.
-  // Makes it easier to manage the data.
   db.serialize(() => {
     const createTableQueries = [
       `CREATE TABLE languages (
@@ -38,15 +32,6 @@ export const initDb = () => {
         word_id INTEGER REFERENCES words (id) ON DELETE CASCADE,
         PRIMARY KEY (group_id, word_id)
       )`,
-      `CREATE TABLE difficulty_levels (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        difficulty_value INTEGER NOT NULL
-      )`,
-      `CREATE TABLE word_group_difficulty (
-        word_group_id INTEGER REFERENCES word_groups (group_id) ON DELETE CASCADE,
-        difficulty_id INTEGER REFERENCES difficulty_levels (id),
-        PRIMARY KEY (word_group_id, difficulty_id)
-      )`,
       `CREATE TABLE tags (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tag_name TEXT NOT NULL
@@ -58,7 +43,17 @@ export const initDb = () => {
       )`,
     ];
 
+    const insertDataQueries = [
+      `INSERT INTO languages (language_name) VALUES ("English")`,
+      `INSERT INTO languages (language_name) VALUES ("Finnish")`,
+      `INSERT INTO languages (language_name) VALUES ("French")`,
+      `INSERT INTO languages (language_name) VALUES ("German")`,
+      `INSERT INTO languages (language_name) VALUES ("Spanish")`,
+      `INSERT INTO languages (language_name) VALUES ("Swedish")`,
+    ];
+
     createTableQueries.forEach((query) => db.run(query));
+    insertDataQueries.forEach((query) => db.run(query));
     console.info("Database initialized");
   });
 };
@@ -75,7 +70,7 @@ export const closeDb = () => {
 
 /**
  * Helper function that adds new data to a table if it doesn't exist, and returns the ID of the data.
- * This is used when adding new languages, tags, difficulty etc and the id of the data is needed in other queries.
+ * This is used when adding new languages, tags, etc and the id of the data is needed in other queries.
  *
  * @param {string} table - The table name.
  * @param {string} column - The column name.
@@ -157,7 +152,6 @@ const getNextGroupId = () => {
  * {...} // no limit for amount of languages that can be in a word group
  * ],
  * tags: ["greeting", "easy"], // optional, no limit for amount of tags
- * difficulty: 1 // optional, difficulty level of the word group
  */
 export const addNewWordGroup = async (wordGroupObj) => {
   const groupId = await getNextGroupId(); // get the group ID to use for the new word group
@@ -224,20 +218,6 @@ export const addNewWordGroup = async (wordGroupObj) => {
     )
   );
 
-  // add the difficulty level to db if it doesn't exist and get the difficulty ID
-  const difficultyId = await getIdOrInsertNewData(
-    "difficulty_levels",
-    "difficulty_value",
-    wordGroupObj.difficulty
-  );
-
-  // add the difficulty ID to the word_group_difficulty table to link it to the group ID
-  await insertData(
-    "word_group_difficulty",
-    ["word_group_id", "difficulty_id"],
-    [groupId, difficultyId]
-  );
-
   // finally return the group ID of the newly added word group.
   return { groupId };
 };
@@ -277,16 +257,6 @@ export const getAllLanguages = async () =>
  */
 export const getAllTags = async () => await sqlQuery("SELECT * FROM tags");
 
-/**
- * Fetches all difficulty levels from the database.
- *
- * @returns {Promise<Object[]>} - An array of difficulties or an empty array if no difficulties.
- */
-export const getAllDifficultyLevels = async () =>
-  await sqlQuery(
-    "SELECT difficulty_value AS difficulty FROM difficulty_levels"
-  );
-
 export const getAllWords = async () => {
   const query = `SELECT words.id, words.primary_word as word, languages.language_name as languageName
   FROM words JOIN languages ON words.language_id = languages.id`;
@@ -309,8 +279,6 @@ export const deleteAllWordGroups = async () => {
     `DELETE FROM words`,
     `DELETE FROM languages`,
     `DELETE FROM word_synonyms`,
-    `DELETE FROM word_group_difficulty`,
-    `DELETE FROM difficulty_levels`,
     `DELETE FROM tags`,
     `DELETE FROM word_group_tags`,
   ];
@@ -334,7 +302,6 @@ export const getWordGroupById = async (groupId) => {
         words.primary_word,
         languages.language_name,
         GROUP_CONCAT(DISTINCT word_synonyms.word ORDER BY word_synonyms.word ASC) AS synonyms,
-        difficulty_levels.difficulty_value AS difficulty,
         GROUP_CONCAT(DISTINCT tags.tag_name ORDER BY tags.tag_name ASC) AS tags
     FROM
         words
@@ -345,17 +312,13 @@ export const getWordGroupById = async (groupId) => {
     JOIN
         word_groups ON words.id = word_groups.word_id
     LEFT JOIN
-        word_group_difficulty ON word_groups.group_id = word_group_difficulty.word_group_id
-    LEFT JOIN
-        difficulty_levels ON word_group_difficulty.difficulty_id = difficulty_levels.id
-    LEFT JOIN
         word_group_tags ON word_groups.group_id = word_group_tags.word_group_id
     LEFT JOIN
         tags ON word_group_tags.tag_id = tags.id
     WHERE
         word_groups.group_id = ?
     GROUP BY
-        words.id, words.primary_word, languages.language_name, difficulty_levels.difficulty_value;
+        words.id, words.primary_word, languages.language_name;
   `;
   const dbResponse = await sqlQuery(query, [groupId]);
   if (dbResponse.length === 0) {
@@ -371,6 +334,5 @@ export const getWordGroupById = async (groupId) => {
     };
   });
   const tags = dbResponse[0].tags ? dbResponse[0].tags.split(",") : []; // tags are the same for all rows
-  const difficulty = dbResponse[0].difficulty; // difficulty is the same for all rows
-  return { id, translations, tags, difficulty };
+  return { id, translations, tags };
 };

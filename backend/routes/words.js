@@ -1,5 +1,5 @@
 import express from "express";
-import { getAllWords } from "../db.js";
+import { getAllWords } from "../database/db.js";
 const wordsRouter = express.Router();
 
 wordsRouter.get("/", async (_, res) => {

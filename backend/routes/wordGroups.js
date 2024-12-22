@@ -5,7 +5,7 @@ import {
   getAllWordGroupIds,
   deleteWordGroupById,
   deleteAllWordGroups,
-} from "../db.js";
+} from "../database/db.js";
 const wordGroupsRouter = express.Router();
 
 wordGroupsRouter.get("/", async (_, res) => {
