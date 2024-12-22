@@ -11,6 +11,8 @@ import InputLabel from "@mui/material/InputLabel";
 import { useState } from "react";
 import axios from "axios";
 import { Select } from "@mui/material";
+import AddToCollection from "./AddToCollection";
+import ToggleDetailedMode from "./ToggleDetailedMode";
 
 const AddWordGroupDialog = ({
   setWordGroups,
@@ -20,6 +22,7 @@ const AddWordGroupDialog = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [warnings, setWarnings] = useState([false, false]);
+  const [detailedMode, setDetailedMode] = useState(false); // by default translations are added as a pair of two languages
 
   // isEdited is used to not show the error message for an empty language field
   // when the user has not had a chance to edit it yet
@@ -32,11 +35,11 @@ const AddWordGroupDialog = ({
 
   const resetDialog = () => {
     setTranslations(initialTranslations);
-    setTags("");
+    setTags([]);
     setWarnings([false, false]);
   };
 
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState([]);
 
   const isInvalidLanguage = (language) => {
     if (!language || language.trim() === "") {
@@ -93,6 +96,14 @@ const AddWordGroupDialog = ({
     }
   };
 
+  const handleDetailedModeChange = (isOn) => {
+    setDetailedMode(isOn);
+    if (!isOn) {
+      setTranslations(initialTranslations);
+      setTags([]);
+    }
+  };
+
   const addTranslation = () => {
     setTranslations([
       ...translations,
@@ -116,7 +127,7 @@ const AddWordGroupDialog = ({
         word: translation.word,
         synonyms: translation.synonyms,
       })),
-      tags: tags ? tags.split(",") : [],
+      tags,
     };
     console.log("wordgroupObj to submit", wordGroupObj);
 
@@ -146,7 +157,13 @@ const AddWordGroupDialog = ({
           resetDialog();
         }}
       >
-        <DialogTitle>Add Word Group</DialogTitle>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <DialogTitle>Add Word Group</DialogTitle>
+          <ToggleDetailedMode
+            detailedMode={detailedMode}
+            setDetailedMode={(isOn) => handleDetailedModeChange(isOn)}
+          />
+        </div>
         <DialogContent>
           {translations.map((translation, index) => (
             <div key={index} style={{ marginTop: "10px" }}>
@@ -214,19 +231,15 @@ const AddWordGroupDialog = ({
                   },
                 }}
               />
-              <TextField
-                label={"word synonyms (separated by commas)"}
-                value={translation.synonyms.join(",")}
-                fullWidth
-                onChange={(e) =>
-                  handleTranslationChange(
-                    index,
-                    "synonyms",
-                    e.target.value.split(",")
-                  )
-                }
-                style={{ marginBottom: "10px" }}
-              />
+              {detailedMode && (
+                  <AddToCollection
+                    collection={translation.synonyms}
+                    onCollectionChange={(newSynonyms) =>
+                      handleTranslationChange(index, "synonyms", newSynonyms)
+                    }
+                    itemName="synonym"
+                  />
+              )}
               {translations.length > 2 && index > 1 && (
                 <Button
                   variant="contained"
@@ -235,29 +248,34 @@ const AddWordGroupDialog = ({
                   fullWidth
                   style={{ marginRight: "10px" }}
                 >
-                  Remove Translation
+                  {`Remove ${translation.languageName} translation`}
                 </Button>
               )}
             </div>
           ))}
-
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={addTranslation}
-            disabled={translations.length >= languageNames.length} // disable button if all languages have been used
-            style={{ marginTop: "10px" }}
-          >
-            Add Another Translation
-          </Button>
-
-          <TextField
-            label="Tags (separated by commas)"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            fullWidth
-            style={{ marginTop: "20px" }}
-          />
+          {detailedMode && (
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={addTranslation}
+              disabled={translations.length >= languageNames.length} // disable button if all languages have been used
+              style={{ marginTop: "10px" }}
+            >
+              {`Add Translation (${translations.length + 1}/${
+                languageNames.length
+              })`}
+            </Button>
+          )}
+          {detailedMode && (
+            <div style={{ marginTop: "30px" }}>
+            <h3>Tags</h3>
+            <AddToCollection
+              collection={tags}
+              onCollectionChange={setTags}
+              itemName="tag"
+            />
+            </div>
+          )}
         </DialogContent>
         <DialogActions>
           <Button
