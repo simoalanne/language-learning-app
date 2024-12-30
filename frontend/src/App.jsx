@@ -45,7 +45,7 @@ const App = () => {
     fetchData("words/", setWords);
   }, []);
 
-  const isSmallScreen = useMediaQuery("(max-width:600px)");
+  const isSmallOrMediumScreen = useMediaQuery("(max-width: 960px)");
 
   const sideNavSx = {
     m: 1,
@@ -60,14 +60,20 @@ const App = () => {
     },
   };
 
-  const bottomNavSx = {
+  // awesome code to set the width of each bottom nav item separately
+  const bottomNavSx = (width = "30%") => {
+    return {
     "&.active": {
       color: "primary.main",
     },
     "&:hover": {
       color: "primary.main",
     },
+    display: "flex",
+    flex: `0 0 ${width}`,
+    justifyContent: "center",
   };
+};
 
   return (
     <Router>
@@ -75,17 +81,13 @@ const App = () => {
       <Box
         sx={{
           display: "flex",
-          flexDirection: isSmallScreen ? "column" : "row",
+          flexDirection: isSmallOrMediumScreen ? "column" : "row",
         }}
       >
         {/* Sidebar for larger screens */}
-        {!isSmallScreen && (
-          <Drawer
-            variant="permanent"
-            sx={{ width: 240 }}
-          >
-            <Toolbar />
-            <Box sx={{ overflow: "auto" }}>
+        {!isSmallOrMediumScreen && (
+          <Drawer variant="permanent" sx={{ width: 240 }}>
+            <Box sx={{ overflow: "auto", mt: 4 }}>
               <List>
                 <ListItemButton sx={sideNavSx} component={NavLink} to="/learn">
                   <ListItemIcon>
@@ -103,9 +105,7 @@ const App = () => {
                   </ListItemIcon>
                   <ListItemText primary="Manage Translations" />
                 </ListItemButton>
-                <ListItemButton
-                  sx={sideNavSx}
-                >
+                <ListItemButton sx={sideNavSx}>
                   <ListItemIcon>
                     <PersonIcon />
                   </ListItemIcon>
@@ -117,8 +117,18 @@ const App = () => {
         )}
 
         {/* Main content area */}
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <Toolbar />
+        <Box
+          component="main"
+          sx={{
+            pl: isSmallOrMediumScreen ? 0 : 4,
+            pt: 4,
+            pb: isSmallOrMediumScreen ? 10 : 2, // space for bottom navigation so it doesn't cover content
+            flexGrow: 1, // content area takes up all available space
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column", // Stack content vertically for smaller screens
+          }}
+        >
           <Routes>
             <Route
               path="/learn"
@@ -139,12 +149,6 @@ const App = () => {
                     setWords={setWords}
                     languageNames={languages.map((lang) => lang.languageName)}
                   />
-                  <DeleteWordGroups
-                    wordGroups={wordGroups}
-                    setWordGroups={setWordGroups}
-                    setLanguages={setLanguages}
-                    setWords={setWords}
-                  />
                 </>
               }
             />
@@ -153,14 +157,16 @@ const App = () => {
         </Box>
 
         {/* Bottom navigation for smaller screens */}
-        {isSmallScreen && (
+        {isSmallOrMediumScreen && (
           <BottomNavigation
             sx={{
               position: "fixed",
               bottom: 0,
               width: "100%",
               zIndex: 1000,
-              bgcolor: "grey.100",
+              bgcolor: "#f5f5f5",
+              display: "flex",
+              justifyContent: "space-between",
             }}
             showLabels
           >
@@ -168,21 +174,21 @@ const App = () => {
               label="Learn"
               icon={<SchoolIcon />}
               component={NavLink}
-              sx={bottomNavSx}
+              sx={bottomNavSx()}
               to="/learn"
             />
             <BottomNavigationAction
               label="Manage Translations"
               icon={<TranslateIcon />}
               component={NavLink}
-              sx={bottomNavSx}
+              sx={bottomNavSx("40%")} // As the text is longer it needs more space to not wrap
               to="/manage-translations"
             />
             {/* Doesnt do anything yet, just a placeholder that may or may not make it to the final version */}
             <BottomNavigationAction
               label="Profile"
               icon={<PersonIcon />}
-              sx={bottomNavSx}
+              sx={bottomNavSx()}
             />
           </BottomNavigation>
         )}

@@ -1,18 +1,11 @@
 /* eslint react/prop-types: */
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
+import { Card, CardContent, CardHeader, Button, Box } from "@mui/material";
 import { useState } from "react";
 import axios from "axios";
-import { Select } from "@mui/material";
+import ToggleOption from "./ToggleOption";
+import TranslationCard from "./TranslationCard";
+import QuickAdd from "./QuickAdd";
 import AddToCollection from "./AddToCollection";
-import ToggleDetailedMode from "./ToggleDetailedMode";
 
 const AddWordGroupDialog = ({
   setWordGroups,
@@ -20,9 +13,8 @@ const AddWordGroupDialog = ({
   setWords,
   languageNames,
 }) => {
-  const [open, setOpen] = useState(false);
-  const [warnings, setWarnings] = useState([false, false]);
   const [detailedMode, setDetailedMode] = useState(false); // by default translations are added as a pair of two languages
+  const [displaySynonyms, setDisplaySynonyms] = useState(true);
 
   // isEdited is used to not show the error message for an empty language field
   // when the user has not had a chance to edit it yet
@@ -32,12 +24,6 @@ const AddWordGroupDialog = ({
   ];
   // intially there will be two translations as that's obviously the minimum
   const [translations, setTranslations] = useState(initialTranslations);
-
-  const resetDialog = () => {
-    setTranslations(initialTranslations);
-    setTags([]);
-    setWarnings([false, false]);
-  };
 
   const [tags, setTags] = useState([]);
 
@@ -87,9 +73,6 @@ const AddWordGroupDialog = ({
       const wordAlreadyUsed = words.some(
         (w) => w.word === word && w.languageName === languageName
       );
-      const newWarnings = [...warnings];
-      newWarnings[index] = wordAlreadyUsed;
-      setWarnings(newWarnings);
       if (wordAlreadyUsed) {
         console.log(`word ${word} already used in ${languageName}`);
       }
@@ -105,18 +88,19 @@ const AddWordGroupDialog = ({
   };
 
   const addTranslation = () => {
+    // find the first language that is not yet used
+    const languageName = languageNames.find(
+      (name) => !translations.map((t) => t.languageName).includes(name)
+    );
     setTranslations([
       ...translations,
-      { languageName: "", word: "", synonyms: [], isEdited: false },
+      { languageName, word: "", synonyms: [] },
     ]);
-    setWarnings([...warnings, false]);
   };
 
   const removeTranslation = (index) => {
     const newTranslations = translations.filter((_, i) => i !== index);
     setTranslations(newTranslations);
-    const newWarnings = warnings.filter((_, i) => i !== index);
-    setWarnings(newWarnings);
   };
 
   const onSubmit = async () => {
@@ -132,8 +116,6 @@ const AddWordGroupDialog = ({
     console.log("wordgroupObj to submit", wordGroupObj);
 
     await axios.post("/api/word-groups", wordGroupObj);
-    setOpen(false);
-    resetDialog();
     setWords((prevWords) => [
       ...prevWords,
       ...translations.map((t, index) => ({
@@ -143,154 +125,132 @@ const AddWordGroupDialog = ({
       })),
     ]);
     setWordGroups((prevWordGroups) => [...prevWordGroups, wordGroupObj]);
+    // reset each translation language word and synonyms
+    const newTranslations = translations.map((t) => ({
+      languageName: t.languageName,
+      word: "",
+      synonyms: [],
+    }));
+    setTranslations(newTranslations);
+  };
+
+  const DetailsCard = () => {
+    return (
+      <Card sx={{ width: 300 }}>
+        <CardHeader
+          sx={{ display: "flex", bgcolor: "#f5f5f5" }}
+          title="Group Details"
+        />
+        <CardContent>
+          <p>{`Translations: ${translations.length}/${languageNames.length}`}</p>
+          <Button
+            onClick={addTranslation}
+            variant="contained"
+            color="primary"
+            size="small"
+            disabled={translations.length === languageNames.length}
+          >
+            Add new translation
+          </Button>
+          <ToggleOption
+            label="Display synonyms"
+            value={displaySynonyms}
+            setValue={setDisplaySynonyms}
+          />
+          <Button
+            variant="contained"
+            color="secondary"
+            size="small"
+            onClick={() => handleDetailedModeChange(false)}
+          >
+            Switch to quick add mode
+          </Button>
+          <AddToCollection
+            collection={tags}
+            onCollectionChange={setTags}
+            itemName={"tag"}
+            collectionLimit={5}
+          />
+          <Button
+            onClick={onSubmit}
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2, bgcolor: "green" }}
+            disabled={!isValidForm()}
+          >
+            Submit translation group
+          </Button>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
-    <div className="add-word-group-dialog">
-      <Button variant="contained" onClick={() => setOpen(true)}>
-        Add a new word group
-      </Button>
-      <Dialog
-        open={open}
-        onClose={() => {
-          setOpen(false);
-          resetDialog();
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <DialogTitle>Add Word Group</DialogTitle>
-          <ToggleDetailedMode
-            detailedMode={detailedMode}
-            setDetailedMode={(isOn) => handleDetailedModeChange(isOn)}
-          />
-        </div>
-        <DialogContent>
+    <div>
+      {detailedMode && (
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            gap: 4,
+            maxWidth: 1400, // max 4 cards in a row (cards are 300px wide)
+            margin: "auto",
+          }}
+        >
           {translations.map((translation, index) => (
-            <div key={index} style={{ marginTop: "10px" }}>
-              <FormControl fullWidth>
-                <InputLabel id={`language-select-label-${index}`}>
-                  {`Language ${index + 1}`}
-                </InputLabel>
-                <Select
-                  labelId={`language-select-label-${index}`}
-                  id={`language-select-${index}`}
-                  name={`language-select-${index}`}
-                  label={`Language ${index + 1}`}
-                  value={translation.languageName}
-                  onChange={(e) =>
-                    handleTranslationChange(
-                      index,
-                      "languageName",
-                      e.target.value
-                    )
-                  }
-                  style={{ marginBottom: "10px" }}
-                >
-                  {languageNames
-                    .filter(
-                      (language) =>
-                        !translations
-                          .map((t, i) => i !== index && t.languageName) // if index is not the current index, include the language
-                          .includes(language) // if the language is not already used in another translation, include it
-                    )
-                    .map((language) => (
-                      <MenuItem key={language} value={language}>
-                        {language}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                label={"word"}
-                required
-                error={warnings[index]}
-                helperText={
-                  warnings[index] &&
-                  "Warning: You have already used this word on another word group!"
-                }
-                value={translation.word}
-                onChange={(e) =>
-                  handleTranslationChange(index, "word", e.target.value)
-                }
-                fullWidth
-                style={{ marginBottom: "10px" }}
-                sx={{
-                  "& .MuiFormLabel-root.Mui-error": {
-                    color: "#D35400", // Error label color
-                  },
-                  "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
-                    {
-                      borderColor: "#D35400", // Error border color
-                    },
-                  "& .MuiFormHelperText-root.Mui-error": {
-                    color: "#D35400", // Error helper text color
-                  },
-                  "& .MuiFormLabel-asterisk": {
-                    color: warnings[index] && "#D35400", // Required asterisk color
-                  },
-                }}
-              />
-              {detailedMode && (
-                  <AddToCollection
-                    collection={translation.synonyms}
-                    onCollectionChange={(newSynonyms) =>
-                      handleTranslationChange(index, "synonyms", newSynonyms)
-                    }
-                    itemName="synonym"
-                  />
-              )}
-              {translations.length > 2 && index > 1 && (
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => removeTranslation(index)}
-                  fullWidth
-                  style={{ marginRight: "10px" }}
-                >
-                  {`Remove ${translation.languageName} translation`}
-                </Button>
-              )}
-            </div>
-          ))}
-          {detailedMode && (
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={addTranslation}
-              disabled={translations.length >= languageNames.length} // disable button if all languages have been used
-              style={{ marginTop: "10px" }}
-            >
-              {`Add Translation (${translations.length + 1}/${
-                languageNames.length
-              })`}
-            </Button>
-          )}
-          {detailedMode && (
-            <div style={{ marginTop: "30px" }}>
-            <h3>Tags</h3>
-            <AddToCollection
-              collection={tags}
-              onCollectionChange={setTags}
-              itemName="tag"
+            <TranslationCard
+              key={index}
+              languages={languageNames}
+              selectedLanguage={translation.languageName}
+              setSelectedLanguage={(language) =>
+                handleTranslationChange(index, "languageName", language)
+              }
+              selectedWord={translation.word}
+              setSelectedWord={(word) =>
+                handleTranslationChange(index, "word", word)
+              }
+              synonyms={translation.synonyms}
+              setSynonyms={(synonyms) =>
+                handleTranslationChange(index, "synonyms", synonyms)
+              }
+              allWords={words}
+              onremoveTranslation={() => removeTranslation(index)}
+              index={index}
+              usedLanguages={translations.map((t) => t.languageName)}
+              displaySynonyms={displaySynonyms}
             />
-            </div>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setOpen(false);
-              resetDialog();
-            }}
-          >
-            Cancel
-          </Button>
-          <Button disabled={!isValidForm()} onClick={onSubmit}>
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
+          ))}
+          <DetailsCard />
+        </Box>
+      )}
+      {!detailedMode && (
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <QuickAdd
+            languages={languageNames}
+            selectedLanguage1={translations[0].languageName}
+            selectedLanguage2={translations[1].languageName}
+            setSelectedLanguage1={(language) =>
+              handleTranslationChange(0, "languageName", language)
+            }
+            setSelectedLanguage2={(language) =>
+              handleTranslationChange(1, "languageName", language)
+            }
+            selectedWord1={translations[0].word}
+            setSelectedWord1={(word) =>
+              handleTranslationChange(0, "word", word)
+            }
+            selectedWord2={translations[1].word}
+            setSelectedWord2={(word) =>
+              handleTranslationChange(1, "word", word)
+            }
+            allWords={words}
+            usedLanguages={translations.map((t) => t.languageName)}
+            setDetailedMode={(isOn) => handleDetailedModeChange(isOn)}
+            onSubmit={onSubmit}
+          />
+        </Box>
+      )}
     </div>
   );
 };

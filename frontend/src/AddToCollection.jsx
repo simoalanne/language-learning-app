@@ -1,29 +1,37 @@
 import { TextField, Button, Chip } from "@mui/material";
 import { useState } from "react";
 
-const AddToCollection = ({ collection, onCollectionChange, itemName }) => {
+const AddToCollection = ({ collection, onCollectionChange, itemName, collectionLimit }) => {
   const [currentItem, setCurrentItem] = useState("");
+  const isLimitReached = collectionLimit && collection.length >= collectionLimit;
+  const isDisabled = currentItem === "" || collection.includes(currentItem) || isLimitReached;
+
+  const buttonLabel = () => {
+    if (!collectionLimit) return `+ Add ${itemName} ${collection.length + 1}`;
+    if (collection.length >= collectionLimit) return "limit reached";
+    return `Add ${itemName} ${collection.length + 1}/${collectionLimit}`;
+  };
 
   return (
     <>
       <TextField
-        label={`Add ${itemName} ${collection.length + 1}`}
+        label={`Add ${itemName}`}
         fullWidth
         value={currentItem}
         onChange={(e) => setCurrentItem(e.target.value)}
+        sx={{mt: 1 }}
       />
       <Button
         variant="contained"
-        color="primary"
+        sx={{bgcolor: "green", width: "100%", mt: 1 }}
         fullWidth
         onClick={() => {
           onCollectionChange([...collection, currentItem]);
           setCurrentItem("");
         }}
-        style={{ marginTop: "10px" }}
-        disabled={currentItem === "" || collection.includes(currentItem)}
+        disabled={isDisabled}
       >
-        {`Add ${itemName}`}
+        {buttonLabel()}
       </Button>
       {collection.map((item, i) => (
         <Chip
@@ -32,7 +40,7 @@ const AddToCollection = ({ collection, onCollectionChange, itemName }) => {
           onDelete={() =>
             onCollectionChange(collection.filter((_, index) => index !== i))
           }
-          style={{ marginTop: "10px", marginRight: "10px" }}
+          sx={{mt: 1, mr: 1 }}
         />
       ))}
     </>
