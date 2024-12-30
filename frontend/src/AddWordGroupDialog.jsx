@@ -13,8 +13,9 @@ const AddWordGroupDialog = ({
   setWords,
   languageNames,
 }) => {
-  const [detailedMode, setDetailedMode] = useState(false); // by default translations are added as a pair of two languages
+  const [detailedMode, setDetailedMode] = useState(true);
   const [displaySynonyms, setDisplaySynonyms] = useState(true);
+  const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
 
   // isEdited is used to not show the error message for an empty language field
   // when the user has not had a chance to edit it yet
@@ -103,6 +104,12 @@ const AddWordGroupDialog = ({
     setTranslations(newTranslations);
   };
 
+  const missingTranslations = () => {
+    const missing = translations.filter((t) => t.word.trim() === "").map((t) => t.languageName
+    );
+    return missing;
+  }
+
   const onSubmit = async () => {
     console.log("tags are", tags);
     const wordGroupObj = {
@@ -132,17 +139,23 @@ const AddWordGroupDialog = ({
       synonyms: [],
     }));
     setTranslations(newTranslations);
+    if (resetTagsOnSubmit) {
+      setTags([]);
+    }
   };
 
   const DetailsCard = () => {
     return (
-      <Card sx={{ width: 300 }}>
+      <Card sx={{ width: 300, bgcolor: "#fafafa" }}>
         <CardHeader
-          sx={{ display: "flex", bgcolor: "#f5f5f5" }}
+          sx={{ display: "flex", bgcolor: "#87CEEB" }}
           title="Group Details"
         />
         <CardContent>
-          <p>{`Translations: ${translations.length}/${languageNames.length}`}</p>
+          <p style={{fontWeight: "bold"}}>{`Translations: ${translations.length}/${languageNames.length}`}</p>
+          {missingTranslations().length > 0 && (
+            <p style={{fontWeight: "bold" }}>{`Missing translations for: ${missingTranslations().join(", ")}`}</p>
+          )}
           <Button
             onClick={addTranslation}
             variant="contained"
@@ -152,10 +165,16 @@ const AddWordGroupDialog = ({
           >
             Add new translation
           </Button>
+          <p style={{fontWeight: "bold"}}>Options:</p>
           <ToggleOption
             label="Display synonyms"
             value={displaySynonyms}
             setValue={setDisplaySynonyms}
+          />
+          <ToggleOption
+            label="Reset tags on submit"
+            value={resetTagsOnSubmit}
+            setValue={setResetTagsOnSubmit}
           />
           <Button
             variant="contained"

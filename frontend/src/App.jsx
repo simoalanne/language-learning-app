@@ -7,7 +7,6 @@ import {
   NavLink,
 } from "react-router-dom";
 import {
-  Toolbar,
   CssBaseline,
   Drawer,
   List,
@@ -24,7 +23,6 @@ import TranslateIcon from "@mui/icons-material/Translate";
 import PersonIcon from "@mui/icons-material/Person";
 import AddWordGroupDialog from "./AddWordGroupDialog";
 import LearnWords from "./LearnWords";
-import DeleteWordGroups from "./DeleteWordGroups";
 import "./App.css";
 
 const App = () => {

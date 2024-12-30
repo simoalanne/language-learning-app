@@ -1,4 +1,11 @@
-import { Card, CardHeader, CardContent, Box, Tooltip, IconButton } from "@mui/material";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Box,
+  Tooltip,
+  IconButton,
+} from "@mui/material";
 import LanguageFlag from "./LanguageFlag";
 import SelectLanguage from "./SelectLanguage";
 import WordInputField from "./WordInputField";
@@ -20,12 +27,12 @@ const TranslationCard = ({
   displaySynonyms,
 }) => {
   return (
-    <Card sx={{ width: 300 }}>
+    <Card sx={{ width: 300, bgcolor: "#fafafa" }}>
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          backgroundColor: "#f5f5f5",
+          backgroundColor: "#87CEEB",
         }}
       >
         <CardHeader title={`${selectedLanguage} Translation`} />
@@ -45,21 +52,21 @@ const TranslationCard = ({
           selectedLanguage={selectedLanguage}
           allWords={allWords}
         />
-        {displaySynonyms &&
-        <AddToCollection
-          collection={synonyms}
-          onCollectionChange={setSynonyms}
-          itemName={"synonym"}
-          collectionLimit={5}
-        />
-        }
+        {displaySynonyms && (
+          <AddToCollection
+            collection={synonyms}
+            onCollectionChange={setSynonyms}
+            itemName={"synonym"}
+            collectionLimit={5}
+          />
+        )}
         {index > 1 && (
           <Tooltip placement="right" title="Remove translation">
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <IconButton onClick={onremoveTranslation}>
-            <DeleteIcon />
-          </IconButton>
-          </Box>
+            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+              <IconButton onClick={onremoveTranslation}>
+                <DeleteIcon />
+              </IconButton>
+            </Box>
           </Tooltip>
         )}
       </CardContent>
