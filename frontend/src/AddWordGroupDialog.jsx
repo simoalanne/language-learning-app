@@ -115,10 +115,10 @@ const AddWordGroupDialog = ({
     const wordGroupObj = {
       translations: translations.map((translation) => ({
         languageName: translation.languageName,
-        word: translation.word,
-        synonyms: translation.synonyms,
+        word: translation.word?.trim(),
+        synonyms: translation.synonyms.map((s) => s?.trim()),
       })),
-      tags,
+      tags: tags.map((tag) => tag?.trim()),
     };
     console.log("wordgroupObj to submit", wordGroupObj);
 
