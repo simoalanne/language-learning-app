@@ -73,25 +73,31 @@ export const closeDb = () => {
  * This is used when adding new languages, tags, etc and the id of the data is needed in other queries.
  *
  * @param {string} table - The table name.
- * @param {string} column - The column name.
- * @param {string} value - The value to insert.
+ * @param {Array<string>} columns - The columns to check if the data already exists.
+ * @param {Array<any>} values - The values to check if the data already exists.
+ * @param {string} whatToSelect - The columns to select if the data already exists. optional default is "id".
  * @returns {Promise<number>} - The ID of the row.
- * @example getIdOrInsertNewData("languages", "language_name", "English");
+ * @example getIdOrInsertNewData("languages", "[language_name]", ["English"]);
  */
-const getIdOrInsertNewData = (table, column, value) => {
+const getIdOrInsertNewData = (table, columns, values, whatToSelect) => {
   return new Promise((resolve, reject) => {
+    const placeholders = columns.map(() => "?").join(", ");
+    const whereClause = columns.map((column) => `${column} = ?`).join(" AND ");
+
     db.serialize(() => {
       db.get(
-        `SELECT id FROM ${table} WHERE ${column} = ?`,
-        [value],
+        `SELECT ${whatToSelect || "id"} FROM ${table} WHERE ${whereClause}`,
+        values,
         (err, row) => {
           if (err) return reject(err);
           if (row) return resolve(row.id);
+
           db.run(
-            `INSERT INTO ${table} (${column}) VALUES (?)`,
-            [value],
+            `INSERT INTO ${table} (${columns.join(
+              ", "
+            )}) VALUES (${placeholders})`,
+            values,
             function (err) {
-              // Can't use arrow function because this will be undefined otherwise
               if (err) return reject(err);
               resolve(this.lastID);
             }
@@ -160,9 +166,9 @@ export const addNewWordGroup = async (wordGroupObj) => {
   const languageIds = await Promise.all(
     wordGroupObj.translations.map((translations) =>
       getIdOrInsertNewData(
-        "languages",
-        "language_name",
-        translations.languageName
+      "languages",
+        ["language_name"],
+        [translations.languageName]
       )
     )
   );
@@ -170,6 +176,9 @@ export const addNewWordGroup = async (wordGroupObj) => {
   // add words to db and get the word IDs
   const wordIds = await Promise.all(
     wordGroupObj.translations.map(async (translations, index) => {
+      // same word can be stored multiple times even for the same language.
+      // this is because its possible to have multiple words with the same spelling but different meanings.
+      // also if words with multiple meanings would be stored only once, then keeping track of synonyms would not be possible.
       return await insertData(
         "words",
         ["language_id", "primary_word"],
@@ -183,10 +192,11 @@ export const addNewWordGroup = async (wordGroupObj) => {
     wordGroupObj.translations.map(async (translations, index) => {
       await Promise.all(
         translations.synonyms.map(async (synonym) => {
-          await insertData(
+          await getIdOrInsertNewData(
             "word_synonyms",
             ["word_id", "word"],
-            [wordIds[index], synonym]
+            [wordIds[index], synonym],
+            "1" // only need to see wheter synonym exists so select "1" to make the query faster
           );
         })
       );
@@ -203,7 +213,7 @@ export const addNewWordGroup = async (wordGroupObj) => {
   // add tags to db that don't exist and get all the tag IDs
   const tagIds = await Promise.all(
     wordGroupObj.tags.map((tag) =>
-      getIdOrInsertNewData("tags", "tag_name", tag)
+      getIdOrInsertNewData("tags", ["tag_name"], [tag])
     )
   );
 
