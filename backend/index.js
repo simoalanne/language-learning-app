@@ -6,21 +6,26 @@ import wordsRouter from "./routes/words.js";
 //import cors from "cors";
 import path from "path";
 
-// To use __dirName with ES modules, these two lines are needed to define __dirname
+// To use __dirname with ES modules, these two lines are needed to define __dirname
 import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const port = process.env.PORT || 3000;
+
 app.use(express.json());
-//app.use(cors());
-app.use(express.static(path.join(__dirname, "public")));
+
+const publicPath = path.join(__dirname, "public");
+app.use(express.static(publicPath));
+
 app.use("/api/word-groups", wordGroupsRouter);
 app.use("/api/languages", languagesRouter);
 app.use("/api/words", wordsRouter);
 
-app.get("/", (_, res) => {
-  res.send("express server");
+// this is needed when using react router and refreshing the page
+// routes all requests that are not for the api to the react app
+app.get("*", (_, res) => {
+  res.sendFile(path.join(publicPath, "index.html"));
 });
 
 const startServer = () => {

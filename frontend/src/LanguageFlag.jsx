@@ -6,7 +6,7 @@ const LanguageFlag = ({ languageName, style }) => {
   }
   return (
     <img
-      src={`../public/${languageName}.svg`}
+      src={`/${languageName}.svg`}
       style={style}
       ></img>
   );
