@@ -18,9 +18,21 @@ app.use(express.json());
 const publicPath = path.join(__dirname, "public");
 app.use(express.static(publicPath));
 
+app.get("/api", (_, res) => {
+  res.json({
+    message: "Welcome to API",
+    routes: ["/api/word-groups", "/api/languages", "/api/words"],
+  });
+});
+
 app.use("/api/word-groups", wordGroupsRouter);
 app.use("/api/languages", languagesRouter);
 app.use("/api/words", wordsRouter);
+
+// redirect all requests that dont match the specified routes to the api root which will show the available routes
+app.all("/api/*", (_, res) => {
+  res.redirect("/api");
+});
 
 // this is needed when using react router and refreshing the page
 // routes all requests that are not for the api to the react app
