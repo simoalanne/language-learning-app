@@ -1,7 +1,7 @@
 import { TextField, Button, Chip } from "@mui/material";
 import { useState } from "react";
 
-const AddToCollection = ({ collection, onCollectionChange, itemName, collectionLimit }) => {
+const AddToCollection = ({ collection, onCollectionChange, itemName, collectionLimit, clearTextFieldRef }) => {
   const [currentItem, setCurrentItem] = useState("");
   const isLimitReached = collectionLimit && collection.length >= collectionLimit;
   const isDisabled = currentItem === "" || collection.includes(currentItem) || isLimitReached;
@@ -11,6 +11,9 @@ const AddToCollection = ({ collection, onCollectionChange, itemName, collectionL
     if (collection.length >= collectionLimit) return "limit reached";
     return `Add ${itemName} ${collection.length + 1}/${collectionLimit}`;
   };
+
+  // returns a function that clears the text field. used for clearing the text field in TranslationCard
+  if (clearTextFieldRef) clearTextFieldRef.current = () => setCurrentItem("");
 
   return (
     <>

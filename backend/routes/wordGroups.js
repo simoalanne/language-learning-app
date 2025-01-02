@@ -5,6 +5,7 @@ import {
   getAllWordGroupIds,
   deleteWordGroupById,
   deleteAllWordGroups,
+  updateWordGroup,
 } from "../database/db.js";
 const wordGroupsRouter = express.Router();
 
@@ -36,8 +37,8 @@ wordGroupsRouter.get("/:id", async (req, res) => {
 wordGroupsRouter.post("/", async (req, res) => {
   try {
     const wordGroupObj = req.body;
-    const response = await addNewWordGroup(wordGroupObj);
-    res.send(response);
+    const id = await addNewWordGroup(wordGroupObj);
+    res.json(id);
   } catch (error) {
     console.error(error);
     res.status(500).send("Server error");
@@ -46,8 +47,8 @@ wordGroupsRouter.post("/", async (req, res) => {
 
 wordGroupsRouter.delete("/", async (_, res) => {
   try {
-    await deleteAllWordGroups();
-    res.json({ message: "All word groups deleted" });
+    const id = await deleteAllWordGroups();
+    res.json(id);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error });
@@ -60,11 +61,30 @@ wordGroupsRouter.delete("/:id", async (req, res) => {
     if (isNaN(groupId)) {
       return res.status(400).json({ error: "Invalid group ID" });
     }
-    await deleteWordGroupById(groupId);
-    res.json({ message: `Word group ${groupId} deleted`} );
+    const id = await deleteWordGroupById(groupId);
+    res.json(id);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error });
+  }
+});
+
+wordGroupsRouter.put("/:id", async (req, res) => {
+  try {
+    const groupId = parseInt(req.params.id);
+    if (isNaN(groupId)) {
+      return res.status(400).json({ error: "Invalid group ID" });
+    }
+
+    const wordGroupObj = {id: groupId, ...req.body};
+    const response = await updateWordGroup(wordGroupObj);
+    if (response?.error) {
+      return res.status(400).json(response);
+    }
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
   }
 });
 

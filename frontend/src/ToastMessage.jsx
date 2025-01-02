@@ -1,13 +1,23 @@
-import { Snackbar } from "@mui/material";
+import { Snackbar, Alert } from "@mui/material";
 
-const ToastMessage = ({ message, isOpen, setOpen }) => {
+const ToastMessage = ({ message, open, setOpen, severity }) => {
   return (
     <Snackbar
-      open={isOpen}
+      open={open}
       autoHideDuration={5000}
       onClose={() => setOpen(false)}
-      message={message}
-    />
+      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      key={"top-center"}
+    >
+      <Alert
+        onClose={() => setOpen(false)}
+        severity={severity}
+        variant="filled"
+        sx={{ width: "100%", }}
+      >
+        {message}
+      </Alert>
+    </Snackbar>
   );
 };
 

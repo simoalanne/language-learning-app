@@ -28,19 +28,16 @@ import "./App.css";
 const App = () => {
   const [wordGroups, setWordGroups] = useState([]);
   const [languages, setLanguages] = useState([]);
-  const [words, setWords] = useState([]);
 
   const fetchData = async (url, setFunction) => {
     const response = await fetch(`api/${url}`);
     const data = await response.json();
-    console.log(data);
     setFunction(data);
   };
 
   useEffect(() => {
     fetchData("word-groups/", setWordGroups);
     fetchData("languages/", setLanguages);
-    fetchData("words/", setWords);
   }, []);
 
   const isSmallOrMediumScreen = useMediaQuery("(max-width: 960px)");
@@ -118,8 +115,6 @@ const App = () => {
         <Box
           component="main"
           sx={{
-            pl: isSmallOrMediumScreen ? 0 : 4,
-            pt: 4,
             pb: isSmallOrMediumScreen ? 10 : 2, // space for bottom navigation so it doesn't cover content
             flexGrow: 1, // content area takes up all available space
             display: "flex",
@@ -143,9 +138,8 @@ const App = () => {
                 <>
                   <AddWordGroupDialog
                     setWordGroups={setWordGroups}
-                    words={words}
-                    setWords={setWords}
                     languageNames={languages.map((lang) => lang.languageName)}
+                    wordGroups={wordGroups}
                   />
                 </>
               }

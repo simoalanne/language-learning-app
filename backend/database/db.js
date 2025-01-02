@@ -37,7 +37,7 @@ export const initDb = () => {
         tag_name TEXT NOT NULL
       )`,
       `CREATE TABLE word_group_tags (
-        word_group_id INTEGER REFERENCES word_groups (group_id) ON DELETE CASCADE,
+        word_group_id INTEGER REFERENCES word_groups (group_id) ON DELETE CASCADE, 
         tag_id INTEGER REFERENCES tags (id),
         PRIMARY KEY (word_group_id, tag_id)
       )`,
@@ -160,13 +160,13 @@ const getNextGroupId = () => {
  * tags: ["greeting", "easy"], // optional, no limit for amount of tags
  */
 export const addNewWordGroup = async (wordGroupObj) => {
-  const groupId = await getNextGroupId(); // get the group ID to use for the new word group
+  const groupId = wordGroupObj.id || (await getNextGroupId()); // if id is not provided, get the next group ID
 
   // Add languages to db that don't exist and get all the language IDs
   const languageIds = await Promise.all(
     wordGroupObj.translations.map((translations) =>
       getIdOrInsertNewData(
-      "languages",
+        "languages",
         ["language_name"],
         [translations.languageName]
       )
@@ -229,7 +229,21 @@ export const addNewWordGroup = async (wordGroupObj) => {
   );
 
   // finally return the group ID of the newly added word group.
-  return { groupId };
+  return { id: groupId };
+};
+
+/**
+ * @param {Object} wordGroupObj - The word group object to be updated.
+ * @returns {Promise<number>} - The group ID of the updated word group.
+ */
+export const updateWordGroup = async (wordGroupObj) => {
+  const id = wordGroupObj.id;
+  if (await getWordGroupById(id) === null) {
+    return { error: "No word group found with the given ID" };
+  }
+  await deleteWordGroupById(id);
+  await addNewWordGroup(wordGroupObj);
+  return { id };
 };
 
 /**
@@ -278,8 +292,15 @@ export const deleteWordGroupById = async (groupId) => {
   return new Promise((resolve, reject) => {
     db.run(query, [groupId], (err) => {
       if (err) return reject(err);
-      resolve();
     });
+    db.run(
+      `DELETE FROM word_group_tags WHERE word_group_id = ?`,
+      [groupId],
+      (err) => {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
   });
 };
 

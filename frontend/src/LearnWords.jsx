@@ -84,7 +84,6 @@ const LearnWords = ({ wordGroups, languageNames }) => {
       })
       .filter((group) => group.length === 2); // only include groups where both languages are present
 
-    console.log("questionsAndAnswers", questionsAndAnswers);
     const testObj = questionsAndAnswers.map((group) => {
       const question = group.find(
         (group) => group.languageName === selectedLanguages[0]
@@ -104,7 +103,6 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     });
   }, [wordGroups, selectedLanguages, selectedTags]);
 
-  console.log("test", test);
   return (
     <div>
       <Dialog open={testOpen} onClose={() => setTestOpen(false)}>

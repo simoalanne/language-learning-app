@@ -1,6 +1,6 @@
 import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
-const SelectLanguage = ({ languages, selectedLanguage, setSelectedLanguage, usedLanguages }) => {
+const SelectLanguage = ({ languages, selectedLanguage, setSelectedLanguage, usedLanguages, hideLanguageSelection }) => {
   if (!selectedLanguage || languages.length === 0) return null; // data not loaded yet
 
   const shownLanguages = languages.filter((language) => !usedLanguages.includes(language));
@@ -9,7 +9,8 @@ const SelectLanguage = ({ languages, selectedLanguage, setSelectedLanguage, used
   
   return (
     // select is disabled when all languages are used as there is no language to select other than the current one
-    <FormControl disabled={usedLanguages.length === languages.length} sx={{mt: 1 }} fullWidth>
+    !hideLanguageSelection && (
+    <FormControl sx={{ marginTop: "10px", }} fullWidth>
       <InputLabel id="language-select-label">Select language</InputLabel>
       <Select
         labelId="language-select-label"
@@ -25,6 +26,7 @@ const SelectLanguage = ({ languages, selectedLanguage, setSelectedLanguage, used
         ))}
       </Select>
     </FormControl>
+    )
   );
 };
 

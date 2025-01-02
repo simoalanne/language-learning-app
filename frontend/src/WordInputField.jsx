@@ -8,17 +8,17 @@ const WordInputField = ({
 
   return (
     <>
-    <TextField
-      autoComplete="off"
-      label={`Word or phrase ${
-        selectedLanguage ? `in ${selectedLanguage}` : ""
-      }`}
-      value={selectedWord}
-      onChange={(e) => setSelectedWord(e.target.value)}
-      fullWidth
-      sx={{ my: 1 }}
-    />
-  </>
+      <TextField
+        autoComplete="off"
+        label={`Word or phrase ${
+          selectedLanguage ? `in ${selectedLanguage}` : ""
+        }`}
+        value={selectedWord}
+        onChange={(e) => setSelectedWord(e.target.value)}
+        fullWidth
+        sx={{ my: 1 }}
+      />
+    </>
   );
 };
 

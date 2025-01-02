@@ -33,7 +33,7 @@ const QuickAdd = ({
 
   return (
     <Card sx={{ width: "85%", maxWidth: 600 }}>
-      <Box sx={{ display: "flex", alignItems: "center", bgcolor: "#f5f5f5" }}>
+      <Box sx={{ display: "flex", alignItems: "center", bgcolor: "#87CEEB" }}>
         <CardHeader title="Quick Add" />
         <LanguageFlag languageName={selectedLanguage1} />
         <LanguageFlag languageName={selectedLanguage2} />
