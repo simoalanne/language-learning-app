@@ -23,7 +23,6 @@ const QuickAdd = ({
   setSelectedWord2,
   allWords,
   usedLanguages,
-  setDetailedMode,
   onSubmit,
 }) => {
   const [hideLanguages, setHideLanguages] = useState(false);
@@ -75,15 +74,6 @@ const QuickAdd = ({
           onClick={onSubmit}
         >
           Submit translation
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          sx={{ mt: 1 }}
-          fullWidth
-          onClick={() => setDetailedMode(true)}
-        >
-          Switch to detailed mode
         </Button>
         <ToggleOption
           label="Hide language selections?"

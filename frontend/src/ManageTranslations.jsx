@@ -4,34 +4,43 @@ import {
   CardContent,
   CardHeader,
   Button,
-  ButtonGroup,
   Box,
+  Typography,
+  Icon,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import ToggleOption from "./ToggleOption";
 import TranslationCard from "./TranslationCard";
 import QuickAdd from "./QuickAdd";
 import AddToCollection from "./AddToCollection";
 import MoveIcons from "./MoveIcons"; // used to navigate between existing word groups
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ToastMessage from "./ToastMessage";
-
-const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
-  const [detailedMode, setDetailedMode] = useState(true);
+import AddIcon from "@mui/icons-material/Add";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
+import EditIcon from "@mui/icons-material/Edit";
+import { useNavigate, useParams } from "react-router-dom";
+const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
-  const [currentActivity, setCurrentActivity] = useState("add");
   const [editModeIndex, setEditModeIndex] = useState(0);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [hideLanguageSelections, setHideLanguageSelections] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const [toastSeverity, setToastSeverity] = useState("success");
-
-  const allTags = wordGroups.map((wordGroup) => wordGroup.tags).flat().sort();
+  const navigate = useNavigate();
+  const tab = useParams().tab;
+  const [activeTab, setActiveTab] = useState(tab || "add");
+    useEffect(() => {
+    console.log("tab changes in useEffect", tab);
+    if (tab !== activeTab) {
+      setActiveTab(tab); // Sync activeTab with the URL if they differ
+    }
+  }, [tab, activeTab]); // Dependency on URL `tab`
+  const allTags = wordGroups
+    .map((wordGroup) => wordGroup.tags)
+    .flat()
+    .sort();
 
   const initialTranslations = [
     { languageName: "English", word: "", synonyms: [] },
@@ -42,33 +51,9 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
 
   const [tags, setTags] = useState([]);
 
-  const isInvalidLanguage = (language) => {
-    if (!language || language.trim() === "") {
-      return { invalid: true, message: "Language cannot be empty!" };
-    }
-    if (!languageNames.includes(language)) {
-      return {
-        invalid: true,
-        message:
-          "Invalid language! Select a valid language from the dropdown list.",
-      };
-    }
-
-    const occurrences = translations.filter(
-      (t) => t.languageName === language
-    ).length;
-    return {
-      invalid: occurrences > 1,
-      message: occurrences > 1 ? "Language already used elsewhere!" : "",
-    };
-  };
-
   const isValidForm = () => {
     let valid = true;
     translations.forEach((translation) => {
-      if (isInvalidLanguage(translation.languageName).invalid) {
-        valid = false;
-      }
       if (translation.word.trim() === "") {
         valid = false;
       }
@@ -80,14 +65,6 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
     const newTranslations = [...translations];
     newTranslations[index][field] = value;
     setTranslations(newTranslations);
-  };
-
-  const handleDetailedModeChange = (isOn) => {
-    setDetailedMode(isOn);
-    if (!isOn) {
-      setTranslations(initialTranslations);
-      setTags([]);
-    }
   };
 
   const addTranslation = () => {
@@ -129,23 +106,25 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
     return translationsChanged || tagsChanged;
   };
 
-  const handleActivityChange = (activity) => {
-    setCurrentActivity(activity);
-    if (activity === "add") {
+  const handleTabChange = (tab) => {
+    console.log("tab changes in handleTabChange", tab);
+    if (tab === "add" || tab === "quick-add") {
       setTranslations(initialTranslations);
       setTags([]);
-      setEditModeIndex(0);
-      setDetailedMode(true);
     }
-    if (activity === "edit") {
-      setDetailedMode(true);
+    if (tab === "edit") {
       handleIndexChange(0);
     }
+    navigate(`/manage-translations/${tab}`);
   };
 
   const handleIndexChange = (index) => {
     setEditModeIndex(index);
     const wordGroup = wordGroups[index];
+    if (!wordGroup) {
+      setTags([]);
+      return;
+    }
     const translations = wordGroup.translations.map((translation) => ({
       languageName: translation.languageName,
       word: translation.word,
@@ -165,7 +144,7 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
       })),
       tags: tags.map((tag) => tag?.trim()),
     };
-    if (currentActivity === "add") {
+    if (activeTab === "add" || activeTab === "quick-add") {
       const id = (await axios.post("/api/word-groups", wordGroupObj)).data.id;
       setToastMsg("Translation group added successfully.");
       setToastOpen(true);
@@ -186,7 +165,7 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
       }
     }
 
-    if (currentActivity === "edit") {
+    if (activeTab === "edit") {
       const id = (
         await axios.put(
           `/api/word-groups/${wordGroups[editModeIndex].id}`,
@@ -212,8 +191,9 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
 
     // if there are no more word groups, switch to add mode
     if (updatedWordGroups.length === 0) {
-      handleActivityChange("add");
-      setToastMsg("Translation group deleted successfully. No more groups left to edit.");
+      setToastMsg(
+        "Translation group deleted successfully. No more groups left to edit."
+      );
       setToastOpen(true);
       setToastSeverity("error");
       return;
@@ -238,14 +218,38 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
     setTranslations(newTranslations);
   };
 
-  const Header = () => {
-    const title =
-      currentActivity === "add"
-        ? detailedMode
-          ? "Add translations"
-          : "Quick add"
-        : "Edit translations";
-    return <h2 style={{ textAlign: "center", marginBottom: "20px", borderBottom: "2px solid black" }}>{title}</h2>;
+  const NothingToEdit = () => {
+    return (
+      <div style={{display: "flex", justifyContent: "center"}}>
+      <Card sx={{ width: "85%", maxWidth: 600, bgcolor: "#fafafa" }}>
+        <CardContent>
+          <Box sx={{ display: "flex", justifyContent: "center", flexDirection: "column", gap: 2 }}>
+          <Typography variant="h6" sx={{ textAlign: "center" }}>
+            No translation groups to edit...
+          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
+          <Button
+            onClick={() => handleTabChange("add")}
+            variant="contained"
+            sx={{ bgcolor: "green" }}
+            startIcon={<AddIcon />}
+          >
+            Add group
+          </Button>
+          <Button
+            onClick={() => handleTabChange("quick-add")}
+            variant="contained"
+            sx={{ bgcolor: "blue" }}
+            startIcon={<FlashOnIcon />}
+          >
+            Quick add
+          </Button>
+          </Box>
+          </Box>
+        </CardContent>
+      </Card>
+      </div>
+    );
   };
 
   const DetailsCard = () => {
@@ -286,22 +290,12 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
             value={hideLanguageSelections}
             setValue={setHideLanguageSelections}
           />
-          {currentActivity === "add" && (
+          {activeTab === "add" && (
             <ToggleOption
               label="Reset tags on submit"
               value={resetTagsOnSubmit}
               setValue={setResetTagsOnSubmit}
             />
-          )}
-          {currentActivity === "add" && ( // when editing existing translations, this option is not available at least for now
-            <Button
-              variant="contained"
-              color="secondary"
-              size="small"
-              onClick={() => handleDetailedModeChange(false)}
-            >
-              Switch to quick add mode
-            </Button>
           )}
           <AddToCollection
             collection={tags}
@@ -317,14 +311,12 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
             color="primary"
             sx={{ mt: 2, bgcolor: "green" }}
             disabled={
-              !isValidForm() || (currentActivity === "edit" && !dataChanged())
+              !isValidForm() || (activeTab === "edit" && !dataChanged())
             }
           >
-            {currentActivity === "add"
-              ? "Submit translation group"
-              : "Save changes"}
+            {activeTab === "add" ? "Submit translation group" : "Save changes"}
           </Button>
-          {currentActivity === "edit" && (
+          {activeTab === "edit" && (
             <Button
               onClick={onDeleteTranslationGroup}
               variant="contained"
@@ -334,7 +326,7 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
               Delete group
             </Button>
           )}
-          {currentActivity === "edit" && (
+          {activeTab === "edit" && (
             <MoveIcons
               currentIndex={editModeIndex}
               maxIndex={wordGroups.length - 1}
@@ -346,74 +338,77 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
     );
   };
 
+  const tabStyle = (isActive) => ({
+    display: "flex",
+    alignItems: "center", // Vertically align icon and text
+    px: 2,
+    py: 1,
+    gap: 1,
+    color: isActive ? "blue" : "black", // Active tab color
+    justifyContent: "center",
+    position: "relative", // Required for absolute positioning of the pseudo-element
+    overflow: "hidden", // Ensures the pseudo-element is clipped if outside bounds
+    borderBottom: isActive ? "2px solid blue" : "none", // Permanent border for active tab
+    "&:hover": {
+      cursor: "pointer",
+      color: "blue", // Change text color on hover
+    },
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      bottom: 0,
+      left: "0%",
+      width: "0%", // Initially set to 0% to hide the border
+      height: "2px", // Set the thickness of the border
+      backgroundColor: "blue", // Color of the sliding border
+      transition: "width 0.3s ease-out", // Animate width expansion on hover
+    },
+    "&:hover::after": !isActive && {
+      width: "100%", // Expand the width to 100% on hover
+    },
+  });
+
   return (
     <div>
       <Box
-        sx={{ display: "flex", mb: 4, justifyContent: "center", maxWidth: 700 }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          bgcolor: "#f0f0f0",
+          mb: 2,
+          gap: 1,
+        }}
       >
-        <ButtonGroup variant="contained" color="success">
-          <Button
-            onClick={() => handleActivityChange("add")}
-            variant="contained"
-            sx={{ borderRadius: 0, bgcolor: "green" }}
-            disableElevation
-          >
-            Add translations
-          </Button>
-          <Button
-            size="small"
-            disableElevation
-            onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{ borderRadius: 0, bgcolor: "green" }}
-          >
-            <ArrowDropDownIcon />
-          </Button>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "center",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-          >
-            <MenuItem
-              onClick={() => {
-                setAnchorEl(null);
-                handleActivityChange("add");
-                setDetailedMode(true);
-              }}
-            >
-              Add translations
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setAnchorEl(null);
-                handleActivityChange("add");
-                setDetailedMode(false);
-              }}
-            >
-              Quick add
-            </MenuItem>
-          </Menu>
-        </ButtonGroup>
-        <Button
-          onClick={() => handleActivityChange("edit")}
-          variant="contained"
-          color="secondary"
-          sx={{ borderRadius: 0 }}
-          disabled={wordGroups.length === 0}
-          disableElevation
+        <Box
+          sx={tabStyle(activeTab === "add")}
+          onClick={() => handleTabChange("add")}
         >
-          Edit translations
-        </Button>
+          <Icon sx={{ display: "flex", alignItems: "center" }}>
+            <AddIcon />
+          </Icon>
+          <Typography variant="body1">Add</Typography>
+        </Box>
+        <Box
+          sx={tabStyle(activeTab === "quick-add")}
+          onClick={() => handleTabChange("quick-add")}
+        >
+          <Icon sx={{ display: "flex", alignItems: "center" }}>
+            <FlashOnIcon />
+          </Icon>
+          <Typography variant="body1">Quick Add</Typography>
+        </Box>
+        <Box
+          sx={tabStyle(activeTab === "edit")}
+          onClick={() => handleTabChange("edit")}
+        >
+          <Icon sx={{ display: "flex", alignItems: "center" }}>
+            <EditIcon />
+          </Icon>
+          <Typography variant="body1">Edit</Typography>
+        </Box>
       </Box>
-      <Header />
-      {detailedMode && (
+      {activeTab === "edit" && wordGroups.length === 0 && <NothingToEdit />}
+      {(activeTab === "add" || activeTab === "edit" && wordGroups.length > 0) && (
         <Box
           sx={{
             display: "flex",
@@ -460,7 +455,7 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
           <DetailsCard />
         </Box>
       )}
-      {!detailedMode && (
+      {activeTab === "quick-add" && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <QuickAdd
             languages={languageNames}
@@ -481,7 +476,6 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
               handleTranslationChange(1, "word", word)
             }
             usedLanguages={translations.map((t) => t.languageName)}
-            setDetailedMode={(isOn) => handleDetailedModeChange(isOn)}
             onSubmit={onSubmit}
           />
         </Box>
@@ -497,4 +491,4 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
   );
 };
 
-export default AddWordGroupDialog;
+export default ManageTranslations;
