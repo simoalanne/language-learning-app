@@ -31,6 +31,8 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
   const [toastMsg, setToastMsg] = useState("");
   const [toastSeverity, setToastSeverity] = useState("success");
 
+  const allTags = wordGroups.map((wordGroup) => wordGroup.tags).flat().sort();
+
   const initialTranslations = [
     { languageName: "English", word: "", synonyms: [] },
     { languageName: "Finnish", word: "", synonyms: [] },
@@ -305,7 +307,9 @@ const AddWordGroupDialog = ({ wordGroups, setWordGroups, languageNames }) => {
             collection={tags}
             onCollectionChange={setTags}
             itemName={"tag"}
-            collectionLimit={5}
+            collectionLimit={3}
+            existingItems={allTags}
+            invalidInputFunction={(tag) => tag?.length > 30}
           />
           <Button
             onClick={onSubmit}

@@ -4,19 +4,26 @@ const WordInputField = ({
   selectedWord,
   setSelectedWord,
   selectedLanguage,
+  invalidInputFunction,
 }) => {
+  const handleInputChange = (newValue) => {
+    if (invalidInputFunction && invalidInputFunction(newValue)) {
+      return;
+    }
+    setSelectedWord(newValue || "");
+  };
 
   return (
     <>
       <TextField
+        sx={{ my: 1 }}
         autoComplete="off"
-        label={`Word or phrase ${
+        label={`Word or short phrase ${
           selectedLanguage ? `in ${selectedLanguage}` : ""
         }`}
         value={selectedWord}
-        onChange={(e) => setSelectedWord(e.target.value)}
+        onChange={(e) => handleInputChange(e.target.value)}
         fullWidth
-        sx={{ my: 1 }}
       />
     </>
   );

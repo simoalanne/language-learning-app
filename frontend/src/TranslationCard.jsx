@@ -61,6 +61,7 @@ const TranslationCard = ({
           selectedWord={selectedWord}
           setSelectedWord={setSelectedWord}
           selectedLanguage={selectedLanguage}
+          invalidInputFunction={(input) => input?.length > 60}
         />
         {!hideSynonyms && (
           <AddToCollection
@@ -68,7 +69,8 @@ const TranslationCard = ({
             collection={synonyms}
             onCollectionChange={setSynonyms}
             itemName={"synonym"}
-            collectionLimit={5}
+            collectionLimit={3}
+            invalidInputFunction={(input) => input?.length > 60}
           />
         )}
         </Box>

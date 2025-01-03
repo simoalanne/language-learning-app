@@ -89,7 +89,6 @@ const QuickAdd = ({
           label="Hide language selections?"
           value={hideLanguages}
           setValue={setHideLanguages}
-          tooltipTitle="Hides the language selections to make the form even more compact"
         />
       </CardContent>
     </Card>
