@@ -23,7 +23,7 @@ import { useNavigate, useParams } from "react-router-dom";
 const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
-  const [editModeIndex, setEditModeIndex] = useState(0);
+  const [editModeIndex, setEditModeIndex] = useState(null);
   const [hideLanguageSelections, setHideLanguageSelections] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
@@ -31,12 +31,14 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const navigate = useNavigate();
   const tab = useParams().tab;
   const [activeTab, setActiveTab] = useState(tab || "add");
-    useEffect(() => {
+
+  useEffect(() => {
     console.log("tab changes in useEffect", tab);
     if (tab !== activeTab) {
-      setActiveTab(tab); // Sync activeTab with the URL if they differ
+      setActiveTab(tab);
     }
-  }, [tab, activeTab]); // Dependency on URL `tab`
+  }, [tab, activeTab]);
+
   const allTags = wordGroups
     .map((wordGroup) => wordGroup.tags)
     .flat()
@@ -46,7 +48,6 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
     { languageName: "English", word: "", synonyms: [] },
     { languageName: "Finnish", word: "", synonyms: [] },
   ];
-  // intially there will be two translations as that's obviously the minimum
   const [translations, setTranslations] = useState(initialTranslations);
 
   const [tags, setTags] = useState([]);
@@ -122,7 +123,6 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
     setEditModeIndex(index);
     const wordGroup = wordGroups[index];
     if (!wordGroup) {
-      setTags([]);
       return;
     }
     const translations = wordGroup.translations.map((translation) => ({
@@ -220,34 +220,48 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
 
   const NothingToEdit = () => {
     return (
-      <div style={{display: "flex", justifyContent: "center"}}>
-      <Card sx={{ width: "85%", maxWidth: 600, bgcolor: "#fafafa" }}>
-        <CardContent>
-          <Box sx={{ display: "flex", justifyContent: "center", flexDirection: "column", gap: 2 }}>
-          <Typography variant="h6" sx={{ textAlign: "center" }}>
-            No translation groups to edit...
-          </Typography>
-          <Box sx={{ display: "flex", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-          <Button
-            onClick={() => handleTabChange("add")}
-            variant="contained"
-            sx={{ bgcolor: "green" }}
-            startIcon={<AddIcon />}
-          >
-            Add group
-          </Button>
-          <Button
-            onClick={() => handleTabChange("quick-add")}
-            variant="contained"
-            sx={{ bgcolor: "blue" }}
-            startIcon={<FlashOnIcon />}
-          >
-            Quick add
-          </Button>
-          </Box>
-          </Box>
-        </CardContent>
-      </Card>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Card sx={{ width: "85%", maxWidth: 600, bgcolor: "#fafafa" }}>
+          <CardContent>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                flexDirection: "column",
+                gap: 2,
+              }}
+            >
+              <Typography variant="h6" sx={{ textAlign: "center" }}>
+                No translation groups to edit...
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 2,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Button
+                  onClick={() => handleTabChange("add")}
+                  variant="contained"
+                  sx={{ bgcolor: "green" }}
+                  startIcon={<AddIcon />}
+                >
+                  Add group
+                </Button>
+                <Button
+                  onClick={() => handleTabChange("quick-add")}
+                  variant="contained"
+                  sx={{ bgcolor: "blue" }}
+                  startIcon={<FlashOnIcon />}
+                >
+                  Quick add
+                </Button>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
       </div>
     );
   };
@@ -338,6 +352,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
     );
   };
 
+  // Animation code was written by AI
   const tabStyle = (isActive) => ({
     display: "flex",
     alignItems: "center", // Vertically align icon and text
@@ -367,6 +382,13 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       width: "100%", // Expand the width to 100% on hover
     },
   });
+
+  // if the initial url is /manage-translations/edit, and there are word groups
+  // then the handleIndexChange function has to be called with the first index
+  // to correctly display the first word group in edit mode
+  if (tab === "edit" && wordGroups.length > 0 && editModeIndex === null) {
+    handleIndexChange(0);
+  }
 
   return (
     <div>
@@ -408,7 +430,8 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
         </Box>
       </Box>
       {activeTab === "edit" && wordGroups.length === 0 && <NothingToEdit />}
-      {(activeTab === "add" || activeTab === "edit" && wordGroups.length > 0) && (
+      {(activeTab === "add" ||
+        (activeTab === "edit" && wordGroups.length > 0)) && (
         <Box
           sx={{
             display: "flex",
