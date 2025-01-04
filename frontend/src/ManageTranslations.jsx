@@ -33,7 +33,6 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const [activeTab, setActiveTab] = useState(tab || "add");
 
   useEffect(() => {
-    console.log("tab changes in useEffect", tab);
     if (tab !== activeTab) {
       setActiveTab(tab);
     }
@@ -94,9 +93,9 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const dataChanged = () => {
     const wordGroup = wordGroups[editModeIndex];
     if (!wordGroup) return false;
-    console.log("dataChanged wordGroup", wordGroup);
     const translationsChanged = translations.some((t, i) => {
       const translation = wordGroup.translations[i];
+      if (!translation) return true; // if word group has less translations than the form then it has changed
       return (
         t.languageName !== translation.languageName ||
         t.word !== translation.word ||
@@ -108,7 +107,6 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   };
 
   const handleTabChange = (tab) => {
-    console.log("tab changes in handleTabChange", tab);
     if (tab === "add" || tab === "quick-add") {
       setTranslations(initialTranslations);
       setTags([]);
@@ -149,11 +147,9 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       setToastMsg("Translation group added successfully.");
       setToastOpen(true);
       setToastSeverity("success");
-      console.log("id after post", id);
       const newWordGroups = [...wordGroups];
       newWordGroups.push({ id, ...wordGroupObj });
       setWordGroups(newWordGroups);
-      console.log("newWordGroups after post", newWordGroups);
       const newTranslations = translations.map((t) => ({
         languageName: t.languageName,
         word: "",
@@ -175,7 +171,6 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       setToastMsg("Translation group updated successfully.");
       setToastOpen(true);
       setToastSeverity("success");
-      console.log("id after put", id);
       const updatedWordGroups = [...wordGroups];
       updatedWordGroups[editModeIndex] = { id, ...wordGroupObj };
       setWordGroups(updatedWordGroups);
@@ -183,10 +178,8 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   };
 
   const onDeleteTranslationGroup = async () => {
-    console.log("deleting word group with id", wordGroups[editModeIndex].id);
     await axios.delete(`/api/word-groups/${wordGroups[editModeIndex].id}`);
     const updatedWordGroups = wordGroups.filter((_, i) => i !== editModeIndex);
-    console.log("updatedWordGroups after delete", updatedWordGroups);
     setWordGroups(updatedWordGroups);
 
     // if there are no more word groups, switch to add mode
@@ -353,35 +346,46 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   };
 
   // Animation code was written by AI
-  const tabStyle = (isActive) => ({
-    display: "flex",
-    alignItems: "center", // Vertically align icon and text
-    px: 2,
-    py: 1,
-    gap: 1,
-    color: isActive ? "blue" : "black", // Active tab color
-    justifyContent: "center",
-    position: "relative", // Required for absolute positioning of the pseudo-element
-    overflow: "hidden", // Ensures the pseudo-element is clipped if outside bounds
-    borderBottom: isActive ? "2px solid blue" : "none", // Permanent border for active tab
-    "&:hover": {
-      cursor: "pointer",
-      color: "blue", // Change text color on hover
-    },
-    "&::after": {
-      content: '""',
-      position: "absolute",
-      bottom: 0,
-      left: "0%",
-      width: "0%", // Initially set to 0% to hide the border
-      height: "2px", // Set the thickness of the border
-      backgroundColor: "blue", // Color of the sliding border
-      transition: "width 0.3s ease-out", // Animate width expansion on hover
-    },
-    "&:hover::after": !isActive && {
-      width: "100%", // Expand the width to 100% on hover
-    },
-  });
+const tabStyle = (isActive) => ({
+  display: "flex",
+  alignItems: "center",
+  px: 2,
+  py: 1,
+  gap: 1,
+  color: isActive && "blue",
+  justifyContent: "center",
+  position: "relative", // Required for absolute positioning of the pseudo-element
+  overflow: "hidden", // Ensures the pseudo-element is clipped if outside bounds
+
+  "&:hover": {
+    cursor: "pointer",
+    color: "blue",
+  },
+
+  // Pseudo-element for the animated border
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    bottom: 0,
+    left: "50%", // Start from the center of the tab
+    transform: "translateX(-50%)", // Center the border
+    width: "0%", // Initially set the width to 0% (invisible)
+    height: "2px", // Set the thickness of the border
+    backgroundColor: "blue", // Active color for the border
+    transition: "width 0.3s ease-out", // Animate width expansion
+  },
+
+  // When active, the border expands outwards from the center
+  "&.active::after": {
+    width: "100%", // Expand to full width from the center
+  },
+
+  // When inactive, the border shrinks back to 0
+  "&:not(.active)::after": {
+    width: "0%", // Shrink to 0%
+  },
+});
+
 
   // if the initial url is /manage-translations/edit, and there are word groups
   // then the handleIndexChange function has to be called with the first index
@@ -402,7 +406,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
         }}
       >
         <Box
-          sx={tabStyle(activeTab === "add")}
+          sx={tabStyle(activeTab === "add")} className={activeTab === "add" ? "active" : ""}
           onClick={() => handleTabChange("add")}
         >
           <Icon sx={{ display: "flex", alignItems: "center" }}>
@@ -411,7 +415,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
           <Typography variant="body1">Add</Typography>
         </Box>
         <Box
-          sx={tabStyle(activeTab === "quick-add")}
+          sx={tabStyle(activeTab === "quick-add")} className={activeTab === "quick-add" ? "active" : ""}
           onClick={() => handleTabChange("quick-add")}
         >
           <Icon sx={{ display: "flex", alignItems: "center" }}>
@@ -420,7 +424,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
           <Typography variant="body1">Quick Add</Typography>
         </Box>
         <Box
-          sx={tabStyle(activeTab === "edit")}
+          sx={tabStyle(activeTab === "edit")} className={activeTab === "edit" ? "active" : ""}
           onClick={() => handleTabChange("edit")}
         >
           <Icon sx={{ display: "flex", alignItems: "center" }}>
