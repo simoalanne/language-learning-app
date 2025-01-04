@@ -30,13 +30,13 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const [toastSeverity, setToastSeverity] = useState("success");
   const navigate = useNavigate();
   const tab = useParams().tab;
-  const [activeTab, setActiveTab] = useState(tab || "add");
+  const [activeTab, setActiveTab] = useState("");
 
   useEffect(() => {
-    if (tab !== activeTab) {
+    if (tab) {
       setActiveTab(tab);
     }
-  }, [tab, activeTab]);
+  }, [tab]);
 
   const allTags = wordGroups
     .map((wordGroup) => wordGroup.tags)
@@ -346,46 +346,45 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   };
 
   // Animation code was written by AI
-const tabStyle = (isActive) => ({
-  display: "flex",
-  alignItems: "center",
-  px: 2,
-  py: 1,
-  gap: 1,
-  color: isActive && "blue",
-  justifyContent: "center",
-  position: "relative", // Required for absolute positioning of the pseudo-element
-  overflow: "hidden", // Ensures the pseudo-element is clipped if outside bounds
+  const tabStyle = (isActive) => ({
+    display: "flex",
+    alignItems: "center",
+    px: 2,
+    py: 1,
+    gap: 1,
+    color: isActive && "blue",
+    justifyContent: "center",
+    position: "relative", // Required for absolute positioning of the pseudo-element
+    overflow: "hidden", // Ensures the pseudo-element is clipped if outside bounds
 
-  "&:hover": {
-    cursor: "pointer",
-    color: "blue",
-  },
+    "&:hover": {
+      cursor: "pointer",
+      color: "blue",
+    },
 
-  // Pseudo-element for the animated border
-  "&::after": {
-    content: '""',
-    position: "absolute",
-    bottom: 0,
-    left: "50%", // Start from the center of the tab
-    transform: "translateX(-50%)", // Center the border
-    width: "0%", // Initially set the width to 0% (invisible)
-    height: "2px", // Set the thickness of the border
-    backgroundColor: "blue", // Active color for the border
-    transition: "width 0.3s ease-out", // Animate width expansion
-  },
+    // Pseudo-element for the animated border
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      bottom: 0,
+      left: "50%", // Start from the center of the tab
+      transform: "translateX(-50%)", // Center the border
+      width: "0%", // Initially set the width to 0% (invisible)
+      height: "2px", // Set the thickness of the border
+      backgroundColor: "blue", // Active color for the border
+      transition: "width 0.3s ease-out", // Animate width expansion
+    },
 
-  // When active, the border expands outwards from the center
-  "&.active::after": {
-    width: "100%", // Expand to full width from the center
-  },
+    // When active, the border expands outwards from the center
+    "&.active::after": {
+      width: "100%", // Expand to full width from the center
+    },
 
-  // When inactive, the border shrinks back to 0
-  "&:not(.active)::after": {
-    width: "0%", // Shrink to 0%
-  },
-});
-
+    // When inactive, the border shrinks back to 0
+    "&:not(.active)::after": {
+      width: "0%", // Shrink to 0%
+    },
+  });
 
   // if the initial url is /manage-translations/edit, and there are word groups
   // then the handleIndexChange function has to be called with the first index
@@ -406,7 +405,8 @@ const tabStyle = (isActive) => ({
         }}
       >
         <Box
-          sx={tabStyle(activeTab === "add")} className={activeTab === "add" ? "active" : ""}
+          sx={tabStyle(activeTab === "add")}
+          className={activeTab === "add" ? "active" : ""}
           onClick={() => handleTabChange("add")}
         >
           <Icon sx={{ display: "flex", alignItems: "center" }}>
@@ -415,7 +415,8 @@ const tabStyle = (isActive) => ({
           <Typography variant="body1">Add</Typography>
         </Box>
         <Box
-          sx={tabStyle(activeTab === "quick-add")} className={activeTab === "quick-add" ? "active" : ""}
+          sx={tabStyle(activeTab === "quick-add")}
+          className={activeTab === "quick-add" ? "active" : ""}
           onClick={() => handleTabChange("quick-add")}
         >
           <Icon sx={{ display: "flex", alignItems: "center" }}>
@@ -424,7 +425,8 @@ const tabStyle = (isActive) => ({
           <Typography variant="body1">Quick Add</Typography>
         </Box>
         <Box
-          sx={tabStyle(activeTab === "edit")} className={activeTab === "edit" ? "active" : ""}
+          sx={tabStyle(activeTab === "edit")}
+          className={activeTab === "edit" ? "active" : ""}
           onClick={() => handleTabChange("edit")}
         >
           <Icon sx={{ display: "flex", alignItems: "center" }}>
