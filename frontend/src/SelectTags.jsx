@@ -1,43 +1,63 @@
-/* eslint react/prop-types: 0 */
-// code partially copied from mui.com documentation.
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import ListItemText from "@mui/material/ListItemText";
-import Select from "@mui/material/Select";
-import Checkbox from "@mui/material/Checkbox";
+import  { useState } from "react";
+import Chip from "@mui/material/Chip";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import IconButton from "@mui/material/IconButton";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import Collapse from "@mui/material/Collapse"; // Import Collapse
 
-const SelectTags = ({ tags, selectedTags, setSelectedTags }) => {
-  console.log("tags", tags);
-  const handleChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setSelectedTags(typeof value === "string" ? value.split(",") : value); 
+const SelectTags = ({ tags, selectedTags, setSelectedTags, header }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  const handleTagClick = (tag) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((selectedTag) => selectedTag !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
   };
-  if (tags.length === 0) return;
+
+  if (tags.length === 0) {
+    return <Typography>No tags available</Typography>;
+  }
 
   return (
-    <FormControl sx={{ marginTop: "10px", width: "200px" }}>
-      <InputLabel id="select-multiple-checkbox-label">Tags</InputLabel>
-      <Select
-        labelId="select-multiple-checkbox-label"
-        id="select-multiple-checkbox"
-        multiple
-        value={selectedTags}
-        onChange={handleChange}
-        input={<OutlinedInput label="Tags" />}
-        renderValue={(selected) => selected.join(", ")}
-      >
-        {tags.map((tag) => (
-          <MenuItem key={tag} value={tag}>
-            <Checkbox checked={selectedTags.includes(tag)} />
-            <ListItemText primary={tag} />
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+    <Box sx={{ my: 1 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography variant="h6" gutterBottom>
+          {header || "Select tags"}
+        </Typography>
+        <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
+          {isCollapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+        </IconButton>
+      </Box>
+      <Collapse in={!isCollapsed} timeout={300}>
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 2,
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            display: "flex",
+            gap: 1,
+            flexWrap: "wrap",
+          }}
+        >
+          {tags.map((tag) => (
+            <Chip
+              key={tag}
+              label={tag}
+              onClick={() => handleTagClick(tag)}
+              clickable
+              color={selectedTags.includes(tag) ? "primary" : "default"}
+              variant={selectedTags.includes(tag) ? "filled" : "outlined"}
+            />
+          ))}
+        </Paper>
+      </Collapse>
+    </Box>
   );
 };
 
