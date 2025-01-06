@@ -1,5 +1,12 @@
 import sqlite3 from "sqlite3";
 const db = new sqlite3.Database(":memory:");
+import {
+  commonWords,
+  verbs,
+  adjectives,
+  sports,
+  programmingTerms,
+} from "./addStartingTranslations.js";
 
 /**
  * Initializes the database by creating following tables:
@@ -54,6 +61,49 @@ export const initDb = () => {
 
     createTableQueries.forEach((query) => db.run(query));
     insertDataQueries.forEach((query) => db.run(query));
+    const words = [
+      ...commonWords,
+      ...verbs,
+      ...adjectives,
+      ...sports,
+      ...programmingTerms,
+    ];
+    // insert starting translations
+    words.forEach((word) => {
+      db.run(`INSERT INTO words (language_id, primary_word) VALUES ${word}`);
+    });
+    // check if all words are added to the words table
+
+    for (let i = 0; i < 200; i++) {
+      const groupId = Math.floor(i / 2) + 1;
+      const wordId = i + 1;
+      db.run(`INSERT INTO word_groups (group_id, word_id) VALUES (?, ?)`, [
+        groupId,
+        wordId,
+      ]);
+    }
+    const tags = [
+      "common words",
+      "verbs",
+      "adjectives",
+      "sports",
+      "programming terms",
+    ];
+    tags.forEach((tag) =>
+      db.run(`INSERT INTO tags (tag_name) VALUES (?)`, [tag])
+    );
+    let tagIndex = 1;
+    for (let i = 1; i < 101; i++) {
+      const wordGroupId = i;
+      db.run(
+        `INSERT INTO word_group_tags (word_group_id, tag_id) VALUES (?, ?)`,
+        [wordGroupId, tagIndex]
+      );
+      // change tag every 20 word groups since
+      if (i % 20 === 0) {
+        tagIndex++;
+      }
+    }
     console.info("Database initialized");
   });
 };
@@ -136,7 +186,7 @@ const insertData = (table, columns, values) => {
  *
  * @returns {Promise<number>} - The next group ID. if now rows yet, returns 1.
  */
-const getNextGroupId = () => {
+export const getNextGroupId = () => {
   return new Promise((resolve, reject) => {
     db.get("SELECT MAX(group_id) AS groupId FROM word_groups", (err, row) => {
       if (err) return reject(err);
@@ -161,7 +211,6 @@ const getNextGroupId = () => {
  */
 export const addNewWordGroup = async (wordGroupObj) => {
   const groupId = wordGroupObj.id || (await getNextGroupId()); // if id is not provided, get the next group ID
-
   // Add languages to db that don't exist and get all the language IDs
   const languageIds = await Promise.all(
     wordGroupObj.translations.map((translations) =>
@@ -227,7 +276,6 @@ export const addNewWordGroup = async (wordGroupObj) => {
       )
     )
   );
-
   // finally return the group ID of the newly added word group.
   return { id: groupId };
 };
@@ -238,7 +286,7 @@ export const addNewWordGroup = async (wordGroupObj) => {
  */
 export const updateWordGroup = async (wordGroupObj) => {
   const id = wordGroupObj.id;
-  if (await getWordGroupById(id) === null) {
+  if ((await getWordGroupById(id)) === null) {
     return { error: "No word group found with the given ID" };
   }
   await deleteWordGroupById(id);
@@ -352,6 +400,7 @@ export const getWordGroupById = async (groupId) => {
         words.id, words.primary_word, languages.language_name;
   `;
   const dbResponse = await sqlQuery(query, [groupId]);
+  console.log(dbResponse);
   if (dbResponse.length === 0) {
     console.error("No word group found with the given ID");
     return null;

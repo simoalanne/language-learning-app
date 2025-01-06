@@ -6,6 +6,7 @@ import {
   deleteWordGroupById,
   deleteAllWordGroups,
   updateWordGroup,
+  getNextGroupId,
 } from "../database/db.js";
 const wordGroupsRouter = express.Router();
 
@@ -45,6 +46,24 @@ wordGroupsRouter.post("/", async (req, res) => {
   }
 });
 
+wordGroupsRouter.post("/bulk", async (req, res) => {
+  try {
+    const wordGroups = req.body.bulkData;
+    console.log(`Adding ${wordGroups.length} word groups`);
+    const ids = [];
+    // For loop instead of map and await Promise.all because for the id to update correctly
+    // the previous operation must finish before the next one starts.
+    for (const wordGroup of wordGroups) {
+      const id = await addNewWordGroup(wordGroup);
+      ids.push(id);
+    }
+    res.json(ids);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
+  }
+});
+
 wordGroupsRouter.delete("/", async (_, res) => {
   try {
     const id = await deleteAllWordGroups();
@@ -76,7 +95,7 @@ wordGroupsRouter.put("/:id", async (req, res) => {
       return res.status(400).json({ error: "Invalid group ID" });
     }
 
-    const wordGroupObj = {id: groupId, ...req.body};
+    const wordGroupObj = { id: groupId, ...req.body };
     const response = await updateWordGroup(wordGroupObj);
     if (response?.error) {
       return res.status(400).json(response);
