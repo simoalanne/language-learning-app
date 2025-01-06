@@ -1,22 +1,16 @@
-/* eslint react/prop-types: 0 */
-import {
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-} from "@mui/material";
-import SwapLanguages from "./SwapLanguages";
+import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";;
 
-const SelectLanguages = ({
+const SelectLanguagePair= ({
   languageNames,
   selectedLanguages,
   setSelectedLanguages,
 }) => {
-  console.log("available languages", languageNames);
-  console.log("selected languages", selectedLanguages);
+  console.log(languageNames);
+  console.log(selectedLanguages);
+  if (languageNames.length === 0) return;
   const DropDownMenu = ({ index }) => {
     return (
-      <FormControl sx={{ marginTop: "10px", width: "200px" }}>
+      <FormControl fullWidth>
         <InputLabel id={`language-select-label-${index}`}>
           {index === 0 ? "Question language" : "Answer language"}
         </InputLabel>
@@ -26,13 +20,11 @@ const SelectLanguages = ({
           name="language-select"
           label={index === 0 ? "Question language" : "Answer language"}
           value={selectedLanguages[index]}
-          onChange={(e) =>
-            setSelectedLanguages((prevLanguages) => {
-              const newLanguages = [...prevLanguages];
-              newLanguages[index] = e.target.value;
-              return newLanguages;
-            })
-          }
+          onChange={(e) => {
+            const newSelectedLanguages = [...selectedLanguages];
+            newSelectedLanguages[index] = e.target.value;
+            setSelectedLanguages(newSelectedLanguages);
+          }}
         >
           {languageNames
             .filter(
@@ -48,15 +40,11 @@ const SelectLanguages = ({
     );
   };
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <>
       <DropDownMenu index={0} />
       <DropDownMenu index={1} />
-      <SwapLanguages
-        selectedLanguages={selectedLanguages}
-        setSelectedLanguages={setSelectedLanguages}
-      />
-    </div>
+    </>
   );
 };
 
-export default SelectLanguages;
+export default SelectLanguagePair;

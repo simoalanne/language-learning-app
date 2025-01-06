@@ -2,12 +2,11 @@
 import { Button } from "@mui/material";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 
-const SwapLanguages = ({ selectedLanguages, setSelectedLanguages }) => {
+const SwapLanguagePair = ({ selectedLanguages, setSelectedLanguages }) => {
   return (
    <Button
         variant="contained"
         color="primary"
-        sx={{ marginTop: "10px", width: "200px" }}
         startIcon={<SwapHorizIcon />}
         onClick={() => setSelectedLanguages([selectedLanguages[1], selectedLanguages[0]])}
       >
@@ -16,4 +15,4 @@ const SwapLanguages = ({ selectedLanguages, setSelectedLanguages }) => {
   );
 };
 
-export default SwapLanguages;
+export default SwapLanguagePair;

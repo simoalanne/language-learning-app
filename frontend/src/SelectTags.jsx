@@ -29,11 +29,11 @@ const SelectTags = ({ tags, selectedTags, setSelectedTags, header }) => {
         <Typography variant="h6" gutterBottom>
           {header || "Select tags"}
         </Typography>
-        <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
+        <IconButton onClick={() => setIsCollapsed(!isCollapsed)} disabled={selectedTags.length > 0}>
           {isCollapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
         </IconButton>
       </Box>
-      <Collapse in={!isCollapsed} timeout={300}>
+      <Collapse in={!isCollapsed} timeout={200}>
         <Paper
           elevation={3}
           sx={{

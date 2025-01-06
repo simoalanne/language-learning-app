@@ -1,30 +1,46 @@
-/* eslint react/prop-types: 0 */
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-} from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Box, Button, Typography } from "@mui/material";
 import "./LearnWords.css";
-import "./QuestionCard";
 import QuestionCard from "./QuestionCard";
-import SelectLanguages from "./SelectLanguages";
-import SelectTags from "./SelectTags";
+import LearningModeCard from "./LearningModeCard";
+import LearningModeSettings from "./LearningModeSettings";
 
 const LearnWords = ({ wordGroups, languageNames }) => {
-  const [testOpen, setTestOpen] = useState(false);
-  const [test, setTest] = useState({ questions: [], answers: [] });
-  const [resultsOpen, setResultsOpen] = useState(false);
+  const [currentTab, setCurrentTab] = useState("settings"); // 'settings', 'test', or 'results'
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [selectedLanguages, setSelectedLanguages] = useState([
-    "English",
-    "Finnish",
-  ]);
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedLearningMode, setSelectedLearningMode] = useState(1);
+
+  const [filterOptions, setFilterOptions] = useState({
+    sourceLanguage: "English",
+    targetLanguage: "Finnish",
+    selectedTags: [],
+  });
+
+  const learningModes = [
+    {
+      id: 1,
+      title: "📖 Flashcards",
+      description:
+        "Not ready to test your knowledge yet? Try flashcards to learn new words first.",
+    },
+    {
+      id: 2,
+      title: "📝 Test",
+      description:
+        "Ready to put your knowledge to a real test? Take a vocabulary test to see how well you know the words.",
+    },
+    {
+      id: 3,
+      title: "🧩 Memory game",
+      description:
+        "Find a matching pair of words with the same meaning in this memory game.",
+    },
+  ];
+
+  const modeName = learningModes
+    .find((mode) => mode.id === selectedLearningMode)
+    .title.slice(3); // Remove the emoji from the title
 
   const handleAnswerChange = (index, value) => {
     const newAnswers = [...userAnswers];
@@ -32,82 +48,153 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     setUserAnswers(newAnswers);
   };
 
-  const SubmitTest = () => {
-    const correctAnswers = test.answers
+  const submitTest = () => {
+    // normalize answers and questions to lowercase
+    const correctAnswersCount = test.answers
       .map((answer, i) => {
         const userAnswer = userAnswers[i];
         return answer.includes(userAnswer);
       })
       .filter((answer) => answer === true).length; // count correct answers
-    setCorrectAnswers(correctAnswers);
-    setTestOpen(false);
-    setResultsOpen(true);
+    setCorrectAnswers(correctAnswersCount);
+    setCurrentTab("results");
   };
 
-  const closeResults = (restart = false) => {
-    setResultsOpen(false);
+  const closeResults = ({restart }) => {
+    setCurrentTab("settings");
     setUserAnswers([]);
-    setTimeout(() => setCorrectAnswers(0), 250);
+    setCorrectAnswers(0);
     if (restart) {
-      setTestOpen(true);
+      setCurrentTab("Test");
     }
   };
 
   const resetSettings = () => {
-    setSelectedLanguages(["English", "Finnish"]);
-    setSelectedTags([]);
+    setFilterOptions({
+      sourceLanguage: "English",
+      targetLanguage: "Finnish",
+      selectedTags: [],
+    });
   };
 
   const canReset =
-    selectedLanguages[0] !== "English" ||
-    selectedLanguages[1] !== "Finnish" ||
-    selectedTags.length > 0;
+    filterOptions.sourceLanguage !== "English" ||
+    filterOptions.targetLanguage !== "Finnish" ||
+    filterOptions.selectedTags.length > 0;
 
-  const testCanBeStarted = test.questions.length > 0;
+  const updateTest = ({ sourceLanguage, targetLanguage, selectedTags }) => {
+    if (wordGroups.length === 0) return { questions: [], answers: [] };
 
-  useEffect(() => {
-    const tagsFilteredGroups = wordGroups.filter(
-      (group) =>
+    const filteredTest = wordGroups.filter((group) => {
+      // Apply tag filtering
+      return (
         selectedTags.length === 0 ||
         selectedTags.every((tag) => group.tags.includes(tag))
-    );
+      );
+    });
 
+    if (filteredTest.length === 0) return { questions: [], answers: [] };
 
-    const questionsAndAnswers = tagsFilteredGroups
+    const mappedTest = filteredTest
       .map((group) => {
-        const filteredTranslations = group.translations.filter(
-          (t) =>
-            t.languageName === selectedLanguages[0] ||
-            t.languageName === selectedLanguages[1]
+        // Find the source and target word objects within the translations array
+        const sourceWordObj = group.translations.find(
+          (item) => item.languageName === sourceLanguage
         );
-        return filteredTranslations;
-      })
-      .filter((group) => group.length === 2); // only include groups where both languages are present
+        const targetWordObj = group.translations.find(
+          (item) => item.languageName === targetLanguage
+        );
 
-    const testObj = questionsAndAnswers.map((group) => {
-      const question = group.find(
-        (group) => group.languageName === selectedLanguages[0]
-      ).word;
-      const answer = group.find(
-        (group) => group.languageName === selectedLanguages[1]
-      ).word;
-      const synonyms = group.find(
-        (group) => group.languageName === selectedLanguages[1]
-      ).synonyms;
-      synonyms.push(answer);
-      return { question, answers: synonyms };
-    });
-    setTest({
-      questions: testObj.map((t) => t.question),
-      answers: testObj.map((t) => t.answers),
-    });
-  }, [wordGroups, selectedLanguages, selectedTags]);
+        // If both languages are available in the group, proceed
+        if (sourceWordObj && targetWordObj) {
+          const question = sourceWordObj.word;
+          const answer = targetWordObj.word;
+          const synonyms = [...targetWordObj.synonyms, answer];
+
+          return { question, answers: synonyms };
+        }
+
+        return null;
+      })
+      .filter((testItem) => testItem !== null); // Remove any null values if a group didn't have both languages
+
+    return {
+      questions: mappedTest.map((testItem) => testItem.question),
+      answers: mappedTest.map((testItem) => testItem.answers),
+    };
+  };
+
+  const test = updateTest(filterOptions);
 
   return (
-    <div>
-      <Dialog open={testOpen} onClose={() => setTestOpen(false)}>
-        <DialogTitle>Test</DialogTitle>
-        <DialogContent>
+    <>
+      {currentTab === "settings" && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 5,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 5,
+              justifyContent: "center",
+              mt: 2,
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+                width: "90%",
+                maxWidth: "500px",
+              }}
+            >
+              {learningModes.map((mode) => (
+                <LearningModeCard
+                  key={mode.id}
+                  learningModeObj={mode}
+                  selectedLearningMode={selectedLearningMode}
+                  setSelectedLearningMode={setSelectedLearningMode}
+                />
+              ))}
+            </Box>
+            <LearningModeSettings
+              modeName={modeName}
+              wordGroups={wordGroups}
+              languageNames={languageNames}
+              setCurrentTab={setCurrentTab}
+              totalQuestions={test.questions.length}
+              filterOptions={filterOptions}
+              setFilterOptions={setFilterOptions}
+            />
+          </Box>
+          <Button
+            variant="contained"
+            color="secondary"
+            sx={{
+              width: "50%",
+              maxWidth: "250px",
+              height: "50px",
+              borderRadius: "25px",
+              "&:hover": {
+                scale: 1.05,
+              },
+            }}
+            onClick={() => setCurrentTab("Test")}
+          >
+            Start {modeName}
+          </Button>
+        </Box>
+      )}
+      {currentTab === "Test" && (
+        <Box sx={{ width: "90%", maxWidth: "500px", margin: "auto" }}>
+          <Typography variant="h5">Test</Typography>
           {test.questions.map((question, i) => (
             <QuestionCard
               key={i}
@@ -117,65 +204,49 @@ const LearnWords = ({ wordGroups, languageNames }) => {
               handleAnswerChange={handleAnswerChange}
             />
           ))}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setTestOpen(false)}>Quit test</Button>
-          <Button onClick={() => SubmitTest()}>Submit</Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={resultsOpen} onClose={() => closeResults()}>
-        <DialogTitle>Results</DialogTitle>
-        <DialogContent>
-          <p>{`You got ${correctAnswers} out of ${test.questions.length} correct`}</p>
-        </DialogContent>
-        <DialogActions>
-          {correctAnswers !== test.questions.length && (
-            <Button onClick={() => closeResults(true)}>Try again?</Button>
-          )}
-          <Button onClick={() => closeResults()}>Close</Button>
-        </DialogActions>
-      </Dialog>
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={() => setSettingsOpen(true)}
-      >
-        Practise words
-      </Button>
-      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)}>
-        <DialogTitle>Test options</DialogTitle>
-        <DialogContent>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-          <SelectLanguages
-            languageNames={languageNames}
-            selectedLanguages={selectedLanguages}
-            setSelectedLanguages={setSelectedLanguages}
-          />
-          <SelectTags
-            tags={wordGroups.flatMap((group) => group.tags)}
-            selectedTags={selectedTags}
-            setSelectedTags={setSelectedTags}
-          />
-          </div>
-          <p>{`Questions available: ${test.questions.length}`}</p>
-        </DialogContent>
-        <DialogActions>
-          <Button sx={{ color: "red" }} disabled={!canReset} onClick={() => resetSettings()}>
-            Reset
-          </Button>
-          <Button onClick={() => setSettingsOpen(false)}>Close</Button>
           <Button
-            disabled={!testCanBeStarted}
-            onClick={() => {
-              setSettingsOpen(false);
-              setTestOpen(true);
-            }}
+            sx={{ marginTop: 2 }}
+            onClick={() => setCurrentTab("settings")}
+            fullWidth
           >
-            Start test
+            Quit test
           </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+          <Button
+            sx={{ marginTop: 1 }}
+            onClick={submitTest}
+            disabled={userAnswers.length !== test.questions.length}
+            fullWidth
+          >
+            Submit
+          </Button>
+        </Box>
+      )}
+
+      {currentTab === "results" && (
+        <Box sx={{ width: "90%", maxWidth: "500px", margin: "auto" }}>
+          <Typography variant="h5">Results</Typography>
+          <Typography variant="body1">{`You got ${correctAnswers} out of ${test.questions.length} correct`}</Typography>
+          {correctAnswers !== test.questions.length && (
+            <Button
+              variant="contained"
+              sx={{ marginTop: 2 }}
+              onClick={() => closeResults({ restart: true })}
+              fullWidth
+            >
+              Try again?
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            sx={{ marginTop: 1 }}
+            onClick={() => closeResults({ restart: false })}
+            fullWidth
+          >
+            Close
+          </Button>
+        </Box>
+      )}
+    </>
   );
 };
 
