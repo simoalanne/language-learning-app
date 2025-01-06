@@ -10,11 +10,13 @@ const LearnWords = ({ wordGroups, languageNames }) => {
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
   const [selectedLearningMode, setSelectedLearningMode] = useState(1);
+  const [test, setTest] = useState({ questions: [], answers: [] });
 
   const [filterOptions, setFilterOptions] = useState({
     sourceLanguage: "English",
     targetLanguage: "Finnish",
     selectedTags: [],
+    randomizeOrder: true,
   });
 
   const learningModes = [
@@ -60,13 +62,15 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     setCurrentTab("results");
   };
 
-  const closeResults = ({restart }) => {
-    setCurrentTab("settings");
+  const closeResults = ({ restart }) => {
     setUserAnswers([]);
     setCorrectAnswers(0);
     if (restart) {
       setCurrentTab("Test");
+      return;
     }
+    setCurrentTab("settings");
+    setTest({ questions: [], answers: [] });
   };
 
   const resetSettings = () => {
@@ -89,7 +93,7 @@ const LearnWords = ({ wordGroups, languageNames }) => {
       // Apply tag filtering
       return (
         selectedTags.length === 0 ||
-        selectedTags.every((tag) => group.tags.includes(tag))
+        selectedTags.some((tag) => group.tags.includes(tag))
       );
     });
 
@@ -124,7 +128,32 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     };
   };
 
-  const test = updateTest(filterOptions);
+  /**
+   * Generates the test based on the filter options
+   * If the randomizeOrder option is enabled, the questions will be shuffled
+   * using the Fisher-Yates algorithm
+   * @param {Object} test - the test state object
+   * @returns {Object} - the updated test object
+   */
+  const generateTest = (test) => {
+    test = updateTest(filterOptions);
+    if (!filterOptions.randomizeOrder) return test;
+    let array = test.questions.map((question, i) => {
+      return {
+        question: question,
+        answers: test.answers[i],
+      };
+    });
+
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    const newQuestions = array.map((item) => item.question);
+    const newAnswers = array.map((item) => item.answers);
+    console.log(newQuestions, newAnswers);
+    return { questions: newQuestions, answers: newAnswers };
+  };
 
   return (
     <>
@@ -186,7 +215,10 @@ const LearnWords = ({ wordGroups, languageNames }) => {
                 scale: 1.05,
               },
             }}
-            onClick={() => setCurrentTab("Test")}
+            onClick={() => {
+              setTest(generateTest(test));
+              setCurrentTab("Test");
+            }}
           >
             Start {modeName}
           </Button>

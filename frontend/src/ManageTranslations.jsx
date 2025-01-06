@@ -38,10 +38,10 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
     }
   }, [tab]);
 
-  const allTags = wordGroups
+  const allTags = [...new Set(wordGroups
     .map((wordGroup) => wordGroup.tags)
     .flat()
-    .sort();
+    .sort())];
 
   const initialTranslations = [
     { languageName: "English", word: "", synonyms: [] },

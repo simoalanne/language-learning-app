@@ -8,6 +8,7 @@ const QuestionCard = ({ question, index, totalQuestions, handleAnswerChange }) =
       <p>{question}</p>
       <p>Answer:</p>
       <TextField
+        autoComplete="off"
         variant="outlined"
         size="small"
         placeholder="Type your answer"
