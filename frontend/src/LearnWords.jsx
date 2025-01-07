@@ -91,7 +91,6 @@ const LearnWords = ({ wordGroups, languageNames }) => {
 
   const generateCarouselCards = ({ selectedTags }) => {
     const filteredGroups = filterByTags(selectedTags);
-    console.log("generateCarouselCards", filteredGroups);
     return filteredGroups;
   };
 
@@ -101,16 +100,15 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     targetLanguage,
   }) => {
     const filteredGroups = filterByTags(selectedTags);
-    console.log("generateFlashCards", filteredGroups);
     return filteredGroups
-      .map((group) => {
+      .map((group, i) => {
         const sourceWord = group.translations.find(
           (translation) => translation.languageName === sourceLanguage
         )?.word;
         const targetWord = group.translations.find(
           (translation) => translation.languageName === targetLanguage
         )?.word;
-        return { sourceWord, targetWord, sourceLanguage, targetLanguage };
+        return { sourceWord, targetWord, sourceLanguage, targetLanguage, id: i + 1 };
       })
       .filter((group) => group.sourceWord && group.targetWord);
   };
@@ -175,7 +173,6 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     }
     const newQuestions = array.map((item) => item.question);
     const newAnswers = array.map((item) => item.answers);
-    console.log(newQuestions, newAnswers);
     return { questions: newQuestions, answers: newAnswers };
   };
 
@@ -242,7 +239,7 @@ const LearnWords = ({ wordGroups, languageNames }) => {
               },
             }}
             onClick={() => {
-              if (modeName === "test") {
+              if (modeName === "Test") {
                 setTest(generateTest(test));
               }
               setCurrentTab(modeName);

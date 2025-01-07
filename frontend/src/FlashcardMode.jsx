@@ -19,7 +19,6 @@ const FlashcardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
     }, 500); // Wait for the fade-out animation to finish before changing the card
   };
 
-  console.log("wordGroups", wordGroups);
   // using the unique id of the word group to track completed cards
   // flashcard calls this function when the card is completed
   // and this marks it as completed if it was not already

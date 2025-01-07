@@ -8,8 +8,6 @@ const Flashcard = ({
   handleCardComplete,
   mode,
 }) => {
-  console.log("flashcard translations", translations);
-  console.log("flashcard mode", mode);
   const [flipState, setFlipState] = useState(0);
   const [frontIndex, setfrontIndex] = useState(0);
   const [backIndex, setbackIndex] = useState(0);
