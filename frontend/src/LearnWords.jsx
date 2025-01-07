@@ -4,7 +4,7 @@ import "./LearnWords.css";
 import QuestionCard from "./QuestionCard";
 import LearningModeCard from "./LearningModeCard";
 import LearningModeSettings from "./LearningModeSettings";
-import FlashCardMode from "./FlashCardMode";
+import FlashcardMode from "./FlashcardMode";
 
 const LearnWords = ({ wordGroups, languageNames }) => {
   const [currentTab, setCurrentTab] = useState("settings"); // 'settings', 'test', or 'results'
@@ -24,32 +24,36 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     {
       id: 1,
       title: "📖 Flashcards",
+      name: "Flashcards",
       description:
         "The classic way to learn new words. Flip the card to see the translation!",
     },
     {
       id: 2,
       title: "🎠 Carousel Cards",
+      name: "Carousel Cards",
       description: `New innovative way to learn words. Similar to flashcards but each card includes all the translations that are available for the group.
         Click on the card to rotate it and see the next translation. After reaching the end the card will rotate back to the first translation.`,
     },
     {
       id: 3,
-      title: "🧩 Memory Game",
+      title: "🔍🃏 Matching Game",
+      name: "Matching Game",
       description:
         "Find a matching pair of words with the same meaning in this memory game!",
     },
     {
       id: 4,
       title: "📝 Test",
+      name: "Test",
       description:
         "Ready to put your knowledge to a real test? Take a vocabulary test to see how well you know the words!",
     },
   ];
 
-  const modeName = learningModes
-    .find((mode) => mode.id === selectedLearningMode)
-    .title.slice(3); // Remove the emoji from the title
+  const modeName = learningModes.find(
+    (mode) => mode.id === selectedLearningMode
+  ).name;
 
   const handleAnswerChange = (index, value) => {
     const newAnswers = [...userAnswers];
@@ -89,7 +93,6 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     const filteredGroups = filterByTags(selectedTags);
     console.log("generateCarouselCards", filteredGroups);
     return filteredGroups;
-
   };
 
   const generateFlashCards = ({
@@ -279,14 +282,14 @@ const LearnWords = ({ wordGroups, languageNames }) => {
         </Box>
       )}
       {currentTab === "Flashcards" && (
-        <FlashCardMode
+        <FlashcardMode
           wordGroups={generateFlashCards(filterOptions)}
           modeName={modeName}
           onExit={() => setCurrentTab("settings")}
         />
       )}
       {currentTab === "Carousel Cards" && (
-         <FlashCardMode
+        <FlashcardMode
           wordGroups={generateCarouselCards(filterOptions)}
           modeName={modeName}
           onExit={() => setCurrentTab("settings")}

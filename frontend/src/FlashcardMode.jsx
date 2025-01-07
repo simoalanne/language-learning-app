@@ -1,10 +1,10 @@
 import { useState, useRef } from "react";
-import Flashcard from "./FlashCard";
+import Flashcard from "./Flashcard";
 import { Box, Button, Fade, Typography } from "@mui/material";
 import MoveIcons from "./MoveIcons";
 import Progressbar from "./Progressbar";
 
-const FlashCardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
+const FlashcardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
   const [selectedIndex, setSelectedIndex] = useState(0); // Track current index
   const [fadeIn, setFadeIn] = useState(true); // Control fade-in animation
   const [cardsCompleted, setCardsCompleted] = useState([]); // Track completed cards
@@ -124,4 +124,4 @@ const FlashCardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
   );
 };
 
-export default FlashCardMode;
+export default FlashcardMode;
