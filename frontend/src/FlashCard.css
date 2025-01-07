@@ -4,11 +4,12 @@
 }
 
 .card {
-  width: 95%;
+  width: 90%;
   max-width: 400px;
   height: 250px;
   perspective: 1000px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* removes blue highlight when tapping on mobile */
   user-select: none;
 }
 

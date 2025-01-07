@@ -2,7 +2,6 @@ import {
   Card,
   CardHeader,
   CardContent,
-  Button,
   Typography,
   Box,
 } from "@mui/material";
@@ -15,8 +14,7 @@ const LearningModeSettings = ({
   modeName,
   languageNames,
   wordGroups,
-  setCurrentTab,
-  totalQuestions,
+  availableQuestions,
   filterOptions,
   setFilterOptions,
 }) => {
@@ -81,7 +79,34 @@ const LearningModeSettings = ({
       )}
       {modeName === "Flashcards" && (
         <CardContent>
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <SelectLanguagePair
+              languageNames={languageNames}
+              selectedLanguages={[
+                filterOptions.sourceLanguage,
+                filterOptions.targetLanguage,
+              ]}
+              setSelectedLanguages={(languages) =>
+                setFilterOptions({
+                  ...filterOptions,
+                  sourceLanguage: languages[0],
+                  targetLanguage: languages[1],
+                })
+              }
+            />
+            <SwapLanguagePair
+              selectedLanguages={[
+                filterOptions.sourceLanguage,
+                filterOptions.targetLanguage,
+              ]}
+              setSelectedLanguages={(languages) =>
+                setFilterOptions({
+                  ...filterOptions,
+                  sourceLanguage: languages[0],
+                  targetLanguage: languages[1],
+                })
+              }
+            />
             <SelectTags
               header={"Learn flashcards that have these tags"}
               tags={allTags}
@@ -90,6 +115,7 @@ const LearningModeSettings = ({
                 setFilterOptions({ ...filterOptions, selectedTags: tags })
               }
             />
+            <Typography variant="h6">{`Number of flashcards: ${availableQuestions}`}</Typography>
           </Box>
         </CardContent>
       )}

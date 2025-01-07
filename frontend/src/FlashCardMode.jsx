@@ -1,16 +1,15 @@
 import { useState, useRef } from "react";
-import FlashCard from "./FlashCard";
+import Flashcard from "./FlashCard";
 import { Box, Button, Fade, Typography } from "@mui/material";
 import MoveIcons from "./MoveIcons";
 import Progressbar from "./Progressbar";
 
-const FlashCardMode = ({ wordGroups, onExit }) => {
+const FlashCardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
   const [selectedIndex, setSelectedIndex] = useState(0); // Track current index
   const [fadeIn, setFadeIn] = useState(true); // Control fade-in animation
   const [cardsCompleted, setCardsCompleted] = useState([]); // Track completed cards
   const maxIndex = wordGroups.length - 1;
   const resetIndexesRef = useRef(null);
-
   const handleIndexChange = (newIndex) => {
     setFadeIn(false);
     setTimeout(() => {
@@ -20,6 +19,7 @@ const FlashCardMode = ({ wordGroups, onExit }) => {
     }, 500); // Wait for the fade-out animation to finish before changing the card
   };
 
+  console.log("wordGroups", wordGroups);
   // using the unique id of the word group to track completed cards
   // flashcard calls this function when the card is completed
   // and this marks it as completed if it was not already
@@ -30,7 +30,6 @@ const FlashCardMode = ({ wordGroups, onExit }) => {
       setCardsCompleted([...cardsCompleted, { id }]);
     }
   };
-
   return (
     <Box sx={{ display: "flex", justifyContent: "center" }}>
       <Box
@@ -58,14 +57,15 @@ const FlashCardMode = ({ wordGroups, onExit }) => {
             fontSize: { xs: "2rem", sm: "2.5rem" }, // slightly smaller font size on small screens
           }}
         >
-          Flash Cards 📖
+          {modeName === "Flashcards" ? "Flashcards 📖" : "Carousel cards 🎠"}
         </Typography>
         <Fade in={fadeIn} timeout={500} mountOnEnter unmountOnExit>
           <div style={{ width: "100%" }}>
-            <FlashCard
-              translations={wordGroups[selectedIndex]?.translations}
+            <Flashcard
+              translations={modeName === "Flashcards" ? wordGroups[selectedIndex] : wordGroups[selectedIndex].translations}
               resetIndexesRef={resetIndexesRef}
               handleCardComplete={handleCardComplete}
+              mode={modeName}
             />
           </div>
         </Fade>

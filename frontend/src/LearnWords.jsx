@@ -24,21 +24,26 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     {
       id: 1,
       title: "📖 Flashcards",
-      description: `Not ready to test your knowledge yet? Use flashcards to learn the words first. 
-        Click on the left or right side of the card to move between translations in the group.
-        Use the arrows to move between groups.`,
+      description:
+        "The classic way to learn new words. Flip the card to see the translation!",
     },
     {
       id: 2,
-      title: "📝 Test",
-      description:
-        "Ready to put your knowledge to a real test? Take a vocabulary test to see how well you know the words.",
+      title: "🎠 Carousel Cards",
+      description: `New innovative way to learn words. Similar to flashcards but each card includes all the translations that are available for the group.
+        Click on the card to rotate it and see the next translation. After reaching the end the card will rotate back to the first translation.`,
     },
     {
       id: 3,
-      title: "🧩 Memory game",
+      title: "🧩 Memory Game",
       description:
-        "Find a matching pair of words with the same meaning in this memory game.",
+        "Find a matching pair of words with the same meaning in this memory game!",
+    },
+    {
+      id: 4,
+      title: "📝 Test",
+      description:
+        "Ready to put your knowledge to a real test? Take a vocabulary test to see how well you know the words!",
     },
   ];
 
@@ -80,7 +85,32 @@ const LearnWords = ({ wordGroups, languageNames }) => {
       return tags.length === 0 || tags.some((tag) => group.tags.includes(tag));
     });
 
-  const generateFlashcards = ({ selectedTags }) => filterByTags(selectedTags);
+  const generateCarouselCards = ({ selectedTags }) => {
+    const filteredGroups = filterByTags(selectedTags);
+    console.log("generateCarouselCards", filteredGroups);
+    return filteredGroups;
+
+  };
+
+  const generateFlashCards = ({
+    selectedTags,
+    sourceLanguage,
+    targetLanguage,
+  }) => {
+    const filteredGroups = filterByTags(selectedTags);
+    console.log("generateFlashCards", filteredGroups);
+    return filteredGroups
+      .map((group) => {
+        const sourceWord = group.translations.find(
+          (translation) => translation.languageName === sourceLanguage
+        )?.word;
+        const targetWord = group.translations.find(
+          (translation) => translation.languageName === targetLanguage
+        )?.word;
+        return { sourceWord, targetWord, sourceLanguage, targetLanguage };
+      })
+      .filter((group) => group.sourceWord && group.targetWord);
+  };
 
   const updateTest = ({ sourceLanguage, targetLanguage, selectedTags }) => {
     if (wordGroups.length === 0) return { questions: [], answers: [] };
@@ -118,6 +148,7 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     };
   };
 
+  const availableQuestions = updateTest(filterOptions);
   /**
    * Generates the test based on the filter options
    * If the randomizeOrder option is enabled, the questions will be shuffled
@@ -191,12 +222,13 @@ const LearnWords = ({ wordGroups, languageNames }) => {
               totalQuestions={test.questions.length}
               filterOptions={filterOptions}
               setFilterOptions={setFilterOptions}
+              availableQuestions={availableQuestions.questions.length}
             />
           </Box>
           <Button
             variant="contained"
             color="secondary"
-            disabled={wordGroups.length === 0}
+            disabled={availableQuestions.questions.length === 0}
             sx={{
               width: "50%",
               maxWidth: "250px",
@@ -207,8 +239,10 @@ const LearnWords = ({ wordGroups, languageNames }) => {
               },
             }}
             onClick={() => {
-              setTest(generateTest(test));
-              setCurrentTab(modeName === "Flashcards" ? "Flashcards" : "Test");
+              if (modeName === "test") {
+                setTest(generateTest(test));
+              }
+              setCurrentTab(modeName);
             }}
           >
             Start {modeName}
@@ -246,7 +280,15 @@ const LearnWords = ({ wordGroups, languageNames }) => {
       )}
       {currentTab === "Flashcards" && (
         <FlashCardMode
-          wordGroups={generateFlashcards(filterOptions)}
+          wordGroups={generateFlashCards(filterOptions)}
+          modeName={modeName}
+          onExit={() => setCurrentTab("settings")}
+        />
+      )}
+      {currentTab === "Carousel Cards" && (
+         <FlashCardMode
+          wordGroups={generateCarouselCards(filterOptions)}
+          modeName={modeName}
           onExit={() => setCurrentTab("settings")}
         />
       )}
