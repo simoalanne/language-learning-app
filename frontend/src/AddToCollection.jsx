@@ -82,7 +82,7 @@ const AddToCollection = ({
           onDelete={() =>
             onCollectionChange(collection.filter((_, index) => index !== i))
           }
-          sx={{ mt: 1, mr: 1 }}
+          sx={{ mt: 1, mr: 1, bgcolor: "primary.main", color: "white" }}
         />
       ))}
     </>

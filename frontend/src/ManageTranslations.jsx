@@ -128,6 +128,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       word: translation.word,
       synonyms: translation.synonyms,
     }));
+    console.log("n")
     setTranslations(translations);
     const tags = wordGroup.tags;
     setTags(tags);
@@ -182,7 +183,6 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
     const updatedWordGroups = wordGroups.filter((_, i) => i !== editModeIndex);
     setWordGroups(updatedWordGroups);
 
-    // if there are no more word groups, switch to add mode
     if (updatedWordGroups.length === 0) {
       setToastMsg(
         "Translation group deleted successfully. No more groups left to edit."
@@ -195,6 +195,8 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
     // if the last word group was deleted, switch to the previous one
     if (editModeIndex === updatedWordGroups.length) {
       handleIndexChange(editModeIndex - 1);
+    } else {
+      handleIndexChange(editModeIndex);
     }
     setToastMsg("Translation group deleted successfully.");
     setToastOpen(true);
@@ -316,6 +318,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
             onClick={onSubmit}
             variant="contained"
             color="primary"
+            fullWidth
             sx={{ mt: 2, bgcolor: "green" }}
             disabled={
               !isValidForm() || (activeTab === "edit" && !dataChanged())
@@ -328,6 +331,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
               onClick={onDeleteTranslationGroup}
               variant="contained"
               color="error"
+              fullWidth
               sx={{ mt: 2 }}
             >
               Delete group

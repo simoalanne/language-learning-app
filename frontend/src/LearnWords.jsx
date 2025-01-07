@@ -4,6 +4,7 @@ import "./LearnWords.css";
 import QuestionCard from "./QuestionCard";
 import LearningModeCard from "./LearningModeCard";
 import LearningModeSettings from "./LearningModeSettings";
+import FlashCardMode from "./FlashCardMode";
 
 const LearnWords = ({ wordGroups, languageNames }) => {
   const [currentTab, setCurrentTab] = useState("settings"); // 'settings', 'test', or 'results'
@@ -23,8 +24,9 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     {
       id: 1,
       title: "📖 Flashcards",
-      description:
-        "Not ready to test your knowledge yet? Try flashcards to learn new words first.",
+      description: `Not ready to test your knowledge yet? Use flashcards to learn the words first. 
+        Click on the left or right side of the card to move between translations in the group.
+        Use the arrows to move between groups.`,
     },
     {
       id: 2,
@@ -73,29 +75,17 @@ const LearnWords = ({ wordGroups, languageNames }) => {
     setTest({ questions: [], answers: [] });
   };
 
-  const resetSettings = () => {
-    setFilterOptions({
-      sourceLanguage: "English",
-      targetLanguage: "Finnish",
-      selectedTags: [],
+  const filterByTags = (tags) =>
+    wordGroups.filter((group) => {
+      return tags.length === 0 || tags.some((tag) => group.tags.includes(tag));
     });
-  };
 
-  const canReset =
-    filterOptions.sourceLanguage !== "English" ||
-    filterOptions.targetLanguage !== "Finnish" ||
-    filterOptions.selectedTags.length > 0;
+  const generateFlashcards = ({ selectedTags }) => filterByTags(selectedTags);
 
   const updateTest = ({ sourceLanguage, targetLanguage, selectedTags }) => {
     if (wordGroups.length === 0) return { questions: [], answers: [] };
 
-    const filteredTest = wordGroups.filter((group) => {
-      // Apply tag filtering
-      return (
-        selectedTags.length === 0 ||
-        selectedTags.some((tag) => group.tags.includes(tag))
-      );
-    });
+    const filteredTest = filterByTags(selectedTags);
 
     if (filteredTest.length === 0) return { questions: [], answers: [] };
 
@@ -206,6 +196,7 @@ const LearnWords = ({ wordGroups, languageNames }) => {
           <Button
             variant="contained"
             color="secondary"
+            disabled={wordGroups.length === 0}
             sx={{
               width: "50%",
               maxWidth: "250px",
@@ -217,7 +208,7 @@ const LearnWords = ({ wordGroups, languageNames }) => {
             }}
             onClick={() => {
               setTest(generateTest(test));
-              setCurrentTab("Test");
+              setCurrentTab(modeName === "Flashcards" ? "Flashcards" : "Test");
             }}
           >
             Start {modeName}
@@ -253,7 +244,12 @@ const LearnWords = ({ wordGroups, languageNames }) => {
           </Button>
         </Box>
       )}
-
+      {currentTab === "Flashcards" && (
+        <FlashCardMode
+          wordGroups={generateFlashcards(filterOptions)}
+          onExit={() => setCurrentTab("settings")}
+        />
+      )}
       {currentTab === "results" && (
         <Box sx={{ width: "90%", maxWidth: "500px", margin: "auto" }}>
           <Typography variant="h5">Results</Typography>

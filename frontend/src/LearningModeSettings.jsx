@@ -71,15 +71,29 @@ const LearningModeSettings = ({
             />
             <ToggleOption
               value={filterOptions.randomizeOrder}
-              setValue={(value) => (
+              setValue={(value) =>
                 setFilterOptions({ ...filterOptions, randomizeOrder: value })
-              )}
+              }
               label="Randomize question order"
             />
           </Box>
         </CardContent>
       )}
-      {modeName !== "Test" && (
+      {modeName === "Flashcards" && (
+        <CardContent>
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <SelectTags
+              header={"Learn flashcards that have these tags"}
+              tags={allTags}
+              selectedTags={filterOptions.selectedTags}
+              setSelectedTags={(tags) =>
+                setFilterOptions({ ...filterOptions, selectedTags: tags })
+              }
+            />
+          </Box>
+        </CardContent>
+      )}
+      {modeName === "Memory game" && (
         <CardContent sx={{ textAlign: "center" }}>
           <Typography
             variant="h4"
