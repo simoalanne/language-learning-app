@@ -5,6 +5,7 @@ import QuestionCard from "./QuestionCard";
 import LearningModeCard from "./LearningModeCard";
 import LearningModeSettings from "./LearningModeSettings";
 import FlashcardMode from "./FlashcardMode";
+import MatchingGameMode from "./MatchingGameMode";
 
 const LearnWords = ({ wordGroups, languageNames }) => {
   const [currentTab, setCurrentTab] = useState("settings"); // 'settings', 'test', or 'results'
@@ -108,7 +109,13 @@ const LearnWords = ({ wordGroups, languageNames }) => {
         const targetWord = group.translations.find(
           (translation) => translation.languageName === targetLanguage
         )?.word;
-        return { sourceWord, targetWord, sourceLanguage, targetLanguage, id: i + 1 };
+        return {
+          sourceWord,
+          targetWord,
+          sourceLanguage,
+          targetLanguage,
+          id: i + 1,
+        };
       })
       .filter((group) => group.sourceWord && group.targetWord);
   };
@@ -239,7 +246,7 @@ const LearnWords = ({ wordGroups, languageNames }) => {
               },
             }}
             onClick={() => {
-              if (modeName === "Test") {
+              if (modeName === "Test" || modeName === "Matching Game") {
                 setTest(generateTest(test));
               }
               setCurrentTab(modeName);
@@ -290,6 +297,15 @@ const LearnWords = ({ wordGroups, languageNames }) => {
           wordGroups={generateCarouselCards(filterOptions)}
           modeName={modeName}
           onExit={() => setCurrentTab("settings")}
+        />
+      )}
+      {currentTab === "Matching Game" && (
+        <MatchingGameMode
+          questions={test.questions || []}
+          answers={test.answers || []}
+          onExit={() => setCurrentTab("settings")}
+          sourceLanguage={filterOptions.sourceLanguage}
+          targetLanguage={filterOptions.targetLanguage}
         />
       )}
       {currentTab === "results" && (
