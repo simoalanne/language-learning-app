@@ -5,13 +5,18 @@ const MatchingGameCard = ({
   index,
   handleClick,
   isFlipped,
+  cardScale,
 }) => {
+  const fontSize =
+    backsideContent.length > 25
+      ? 0.75 * cardScale + "rem"
+      : 1 * cardScale + "rem";
   return (
     <Box
       onClick={() => !isFlipped && handleClick(index)}
       sx={{
-        width: 75,
-        height: 75,
+        width: 75 * cardScale,
+        height: 75 * cardScale,
         perspective: 1000,
       }}
     >
@@ -41,7 +46,7 @@ const MatchingGameCard = ({
             boxShadow: "inset 0 0 50px rgba(255, 255, 255, 0.2)",
           }}
         >
-          <Typography variant="h5">⭐</Typography>
+          <Typography sx={{ fontSize: 2 * cardScale + "rem" }}>⭐</Typography>
         </Box>
         <Box
           sx={{
@@ -58,7 +63,7 @@ const MatchingGameCard = ({
         >
           <Typography
             sx={{
-              width: 75,
+              width: 75 * cardScale,
               overflow: "hidden",
               textOverflow: "ellipsis",
               textAlign: "center",
@@ -66,7 +71,7 @@ const MatchingGameCard = ({
               maxHeight: 75,
               display: "block",
               lineHeight: "normal",
-              fontSize: backsideContent.length > 25 ? "0.75rem" : "1rem",
+              fontSize: fontSize,
             }}
           >
             {backsideContent}

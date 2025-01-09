@@ -1,7 +1,15 @@
 import MatchingGameCard from "./MatchingGameCard";
-import { Box, Typography, Button, DialogTitle } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
 import { useState, useEffect } from "react";
 import Progressbar from "./Progressbar";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import {
   Dialog,
   DialogActions,
@@ -24,6 +32,7 @@ const MatchingGameMode = ({
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [openedPairIsMatch, setOpenedPairIsMatch] = useState(false);
   const [timer, setTimer] = useState(null);
+  const [cardScale, setCardScale] = useState(1);
 
   useEffect(() => {
     // prevent this from running if there are no questions or answers meaning the game is not ready
@@ -112,11 +121,37 @@ const MatchingGameMode = ({
       <Box
         sx={{
           display: "flex",
+          gap: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          bgcolor: "primary.main",
+          borderRadius: 10,
+          padding: 1,
+          mb: 2,
+        }}
+      >
+        <IconButton
+          onClick={() => setCardScale(cardScale - 0.25)}
+          disabled={cardScale === 0.5}
+        >
+          <RemoveIcon />
+        </IconButton>
+        <Typography variant="body1">{`Zoom: ${cardScale * 100}%`}</Typography>
+        <IconButton
+          onClick={() => setCardScale(cardScale + 0.25)}
+          disabled={cardScale === 1.5}
+        >
+          <AddIcon />
+        </IconButton>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
           gap: 2,
-          width: "90%",
-          maxWidth: 1000,
+          width: "95%",
+          maxWidth: 1200,
         }}
       >
         {combined.map((c, index) => (
@@ -132,6 +167,7 @@ const MatchingGameMode = ({
             }
             isSelected={flippedCards.includes(index)}
             handleClick={handleClick}
+            cardScale={cardScale}
           />
         ))}
       </Box>
