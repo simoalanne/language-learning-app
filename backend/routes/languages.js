@@ -3,10 +3,13 @@ import { getAllLanguages } from "../database/db.js";
 const languagesRouter = express.Router();
 
 languagesRouter.get("/", async (_, res) => {
-  const languages = await getAllLanguages();
-  res.json(
-    languages.map((lang) => ({ languageName: lang.language_name }))
-  );
+  try {
+    const languages = await getAllLanguages();
+    res.json(languages.map((lang) => ({ languageName: lang.language_name })));
+  } catch (error) {
+    console.error(err);
+    res.status(500).json({ error });
+  }
 });
 
 export default languagesRouter;

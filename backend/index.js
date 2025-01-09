@@ -3,7 +3,6 @@ import { initDb, closeDb } from "./database/db.js";
 import wordGroupsRouter from "./routes/wordGroups.js";
 import languagesRouter from "./routes/languages.js";
 import wordsRouter from "./routes/words.js";
-//import cors from "cors";
 import path from "path";
 
 // To use __dirname with ES modules, these two lines are needed to define __dirname
@@ -14,6 +13,41 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// middleware function to handle invalid JSON in request body more gracefully
+// code found from here: https://stackoverflow.com/questions/58134287
+app.use((err, _, res, next) => {
+  if (err instanceof SyntaxError && "body" in err && err.status === 400) {
+    return res
+      .status(400)
+      .json({ message: "Invalid JSON in request body", error: err.message });
+  }
+  next(err);
+});
+
+/**
+ * Middleware to check if the content type is application/json
+ *
+ * If the request method is POST or PUT and the content type is not application/json
+ * then return a 400 status code with an error message. else call next middleware
+ *
+ * @param {express.Request} req
+ * @param {express.Response} res
+ * @param {express.NextFunction} next
+ */
+const checkJsonContentType = (req, res, next) => {
+  // PATCH is not used in this project so no need to check for it
+  if (req.method === "POST" || req.method === "PUT") {
+    if (!req.is("application/json")) {
+      return res
+        .status(400)
+        .json({ error: "Content type must be application/json" });
+    }
+  }
+  next();
+};
+
+app.use(checkJsonContentType);
 
 const publicPath = path.join(__dirname, "public");
 app.use(express.static(publicPath));

@@ -1,58 +1,8 @@
 # POST
-POST http://localhost:3000/api/word-groups/bulk
+POST http://localhost:3000/api/word-groups/
 Content-Type: application/json
 
 {
-  "bulkData": [
-    {
-      "translations": [
-        {"languageName": "English", "word": "Hello", "synonyms": ["Hi", "Hey"]},
-        {"languageName": "Spanish", "word": "Holaa", "synonyms": ["ola", "saludo"]},
-        {"languageName": "French", "word": "Bonjour", "synonyms": ["salut"]},
-        {"languageName": "German", "word": "Hallo", "synonyms": ["Hi", "Hey"]},
-        {"languageName": "Finnish", "word": "Hei", "synonyms": ["Moi", "Terve"]},
-        {"languageName": "Swedish", "word": "Hej", "synonyms": ["Tja", "Tjena"]}
-      ],
-      "tags": ["greeting", "salutation"],
-      "difficulty": 1
-    },
-    {
-      "translations": [
-        {"languageName": "English", "word": "Apple", "synonyms": ["Fruit", "Pome"]},
-        {"languageName": "Spanish", "word": "Manzana", "synonyms": ["Fruta"]},
-        {"languageName": "French", "word": "Pomme", "synonyms": ["Fruit"]},
-        {"languageName": "German", "word": "Apfel", "synonyms": ["Frucht"]},
-        {"languageName": "Finnish", "word": "Omena", "synonyms": ["Hedelmä"]},
-        {"languageName": "Swedish", "word": "Äpple", "synonyms": ["Frukt"]}
-      ],
-      "tags": ["food", "fruit"],
-      "difficulty": 2
-    },
-    {
-      "translations": [
-        {"languageName": "English", "word": "Tree", "synonyms": ["Plant", "Timber"]},
-        {"languageName": "Spanish", "word": "Árbol", "synonyms": ["Planta", "Madera"]},
-        {"languageName": "French", "word": "Arbre", "synonyms": ["Plante", "Bois"]},
-        {"languageName": "German", "word": "Baum", "synonyms": ["Pflanze", "Holz"]},
-        {"languageName": "Finnish", "word": "Puu", "synonyms": ["Kasvi", "Puuaines"]},
-        {"languageName": "Swedish", "word": "Träd", "synonyms": ["Växt", "Trä"]}
-      ],
-      "tags": ["nature", "plants"],
-      "difficulty": 1
-    },
-    {
-      "translations": [
-        {"languageName": "English", "word": "Car", "synonyms": ["Automobile", "Vehicle"]},
-        {"languageName": "Spanish", "word": "Coche", "synonyms": ["Automóvil", "Vehículo"]},
-        {"languageName": "French", "word": "Voiture", "synonyms": ["Automobile", "Véhicule"]},
-        {"languageName": "German", "word": "Auto", "synonyms": ["Automobil", "Fahrzeug"]},
-        {"languageName": "Finnish", "word": "Auto", "synonyms": ["Ajoneuvo", "Kulkuväline"]},
-        {"languageName": "Swedish", "word": "Bil", "synonyms": ["Fordon", "Automobil"]}
-      ],
-      "tags": ["transport", "vehicle"],
-      "difficulty": 2
-    },
-    {
       "translations": [
         {"languageName": "English", "word": "House", "synonyms": ["Home", "Building"]},
         {"languageName": "Spanish", "word": "Casa", "synonyms": ["Hogar", "Edificio"]},
@@ -61,11 +11,8 @@ Content-Type: application/json
         {"languageName": "Finnish", "word": "Talo", "synonyms": ["Koti", "Rakennus"]},
         {"languageName": "Swedish", "word": "Hus", "synonyms": ["Hem", "Byggnad"]}
       ],
-      "tags": ["home", "architecture"],
-      "difficulty": 1
+      "tags": ["home", "architecture"]
     }
-  ]
-}
 
 
 ###

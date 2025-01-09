@@ -5,7 +5,7 @@ import {
   verbs,
   adjectives,
   sports,
-  programmingTerms,
+  animals,
 } from "./addStartingTranslations.js";
 
 /**
@@ -44,7 +44,7 @@ export const initDb = () => {
         tag_name TEXT NOT NULL
       )`,
       `CREATE TABLE word_group_tags (
-        word_group_id INTEGER REFERENCES word_groups (group_id) ON DELETE CASCADE, 
+        word_group_id INTEGER REFERENCES word_groups (group_id),
         tag_id INTEGER REFERENCES tags (id),
         PRIMARY KEY (word_group_id, tag_id)
       )`,
@@ -66,7 +66,7 @@ export const initDb = () => {
       ...verbs,
       ...adjectives,
       ...sports,
-      ...programmingTerms,
+      ...animals,
     ];
     // insert starting translations
     words.forEach((word) => {
@@ -74,8 +74,8 @@ export const initDb = () => {
     });
     // check if all words are added to the words table
 
-    for (let i = 0; i < 200; i++) {
-      const groupId = Math.floor(i / 2) + 1;
+    for (let i = 0; i < words.length; i++) {
+      const groupId = Math.floor(i / 3) + 1;
       const wordId = i + 1;
       db.run(`INSERT INTO word_groups (group_id, word_id) VALUES (?, ?)`, [
         groupId,
@@ -87,19 +87,18 @@ export const initDb = () => {
       "verbs",
       "adjectives",
       "sports",
-      "programming terms",
+      "animals",
     ];
     tags.forEach((tag) =>
       db.run(`INSERT INTO tags (tag_name) VALUES (?)`, [tag])
     );
     let tagIndex = 1;
-    for (let i = 1; i < 101; i++) {
+    for (let i = 1; i < words.length / 3 + 1; i++) {
       const wordGroupId = i;
       db.run(
         `INSERT INTO word_group_tags (word_group_id, tag_id) VALUES (?, ?)`,
         [wordGroupId, tagIndex]
       );
-      // change tag every 20 word groups since
       if (i % 20 === 0) {
         tagIndex++;
       }
@@ -400,7 +399,6 @@ export const getWordGroupById = async (groupId) => {
         words.id, words.primary_word, languages.language_name;
   `;
   const dbResponse = await sqlQuery(query, [groupId]);
-  console.log(dbResponse);
   if (dbResponse.length === 0) {
     console.error("No word group found with the given ID");
     return null;
