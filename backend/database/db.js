@@ -325,7 +325,10 @@ export const addNewWordGroup = async (wordGroupObj) => {
  */
 export const updateWordGroup = async (wordGroupObj) => {
   const id = wordGroupObj.id;
-  if ((await sqlQuery("SELECT id FROM word_groups WHERE id = ?", [id])).length === 0) {
+  if (
+    (await sqlQuery("SELECT id FROM word_groups WHERE id = ?", [id])).length ===
+    0
+  ) {
     return { error: "No word group found with the given ID" };
   }
   await deleteWordGroupById(id);
@@ -348,7 +351,6 @@ const sqlQuery = (query, params = []) => {
     });
   });
 };
-
 
 export const getAllWordGroupIds = async () => {
   const groupIds = await sqlQuery("SELECT DISTINCT id FROM word_groups");
@@ -441,7 +443,7 @@ export const getWordGroupById = async (groupId) => {
   });
   const tags = dbResponse[0].tags ? dbResponse[0].tags.split(",") : []; // tags are the same for all rows
   return {
-  id,
+    id,
     translations,
     tags,
     createdAt: dbResponse[0].created_at,
@@ -449,9 +451,76 @@ export const getWordGroupById = async (groupId) => {
   };
 };
 
-// TODO
-export const getMultipleWordGroups = async (offset, limit, search) => {
-}
+export const getMultipleWordGroups = async ({ offset, limit, getAll }) => {
+  const query = `
+    SELECT 
+      wg.id AS id,
+      wg.created_at,
+      wg.updated_at,
+      w.word,
+      l.language_name,
+      GROUP_CONCAT(DISTINCT ws.synonym ORDER BY ws.synonym) AS synonyms,
+      GROUP_CONCAT(DISTINCT t.tag_name ORDER BY t.tag_name) AS tags
+    FROM word_groups wg
+      JOIN words w ON w.group_id = wg.id
+      LEFT JOIN languages l ON l.id = w.language_id
+      LEFT JOIN word_synonyms ws ON ws.word_id = w.id
+      LEFT JOIN word_group_tags wgt ON wgt.word_group_id = wg.id
+      LEFT JOIN tags t ON t.id = wgt.tag_id
+    ${getAll ? "" : "WHERE wg.id > ? AND wg.id <= ?"}
+    GROUP BY w.word, l.language_name, wg.id
+    ORDER BY wg.id, l.language_name`;
+
+  const dbResponse = await sqlQuery(
+    query,
+    getAll ? [] : [offset, offset + limit]
+  );
+  let isFirstEntryInGroup = true;
+  let currentId = dbResponse[0]?.id;
+  if (!currentId) {
+    return [];
+  }
+  let wordGroup = [];
+  let allGroups = [];
+
+  for (const row of dbResponse) {
+    if (row.id !== currentId) {
+      currentId = row.id;
+      allGroups.push(wordGroup);
+      isFirstEntryInGroup = true;
+    }
+    if (isFirstEntryInGroup) {
+      wordGroup = {
+        id: row.id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        translations: [],
+        tags: row.tags ? row.tags.split(",") : [],
+      };
+      isFirstEntryInGroup = false;
+    }
+    wordGroup.translations.push({
+      languageName: row.language_name,
+      word: row.word,
+      synonyms: row.synonyms ? row.synonyms.split(",") : [],
+    });
+  }
+  allGroups.push(wordGroup);
+  return allGroups;
+};
+
+export const getMaxId = async () =>
+  (await sqlQuery("SELECT MAX(id) AS id FROM word_groups"))[0]?.id;
+
+const getTotalds = async (tableName) =>
+  (await sqlQuery("SELECT COUNT(DISTINCT id) AS total FROM " + tableName))[0]
+    .total;
+
+export const getTotalAndPages = async (tableName, limit) => {
+  const total = await getTotalds(tableName);
+  const pages = Math.floor(total / limit);
+  return { total, pages };
+};
 
 export const getUserByUsername = async (username) => {
   const query = `SELECT * FROM users WHERE username = ?`;

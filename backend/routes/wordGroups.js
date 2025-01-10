@@ -2,14 +2,16 @@ import express from "express";
 import {
   addNewWordGroup,
   getWordGroupById,
-  getAllWordGroupIds,
   deleteWordGroupById,
   deleteAllWordGroups,
   updateWordGroup,
+  getMultipleWordGroups,
+  getTotalAndPages,
 } from "../database/db.js";
 import { wordGroupValidation } from "../utils/validation.js";
 const wordGroupsRouter = express.Router();
 import { body, param, query, validationResult } from "express-validator";
+import { performance } from "perf_hooks";
 const validLanguages = [
   "English",
   "Finnish",
@@ -19,17 +21,28 @@ const validLanguages = [
   "Swedish",
 ];
 
-wordGroupsRouter.get("/", async (_, res) => {
-  try {
-    const ids = await getAllWordGroupIds();
-    const wordGroups = await Promise.all(
-      ids.map(async (id) => await getWordGroupById(id))
-    );
+wordGroupsRouter.get("/", async (req, res) => {
+  const includePagination = req.query.pagination === "true";
+  const offset = parseInt(req.query.offset) || 0;
+  let limit = parseInt(req.query.limit);
+  const now = performance.now();
+  const wordGroups = await getMultipleWordGroups({
+    offset,
+    limit,
+    getAll: !limit,
+  });
+  const { total, pages } = await getTotalAndPages("word_groups", limit);
+  if (!includePagination) {
+    // app doesnt use pagination currently so dont send data it wont use
     res.json(wordGroups);
-  } catch (error) {
-    console.error(error);
-    res.sendStatus(500).json({ error });
+    console.log("Fetching all word groups took", performance.now() - now);
+    return;
   }
+  res.json({
+    ...{ wordGroups },
+    ...{ pagination: { total, limit, offset, pages } },
+  });
+  console.log("Fetching all word groups took", performance.now() - now);
 });
 
 wordGroupsRouter.get(
