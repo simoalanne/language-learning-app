@@ -8,46 +8,53 @@ import {
   animals,
 } from "./addStartingTranslations.js";
 
-/**
- * Initializes the database by creating following tables:
- * - languages: Stores language name and its id.
- * - words: Stores the primary word and its language id.
- * - word_synonyms: Stores synonyms for the primary word.
- * - word_groups: Links the word in all languages to a single group.
- * - tags: Stores tags related to a certain word group.
- * - word_group_tags: Links word groups to tags.
- */
-export const initDb = () => {
-  db.serialize(() => {
+// Initializes the database by creating following tables:
+// - languages: contains language name and id
+// - words: contains word, language id and group id it belongs to
+// - word_synonyms: contains word id and synonym
+// - word_groups: contains metadata, id and user id to tie the word groups to specific user
+// - tags: contains tag name and id
+// - word_group_tags: many to many table to link word groups and tags together to allow storing multiple tags for a word group
+export const initDb = async () => {
+  try {
     const createTableQueries = [
       `CREATE TABLE languages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        language_name TEXT NOT NULL
-      )`,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    language_name TEXT NOT NULL
+  )`,
       `CREATE TABLE words (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        language_id INTEGER REFERENCES languages (id),
-        primary_word TEXT NOT NULL
-      )`,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    language_id INTEGER REFERENCES languages (id),
+    word TEXT NOT NULL,
+    group_id INTEGER REFERENCES word_groups (id) ON DELETE CASCADE 
+  )`,
       `CREATE TABLE word_synonyms (
-        word_id INTEGER REFERENCES words (id) ON DELETE CASCADE,
-        word TEXT NOT NULL,
-        PRIMARY KEY (word_id, word)
-      )`,
+    word_id INTEGER REFERENCES words (id) ON DELETE CASCADE,
+    synonym TEXT NOT NULL,
+    PRIMARY KEY (word_id, synonym)
+  )`,
       `CREATE TABLE word_groups (
-        group_id INTEGER,
-        word_id INTEGER REFERENCES words (id) ON DELETE CASCADE,
-        PRIMARY KEY (group_id, word_id)
-      )`,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES users (id),
+    group_name TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL
+  )`,
       `CREATE TABLE tags (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tag_name TEXT NOT NULL
-      )`,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    word_group_id INTEGER REFERENCES word_groups (id) ON DELETE CASCADE, -- if word group is deleted, delete the tag link as well
+    tag_name TEXT NOT NULL
+  )`,
       `CREATE TABLE word_group_tags (
-        word_group_id INTEGER REFERENCES word_groups (group_id),
-        tag_id INTEGER REFERENCES tags (id),
-        PRIMARY KEY (word_group_id, tag_id)
-      )`,
+    word_group_id INTEGER REFERENCES word_groups (id) ON DELETE CASCADE, -- if word group is deleted, delete the tag link as well
+    tag_id INTEGER REFERENCES tags (id) ON DELETE CASCADE, 
+    PRIMARY KEY (word_group_id, tag_id)
+  )`,
+      `CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+  )`,
     ];
 
     const insertDataQueries = [
@@ -59,8 +66,14 @@ export const initDb = () => {
       `INSERT INTO languages (language_name) VALUES ("Swedish")`,
     ];
 
-    createTableQueries.forEach((query) => db.run(query));
-    insertDataQueries.forEach((query) => db.run(query));
+    for (const query of createTableQueries) {
+      await insertRawSql(query);
+    }
+
+    for (const query of insertDataQueries) {
+      await insertRawSql(query);
+    }
+
     const words = [
       ...commonWords,
       ...verbs,
@@ -68,43 +81,56 @@ export const initDb = () => {
       ...sports,
       ...animals,
     ];
-    // insert starting translations
-    words.forEach((word) => {
-      db.run(`INSERT INTO words (language_id, primary_word) VALUES ${word}`);
-    });
-    // check if all words are added to the words table
-
-    for (let i = 0; i < words.length; i++) {
-      const groupId = Math.floor(i / 3) + 1;
-      const wordId = i + 1;
-      db.run(`INSERT INTO word_groups (group_id, word_id) VALUES (?, ?)`, [
-        groupId,
-        wordId,
-      ]);
-    }
-    const tags = [
-      "common words",
-      "verbs",
-      "adjectives",
-      "sports",
-      "animals",
-    ];
-    tags.forEach((tag) =>
-      db.run(`INSERT INTO tags (tag_name) VALUES (?)`, [tag])
+    // insert starting translations.
+    // array elements are template strings so they can be directly inserted into the query
+    // total of 300 words are inserted, 100 for each language
+    await Promise.all(
+      words.map(
+        async (word) =>
+          await insertRawSql(
+            `INSERT INTO words (language_id, word, group_id) VALUES ${word}`
+          )
+      )
     );
+
+    // get the english words to use as group names
+    const englishWords = await sqlQuery(
+      "SELECT word FROM words WHERE language_id = 1"
+    );
+
+    // insert starting word groups
+    for (const word of englishWords) {
+      // for groups that belong to database itself user_id and created_at and updated_at are NULL because this data is not editable
+      await insertRawSql(
+        `INSERT INTO word_groups (group_name, created_at, updated_at) VALUES ("${word.word}", NULL, NULL)`
+      );
+    }
+
+    // insert starting tags
+    const tags = ["common words", "verbs", "adjectives", "sports", "animals"];
+    await Promise.all(
+      tags.map(
+        async (tag) =>
+          await insertRawSql(`INSERT INTO tags (tag_name) VALUES ("${tag}")`)
+      )
+    );
+
+    // link the starting tags to the starting word groups. tag index changes after looping through 20 groups
     let tagIndex = 1;
-    for (let i = 1; i < words.length / 3 + 1; i++) {
-      const wordGroupId = i;
-      db.run(
-        `INSERT INTO word_group_tags (word_group_id, tag_id) VALUES (?, ?)`,
-        [wordGroupId, tagIndex]
+
+    for (let i = 1; i <= words.length / 3; i++) {
+      await insertRawSql(
+        `INSERT INTO word_group_tags (word_group_id, tag_id) VALUES (${i}, ${tagIndex})`
       );
       if (i % 20 === 0) {
         tagIndex++;
       }
     }
     console.info("Database initialized");
-  });
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
 };
 
 export const closeDb = () => {
@@ -153,6 +179,22 @@ const getIdOrInsertNewData = (table, columns, values, whatToSelect) => {
           );
         }
       );
+    });
+  });
+};
+/**
+ * Helper function to insert raw SQL into the database.
+ * this does not sanitize the input so it should not be used with user input.
+ *
+ * @param {string} sql - The SQL query to run.
+ * @returns {Promise<number>} - The ID of the last inserted row.
+ * @example insertRawSql("INSERT INTO languages (language_name) VALUES ('English')");
+ */
+const insertRawSql = (sql) => {
+  return new Promise((resolve, reject) => {
+    db.run(sql, function (err) {
+      if (err) return reject(err);
+      resolve(this.lastID);
     });
   });
 };
@@ -209,28 +251,27 @@ export const getNextGroupId = () => {
  * tags: ["greeting", "easy"], // optional, no limit for amount of tags
  */
 export const addNewWordGroup = async (wordGroupObj) => {
-  const groupId = wordGroupObj.id || (await getNextGroupId()); // if id is not provided, get the next group ID
-  // Add languages to db that don't exist and get all the language IDs
   const languageIds = await Promise.all(
-    wordGroupObj.translations.map((translations) =>
-      getIdOrInsertNewData(
-        "languages",
-        ["language_name"],
-        [translations.languageName]
-      )
-    )
+    wordGroupObj.translations.map(async (translations) => {
+      const languageName = translations.languageName;
+      const languageId = await sqlQuery(
+        "SELECT id FROM languages WHERE language_name = ?",
+        [languageName]
+      );
+      return languageId[0].id;
+    })
   );
+
+  const query = `SELECT MAX(id) AS id FROM word_groups`;
+  const groupId = (await sqlQuery(query))[0]?.id + 1;
 
   // add words to db and get the word IDs
   const wordIds = await Promise.all(
     wordGroupObj.translations.map(async (translations, index) => {
-      // same word can be stored multiple times even for the same language.
-      // this is because its possible to have multiple words with the same spelling but different meanings.
-      // also if words with multiple meanings would be stored only once, then keeping track of synonyms would not be possible.
       return await insertData(
         "words",
-        ["language_id", "primary_word"],
-        [languageIds[index], translations.word]
+        ["language_id", "word", "group_id"],
+        [languageIds[index], translations.word, groupId]
       );
     })
   );
@@ -240,22 +281,21 @@ export const addNewWordGroup = async (wordGroupObj) => {
     wordGroupObj.translations.map(async (translations, index) => {
       await Promise.all(
         translations.synonyms.map(async (synonym) => {
-          await getIdOrInsertNewData(
+          await insertData(
             "word_synonyms",
-            ["word_id", "word"],
-            [wordIds[index], synonym],
-            "1" // only need to see wheter synonym exists so select "1" to make the query faster
+            ["word_id", "synonym"],
+            [wordIds[index], synonym]
           );
         })
       );
     })
   );
 
-  // add the word IDs to the word_groups table to link them to the group ID
-  await Promise.all(
-    wordIds.map((wordId) =>
-      insertData("word_groups", ["group_id", "word_id"], [groupId, wordId])
-    )
+  // add the group to the word_groups table
+  await insertData(
+    "word_groups",
+    ["group_name"], // group_name is the first translation word
+    [wordGroupObj.translations[0].word]
   );
 
   // add tags to db that don't exist and get all the tag IDs
@@ -275,7 +315,7 @@ export const addNewWordGroup = async (wordGroupObj) => {
       )
     )
   );
-  // finally return the group ID of the newly added word group.
+
   return { id: groupId };
 };
 
@@ -285,7 +325,7 @@ export const addNewWordGroup = async (wordGroupObj) => {
  */
 export const updateWordGroup = async (wordGroupObj) => {
   const id = wordGroupObj.id;
-  if ((await getWordGroupById(id)) === null) {
+  if ((await sqlQuery("SELECT id FROM word_groups WHERE id = ?", [id])).length === 0) {
     return { error: "No word group found with the given ID" };
   }
   await deleteWordGroupById(id);
@@ -309,9 +349,10 @@ const sqlQuery = (query, params = []) => {
   });
 };
 
+
 export const getAllWordGroupIds = async () => {
-  const groupIds = await sqlQuery("SELECT DISTINCT group_id FROM word_groups");
-  return groupIds.map((row) => row.group_id);
+  const groupIds = await sqlQuery("SELECT DISTINCT id FROM word_groups");
+  return groupIds.map((row) => row.id);
 };
 /**
  * Fetches all languages from the database.
@@ -335,19 +376,12 @@ export const getAllWords = async () => {
 };
 
 export const deleteWordGroupById = async (groupId) => {
-  const query = `DELETE FROM word_groups WHERE group_id = ?`;
+  const query = `DELETE FROM word_groups WHERE id = ?`;
   return new Promise((resolve, reject) => {
     db.run(query, [groupId], (err) => {
       if (err) return reject(err);
+      resolve();
     });
-    db.run(
-      `DELETE FROM word_group_tags WHERE word_group_id = ?`,
-      [groupId],
-      (err) => {
-        if (err) return reject(err);
-        resolve();
-      }
-    );
   });
 };
 
@@ -374,43 +408,61 @@ export const deleteAllWordGroups = async () => {
 
 export const getWordGroupById = async (groupId) => {
   const query = `
-    SELECT
-        word_groups.group_id,
-        words.id AS word_id,
-        words.primary_word,
-        languages.language_name,
-        GROUP_CONCAT(DISTINCT word_synonyms.word ORDER BY word_synonyms.word ASC) AS synonyms,
-        GROUP_CONCAT(DISTINCT tags.tag_name ORDER BY tags.tag_name ASC) AS tags
-    FROM
-        words
-    JOIN
-        languages ON words.language_id = languages.id
-    LEFT JOIN
-        word_synonyms ON words.id = word_synonyms.word_id
-    JOIN
-        word_groups ON words.id = word_groups.word_id
-    LEFT JOIN
-        word_group_tags ON word_groups.group_id = word_group_tags.word_group_id
-    LEFT JOIN
-        tags ON word_group_tags.tag_id = tags.id
-    WHERE
-        word_groups.group_id = ?
-    GROUP BY
-        words.id, words.primary_word, languages.language_name;
-  `;
+    SELECT 
+      wg.id AS id,
+      wg.created_at,
+      wg.updated_at,
+      w.word,
+      l.language_name,
+      GROUP_CONCAT(DISTINCT ws.synonym ORDER BY ws.synonym) AS synonyms,
+      GROUP_CONCAT(DISTINCT t.tag_name ORDER BY t.tag_name) AS tags
+    FROM word_groups wg
+      JOIN words w ON w.group_id = wg.id
+      LEFT JOIN languages l ON l.id = w.language_id
+      LEFT JOIN word_synonyms ws ON ws.word_id = w.id
+      LEFT JOIN word_group_tags wgt ON wgt.word_group_id = wg.id
+      LEFT JOIN tags t ON t.id = wgt.tag_id
+    WHERE wg.id = ?
+    GROUP BY w.word, l.language_name, wg.id`;
+
   const dbResponse = await sqlQuery(query, [groupId]);
   if (dbResponse.length === 0) {
     console.error("No word group found with the given ID");
     return null;
   }
-  const id = dbResponse[0].group_id;
+
+  const id = dbResponse[0].id;
   const translations = dbResponse.map((row) => {
     return {
       languageName: row.language_name,
-      word: row.primary_word,
+      word: row.word,
       synonyms: row.synonyms ? row.synonyms.split(",") : [],
     };
   });
   const tags = dbResponse[0].tags ? dbResponse[0].tags.split(",") : []; // tags are the same for all rows
-  return { id, translations, tags };
+  return {
+  id,
+    translations,
+    tags,
+    createdAt: dbResponse[0].created_at,
+    updatedAt: dbResponse[0].updated_at,
+  };
+};
+
+// TODO
+export const getMultipleWordGroups = async (offset, limit, search) => {
+}
+
+export const getUserByUsername = async (username) => {
+  const query = `SELECT * FROM users WHERE username = ?`;
+  const user = await sqlQuery(query, [username]);
+  return user[0];
+};
+
+export const addUser = async (username, password) => {
+  try {
+    await insertData("users", ["username", "password"], [username, password]);
+  } catch (error) {
+    return { error: "Internal server error" };
+  }
 };

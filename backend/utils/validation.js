@@ -38,3 +38,14 @@ export const wordGroupValidation = [
   body("tags").isArray().withMessage("Tags must be an array"),
   body("tags.*").isString().withMessage("Each tag must be a string"),
 ];
+
+export const userValidation = [
+  body("username")
+    .isLength({ min: 3 })
+    .withMessage("Username must be at least 3 characters long"),
+  body("password")
+    .isLength({ min: 8, max: 64 })
+    .withMessage(
+      "Password must be at least 8 characters long but no more than 64 characters"
+    ),
+];
