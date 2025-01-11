@@ -36,7 +36,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    fetchData("word-groups/", setWordGroups);
+    fetchData("word-groups/public", setWordGroups);
     fetchData("languages/", setLanguages);
   }, []);
 

@@ -5,6 +5,7 @@ import languagesRouter from "./routes/languages.js";
 import wordsRouter from "./routes/words.js";
 import authRouter from "./routes/auth.js";
 import path from "path";
+import "dotenv/config";
 
 // To use __dirname with ES modules, these two lines are needed to define __dirname
 import { fileURLToPath } from "url";

@@ -35,7 +35,7 @@ export const initDb = async () => {
   )`,
       `CREATE TABLE word_groups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER REFERENCES users (id),
+    user_id INTEGER REFERENCES users (id) ON DELETE CASCADE,
     group_name TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL
@@ -250,7 +250,7 @@ export const getNextGroupId = () => {
  * ],
  * tags: ["greeting", "easy"], // optional, no limit for amount of tags
  */
-export const addNewWordGroup = async (wordGroupObj) => {
+export const addNewWordGroup = async (wordGroupObj, userId) => {
   const languageIds = await Promise.all(
     wordGroupObj.translations.map(async (translations) => {
       const languageName = translations.languageName;
@@ -294,8 +294,8 @@ export const addNewWordGroup = async (wordGroupObj) => {
   // add the group to the word_groups table
   await insertData(
     "word_groups",
-    ["group_name"], // group_name is the first translation word
-    [wordGroupObj.translations[0].word]
+    ["group_name", "user_id"],
+    [wordGroupObj.translations[0].word, userId]
   );
 
   // add tags to db that don't exist and get all the tag IDs
@@ -352,18 +352,14 @@ const sqlQuery = (query, params = []) => {
   });
 };
 
-export const getAllWordGroupIds = async () => {
-  const groupIds = await sqlQuery("SELECT DISTINCT id FROM word_groups");
-  return groupIds.map((row) => row.id);
-};
 /**
  * Fetches all languages from the database.
  *
  * @returns {Promise<Object[]>} - An array of language objects or an empty array if no languages.
  */
-
 export const getAllLanguages = async () =>
   await sqlQuery("SELECT * FROM languages");
+
 /**
  * Fetches all tags from the database.
  *
@@ -377,39 +373,20 @@ export const getAllWords = async () => {
   return await sqlQuery(query);
 };
 
-export const deleteWordGroupById = async (groupId) => {
-  const query = `DELETE FROM word_groups WHERE id = ?`;
+export const deleteWordGroupById = async (groupId, userId) => {
+  const query = `DELETE FROM word_groups WHERE id = ? AND user_id = ?`;
   return new Promise((resolve, reject) => {
-    db.run(query, [groupId], (err) => {
+    db.run(query, [groupId, userId], (err) => {
       if (err) return reject(err);
       resolve();
     });
   });
 };
 
-export const deleteAllWordGroups = async () => {
-  const queries = [
-    `DELETE FROM word_groups`,
-    `DELETE FROM words`,
-    `DELETE FROM languages`,
-    `DELETE FROM word_synonyms`,
-    `DELETE FROM tags`,
-    `DELETE FROM word_group_tags`,
-  ];
-  return new Promise((resolve, reject) => {
-    db.serialize(() => {
-      queries.forEach((query) => {
-        db.run(query, (err) => {
-          if (err) return reject(err);
-        });
-      });
-      resolve();
-    });
-  });
-};
 
-export const getWordGroupById = async (groupId) => {
+export const getWordGroupById = async (groupId, userId) => {
   const query = `
+    WITH user_groups AS (
     SELECT 
       wg.id AS id,
       wg.created_at,
@@ -417,17 +394,22 @@ export const getWordGroupById = async (groupId) => {
       w.word,
       l.language_name,
       GROUP_CONCAT(DISTINCT ws.synonym ORDER BY ws.synonym) AS synonyms,
-      GROUP_CONCAT(DISTINCT t.tag_name ORDER BY t.tag_name) AS tags
-    FROM word_groups wg
+      GROUP_CONCAT(DISTINCT t.tag_name ORDER BY t.tag_name) AS tags,
+      DENSE_RANK() OVER (ORDER BY wg.id) AS group_number
+      FROM word_groups wg
       JOIN words w ON w.group_id = wg.id
       LEFT JOIN languages l ON l.id = w.language_id
       LEFT JOIN word_synonyms ws ON ws.word_id = w.id
       LEFT JOIN word_group_tags wgt ON wgt.word_group_id = wg.id
       LEFT JOIN tags t ON t.id = wgt.tag_id
-    WHERE wg.id = ?
-    GROUP BY w.word, l.language_name, wg.id`;
+    WHERE ${userId ? "wg.user_id = ?" : "wg.user_id IS NULL"}
+    GROUP BY w.word, l.language_name, wg.id
+    ORDER BY wg.id, l.language_name
+    )
+    SELECT * FROM user_groups WHERE id = ?`;
 
-  const dbResponse = await sqlQuery(query, [groupId]);
+  const params = userId ? [userId, groupId] : [groupId];
+  const dbResponse = await sqlQuery(query, params);
   if (dbResponse.length === 0) {
     console.error("No word group found with the given ID");
     return null;
@@ -451,8 +433,18 @@ export const getWordGroupById = async (groupId) => {
   };
 };
 
-export const getMultipleWordGroups = async ({ offset, limit, getAll }) => {
+export const getMultipleWordGroups = async ({
+  offset,
+  limit,
+  getAll,
+  userId,
+}) => {
+  // AI assistance was needed here because didn't know about dense rank and how to use it.
+  // use a cte to filter data based on user_id and then do another select for that cte's result.
+  // if no userId null is used to get all data tied to the database itself. Then dense rank allows
+  // pagination to work since it starts from 1 and increments by 1 afer the id changes.
   const query = `
+    WITH user_groups AS (
     SELECT 
       wg.id AS id,
       wg.created_at,
@@ -460,20 +452,29 @@ export const getMultipleWordGroups = async ({ offset, limit, getAll }) => {
       w.word,
       l.language_name,
       GROUP_CONCAT(DISTINCT ws.synonym ORDER BY ws.synonym) AS synonyms,
-      GROUP_CONCAT(DISTINCT t.tag_name ORDER BY t.tag_name) AS tags
+      GROUP_CONCAT(DISTINCT t.tag_name ORDER BY t.tag_name) AS tags,
+      DENSE_RANK() OVER (ORDER BY wg.id) AS group_number
     FROM word_groups wg
       JOIN words w ON w.group_id = wg.id
       LEFT JOIN languages l ON l.id = w.language_id
       LEFT JOIN word_synonyms ws ON ws.word_id = w.id
       LEFT JOIN word_group_tags wgt ON wgt.word_group_id = wg.id
       LEFT JOIN tags t ON t.id = wgt.tag_id
-    ${getAll ? "" : "WHERE wg.id > ? AND wg.id <= ?"}
+    WHERE ${userId ? "wg.user_id = ?" : "wg.user_id IS NULL"}
     GROUP BY w.word, l.language_name, wg.id
-    ORDER BY wg.id, l.language_name`;
-
+    ORDER BY wg.id, l.language_name
+    )
+    SELECT * FROM user_groups
+    ${getAll ? "" : `WHERE group_number > ? AND group_number <= ?`}`;
   const dbResponse = await sqlQuery(
     query,
-    getAll ? [] : [offset, offset + limit]
+    userId
+      ? getAll
+        ? [userId]
+        : [userId, offset, offset + limit]
+      : getAll
+      ? []
+      : [offset, offset + limit]
   );
   let isFirstEntryInGroup = true;
   let currentId = dbResponse[0]?.id;
@@ -509,13 +510,6 @@ export const getMultipleWordGroups = async ({ offset, limit, getAll }) => {
   return allGroups;
 };
 
-export const getMaxId = async () =>
-  (await sqlQuery("SELECT MAX(id) AS id FROM word_groups"))[0]?.id;
-
-const getTotalds = async (tableName) =>
-  (await sqlQuery("SELECT COUNT(DISTINCT id) AS total FROM " + tableName))[0]
-    .total;
-
 export const getTotalAndPages = async (tableName, limit) => {
   const total = await getTotalds(tableName);
   const pages = Math.floor(total / limit);
@@ -530,7 +524,12 @@ export const getUserByUsername = async (username) => {
 
 export const addUser = async (username, password) => {
   try {
-    await insertData("users", ["username", "password"], [username, password]);
+    const id = await insertData(
+      "users",
+      ["username", "password"],
+      [username, password]
+    );
+    return id;
   } catch (error) {
     return { error: "Internal server error" };
   }

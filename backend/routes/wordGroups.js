@@ -3,15 +3,14 @@ import {
   addNewWordGroup,
   getWordGroupById,
   deleteWordGroupById,
-  deleteAllWordGroups,
   updateWordGroup,
   getMultipleWordGroups,
   getTotalAndPages,
 } from "../database/db.js";
 import { wordGroupValidation } from "../utils/validation.js";
+import { verifyToken } from "./auth.js";
 const wordGroupsRouter = express.Router();
 import { body, param, query, validationResult } from "express-validator";
-import { performance } from "perf_hooks";
 const validLanguages = [
   "English",
   "Finnish",
@@ -21,28 +20,35 @@ const validLanguages = [
   "Swedish",
 ];
 
+wordGroupsRouter.use(verifyToken);
+
 wordGroupsRouter.get("/", async (req, res) => {
-  const includePagination = req.query.pagination === "true";
+  const includePagination = req.query.paginationIncluded === "true";
   const offset = parseInt(req.query.offset) || 0;
   let limit = parseInt(req.query.limit);
-  const now = performance.now();
   const wordGroups = await getMultipleWordGroups({
     offset,
     limit,
     getAll: !limit,
+    userId: req.user.id,
   });
   const { total, pages } = await getTotalAndPages("word_groups", limit);
   if (!includePagination) {
     // app doesnt use pagination currently so dont send data it wont use
     res.json(wordGroups);
-    console.log("Fetching all word groups took", performance.now() - now);
     return;
   }
   res.json({
     ...{ wordGroups },
     ...{ pagination: { total, limit, offset, pages } },
   });
-  console.log("Fetching all word groups took", performance.now() - now);
+});
+
+// returns all the public word groups which dont belong to any user. no need for pagination
+// because it's either all or nothing thats needed from here in the app
+wordGroupsRouter.get("/public", async (_, res) => {
+  const wordGroups = await getMultipleWordGroups({offset: 0, limit: 0, getAll: true});
+  res.json(wordGroups);
 });
 
 wordGroupsRouter.get(
@@ -59,7 +65,7 @@ wordGroupsRouter.get(
         return res.status(400).json({ error: "Invalid group ID" });
       }
 
-      const response = await getWordGroupById(groupId);
+      const response = await getWordGroupById(groupId, req.user.id);
 
       res.json(response);
     } catch (error) {
@@ -76,7 +82,7 @@ wordGroupsRouter.post("/", wordGroupValidation, async (req, res) => {
   }
   try {
     const wordGroupObj = req.body;
-    const id = await addNewWordGroup(wordGroupObj);
+    const id = await addNewWordGroup(wordGroupObj, req.user.id);
     res.json(id);
   } catch (error) {
     console.error(error);
@@ -136,7 +142,7 @@ wordGroupsRouter.post(
       const wordGroups = req.body.bulkData;
       const ids = [];
       for (const wordGroup of wordGroups) {
-        const id = await addNewWordGroup(wordGroup);
+        const id = await addNewWordGroup(wordGroup, req.user.id);
         ids.push(id);
       }
       res.json(ids);
@@ -147,16 +153,6 @@ wordGroupsRouter.post(
   }
 );
 
-wordGroupsRouter.delete("/", async (_, res) => {
-  try {
-    const id = await deleteAllWordGroups();
-    res.json(id);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error });
-  }
-});
-
 wordGroupsRouter.delete(
   "/:id",
   [param("id").isInt({ min: 1 }).withMessage("ID must be a positive integer")],
@@ -166,7 +162,7 @@ wordGroupsRouter.delete(
       if (isNaN(groupId)) {
         return res.status(400).json({ error: "Invalid group ID" });
       }
-      const id = await deleteWordGroupById(groupId);
+      const id = await deleteWordGroupById(groupId, req.user.id);
       res.json(id);
     } catch (error) {
       console.error(error);
@@ -183,7 +179,7 @@ wordGroupsRouter.put("/:id", wordGroupValidation, async (req, res) => {
     }
 
     const wordGroupObj = { id: groupId, ...req.body };
-    const response = await updateWordGroup(wordGroupObj);
+    const response = await updateWordGroup(wordGroupObj, req.user.id);
     if (response?.error) {
       return res.status(400).json(response);
     }
