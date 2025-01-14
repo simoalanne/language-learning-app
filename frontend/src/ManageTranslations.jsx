@@ -8,7 +8,7 @@ import {
   Typography,
   Icon,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import ToggleOption from "./ToggleOption";
 import TranslationCard from "./TranslationCard";
@@ -20,6 +20,7 @@ import AddIcon from "@mui/icons-material/Add";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import EditIcon from "@mui/icons-material/Edit";
 import { useNavigate, useParams } from "react-router-dom";
+import { AuthContext } from "./Authorisation/AuthContext";
 const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
@@ -31,6 +32,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const navigate = useNavigate();
   const tab = useParams().tab;
   const [activeTab, setActiveTab] = useState("");
+  const { token } = useContext(AuthContext);
 
   useEffect(() => {
     if (tab) {
@@ -38,10 +40,14 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
     }
   }, [tab]);
 
-  const allTags = [...new Set(wordGroups
-    .map((wordGroup) => wordGroup.tags)
-    .flat()
-    .sort())];
+  const allTags = [
+    ...new Set(
+      wordGroups
+        .map((wordGroup) => wordGroup.tags)
+        .flat()
+        .sort()
+    ),
+  ];
 
   const initialTranslations = [
     { languageName: "English", word: "", synonyms: [] },
@@ -128,7 +134,6 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       word: translation.word,
       synonyms: translation.synonyms,
     }));
-    console.log("n")
     setTranslations(translations);
     const tags = wordGroup.tags;
     setTags(tags);
@@ -144,7 +149,13 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       tags: tags.map((tag) => tag?.trim()),
     };
     if (activeTab === "add" || activeTab === "quick-add") {
-      const id = (await axios.post("/api/word-groups", wordGroupObj)).data.id;
+      const id = (
+        await axios.post("/api/word-groups", wordGroupObj, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      ).data.id;
       setToastMsg("Translation group added successfully.");
       setToastOpen(true);
       setToastSeverity("success");
@@ -166,7 +177,12 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       const id = (
         await axios.put(
           `/api/word-groups/${wordGroups[editModeIndex].id}`,
-          wordGroupObj
+          wordGroupObj,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         )
       ).data.id;
       setToastMsg("Translation group updated successfully.");
@@ -179,7 +195,11 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   };
 
   const onDeleteTranslationGroup = async () => {
-    await axios.delete(`/api/word-groups/${wordGroups[editModeIndex].id}`);
+    await axios.delete(`/api/word-groups/${wordGroups[editModeIndex].id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     const updatedWordGroups = wordGroups.filter((_, i) => i !== editModeIndex);
     setWordGroups(updatedWordGroups);
 
@@ -338,11 +358,11 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
             </Button>
           )}
           {activeTab === "edit" && (
-            <MoveIcons
-              currentIndex={editModeIndex}
-              maxIndex={wordGroups.length - 1}
-              onClick={(index) => handleIndexChange(index)}
-            />
+              <MoveIcons
+                currentIndex={editModeIndex}
+                maxIndex={wordGroups.length - 1}
+                onClick={(index) => handleIndexChange(index)}
+              />
           )}
         </CardContent>
       </Card>

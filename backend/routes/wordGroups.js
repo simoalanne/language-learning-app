@@ -47,7 +47,11 @@ wordGroupsRouter.get("/", async (req, res) => {
 // returns all the public word groups which dont belong to any user. no need for pagination
 // because it's either all or nothing thats needed from here in the app
 wordGroupsRouter.get("/public", async (_, res) => {
-  const wordGroups = await getMultipleWordGroups({offset: 0, limit: 0, getAll: true});
+  const wordGroups = await getMultipleWordGroups({
+    offset: 0,
+    limit: 0,
+    getAll: true,
+  });
   res.json(wordGroups);
 });
 
@@ -178,8 +182,7 @@ wordGroupsRouter.put("/:id", wordGroupValidation, async (req, res) => {
       return res.status(400).json({ error: "Invalid group ID" });
     }
 
-    const wordGroupObj = { id: groupId, ...req.body };
-    const response = await updateWordGroup(wordGroupObj, req.user.id);
+    const response = await updateWordGroup(req.body, req.user.id, groupId);
     if (response?.error) {
       return res.status(400).json(response);
     }

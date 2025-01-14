@@ -5,8 +5,6 @@ const SelectLanguagePair= ({
   selectedLanguages,
   setSelectedLanguages,
 }) => {
-  console.log(languageNames);
-  console.log(selectedLanguages);
   if (languageNames.length === 0) return;
   const DropDownMenu = ({ index }) => {
     return (

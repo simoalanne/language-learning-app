@@ -8,7 +8,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import Collapse from "@mui/material/Collapse"; // Import Collapse
 
-const SelectTags = ({ tags, selectedTags, setSelectedTags, header }) => {
+const SelectTags = ({ tags, selectedTags, setSelectedTags, header, useCollapseMode = true }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const handleTagClick = (tag) => {
@@ -24,6 +24,8 @@ const SelectTags = ({ tags, selectedTags, setSelectedTags, header }) => {
   }
 
   return (
+    <>
+    {useCollapseMode ? (
     <Box sx={{ my: 1 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Typography variant="h6" gutterBottom>
@@ -58,6 +60,21 @@ const SelectTags = ({ tags, selectedTags, setSelectedTags, header }) => {
         </Paper>
       </Collapse>
     </Box>
+    ) : (
+      <Box sx={{display: "flex", gap: 1, flexWrap: "wrap"}}>
+        {tags.map((tag) => (
+          <Chip
+            key={tag}
+            label={tag}
+            onClick={() => handleTagClick(tag)}
+            clickable
+            color={selectedTags.includes(tag) ? "primary" : "default"}
+            variant={selectedTags.includes(tag) ? "filled" : "outlined"}
+          />
+        ))}
+      </Box>
+    )}
+    </>
   );
 };
 

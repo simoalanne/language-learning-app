@@ -6,6 +6,16 @@ const authRouter = express.Router();
 import { addUser, getUserByUsername } from "../database/db.js";
 import { userValidation } from "../utils/validation.js";
 
+
+authRouter.post("/validate-username", async (req, res) => {
+  const { username } = req.body;
+  const user = await getUserByUsername(username);
+  if (user) {
+    return res.status(409).json({ error: `Username ${username} already exists. please choose another name` });
+  }
+  res.sendStatus(200);
+});
+
 authRouter.post("/register", userValidation, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -15,7 +25,7 @@ authRouter.post("/register", userValidation, async (req, res) => {
     const { username, password } = req.body;
     const user = await getUserByUsername(username);
     if (user) {
-      return res.status(409).json({ error: "Username already exists" });
+      return res.status(409).json({ error: `Username ${username} already exists. please choose another name` });
     }
 
     const saltRounds = 10;
@@ -70,7 +80,7 @@ const generateToken = (user) => {
  * @param {object} res - Express response object
  * @param {function} next - Express next middleware function
  */
-export const verifyToken = (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   if (req.path.startsWith("/public")) {
     return next();
   }
@@ -81,6 +91,12 @@ export const verifyToken = (req, res, next) => {
   try {
     const actualToken = token.split(" ")[1];
     const decodedToken = jwt.verify(actualToken, process.env.JWT_SECRET);
+    // because the app is not persistent and will refresh on inactivity we need to check if the user still exists
+    const user = await getUserByUsername(decodedToken.username);
+    if (!user) {
+      console.error("Database refreshed due to inactivity, token is valid but cant be used in app anymore");
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
     req.user = decodedToken;
     next();
   } catch (error) {
@@ -88,5 +104,9 @@ export const verifyToken = (req, res, next) => {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 };
+
+authRouter.get("/verify-token", verifyToken, (req, res) => {
+  res.status(200).json({ isValid: true, user: req.user });
+});
 
 export default authRouter;

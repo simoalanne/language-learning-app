@@ -126,6 +126,9 @@ export const initDb = async () => {
         tagIndex++;
       }
     }
+
+    // enable foreign key constraints
+    await insertRawSql("PRAGMA foreign_keys = ON");
     console.info("Database initialized");
   } catch (error) {
     console.error(error);
@@ -223,20 +226,6 @@ const insertData = (table, columns, values) => {
 };
 
 /**
- * Helper function to fetch the next group ID for the new word group.
- *
- * @returns {Promise<number>} - The next group ID. if now rows yet, returns 1.
- */
-export const getNextGroupId = () => {
-  return new Promise((resolve, reject) => {
-    db.get("SELECT MAX(group_id) AS groupId FROM word_groups", (err, row) => {
-      if (err) return reject(err);
-      resolve((row.groupId || 0) + 1);
-    });
-  });
-};
-
-/**
  * Adds a new word group to the database.
  *
  * @param {Object} wordGroupObj - The word group object to be added.
@@ -251,6 +240,14 @@ export const getNextGroupId = () => {
  * tags: ["greeting", "easy"], // optional, no limit for amount of tags
  */
 export const addNewWordGroup = async (wordGroupObj, userId) => {
+  // Insert the group into the word_groups table first
+  const groupId = await insertData(
+    "word_groups",
+    ["group_name", "user_id", "updated_at"],
+    [wordGroupObj.translations[0].word, userId, null]
+  );
+
+  // Get language IDs
   const languageIds = await Promise.all(
     wordGroupObj.translations.map(async (translations) => {
       const languageName = translations.languageName;
@@ -262,10 +259,7 @@ export const addNewWordGroup = async (wordGroupObj, userId) => {
     })
   );
 
-  const query = `SELECT MAX(id) AS id FROM word_groups`;
-  const groupId = (await sqlQuery(query))[0]?.id + 1;
-
-  // add words to db and get the word IDs
+  // Add words to db and get the word IDs
   const wordIds = await Promise.all(
     wordGroupObj.translations.map(async (translations, index) => {
       return await insertData(
@@ -276,7 +270,7 @@ export const addNewWordGroup = async (wordGroupObj, userId) => {
     })
   );
 
-  // add synonyms to db for each word using the word IDs
+  // Add synonyms to db for each word using the word IDs
   await Promise.all(
     wordGroupObj.translations.map(async (translations, index) => {
       await Promise.all(
@@ -291,21 +285,14 @@ export const addNewWordGroup = async (wordGroupObj, userId) => {
     })
   );
 
-  // add the group to the word_groups table
-  await insertData(
-    "word_groups",
-    ["group_name", "user_id"],
-    [wordGroupObj.translations[0].word, userId]
-  );
-
-  // add tags to db that don't exist and get all the tag IDs
+  // Add tags to db that don't exist and get all the tag IDs
   const tagIds = await Promise.all(
     wordGroupObj.tags.map((tag) =>
       getIdOrInsertNewData("tags", ["tag_name"], [tag])
     )
   );
 
-  // add the tag IDs to the word_group_tags table to link them to the group ID
+  // Add the tag IDs to the word_group_tags table to link them to the group ID
   await Promise.all(
     tagIds.map((tagId) =>
       insertData(
@@ -319,21 +306,77 @@ export const addNewWordGroup = async (wordGroupObj, userId) => {
   return { id: groupId };
 };
 
-/**
- * @param {Object} wordGroupObj - The word group object to be updated.
- * @returns {Promise<number>} - The group ID of the updated word group.
- */
-export const updateWordGroup = async (wordGroupObj) => {
-  const id = wordGroupObj.id;
-  if (
-    (await sqlQuery("SELECT id FROM word_groups WHERE id = ?", [id])).length ===
-    0
-  ) {
-    return { error: "No word group found with the given ID" };
-  }
-  await deleteWordGroupById(id);
-  await addNewWordGroup(wordGroupObj);
-  return { id };
+export const updateWordGroup = async (wordGroupObj, userId, groupId) => {
+  // Update the group name in the word_groups table
+  await sqlRun(
+    "UPDATE word_groups SET group_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?",
+    [wordGroupObj.translations[0].word, groupId, userId]
+  );
+  
+
+  // Get language IDs
+  const languageIds = await Promise.all(
+    wordGroupObj.translations.map(async (translations) => {
+      const languageName = translations.languageName;
+      const languageId = await sqlQuery(
+        "SELECT id FROM languages WHERE language_name = ?",
+        [languageName]
+      );
+      return languageId[0].id;
+    })
+  );
+
+  // delete old words
+  await sqlRun("DELETE FROM words WHERE group_id = ?", [groupId]);
+
+  // Add words to db and get the word IDs
+  const wordIds = await Promise.all(
+    wordGroupObj.translations.map(
+      async (translations, index) =>
+        await insertData(
+          "words",
+          ["language_id", "word", "group_id"],
+          [languageIds[index], translations.word, groupId]
+        )
+    )
+  );
+
+  // Add synonyms to db for each word using the word IDs
+  await Promise.all(
+    wordGroupObj.translations.map(async (translations, index) => {
+      await Promise.all(
+        translations.synonyms.map(async (synonym) => {
+          await insertData(
+            "word_synonyms",
+            ["word_id", "synonym"],
+            [wordIds[index], synonym]
+          );
+        })
+      );
+    })
+  );
+
+  // Add tags to db that don't exist and get all the tag IDs
+  const tagIds = await Promise.all(
+    wordGroupObj.tags.map((tag) =>
+      getIdOrInsertNewData("tags", ["tag_name"], [tag])
+    )
+  );
+
+  // delete old tags
+  await sqlRun("DELETE FROM word_group_tags WHERE word_group_id = ?", [groupId]);
+
+  // Add the tag IDs to the word_group_tags table to link them to the group ID
+  await Promise.all(
+    tagIds.map((tagId) =>
+      insertData(
+        "word_group_tags",
+        ["word_group_id", "tag_id"],
+        [groupId, tagId]
+      )
+    )
+  );
+  return { id: groupId };
 };
 
 /**
@@ -348,6 +391,15 @@ const sqlQuery = (query, params = []) => {
     db.all(query, params, (err, rows) => {
       if (err) return reject(err);
       resolve(rows);
+    });
+  });
+};
+
+const sqlRun = (query, params = []) => {
+  return new Promise((resolve, reject) => {
+    db.run(query, params, function (err) {
+      if (err) return reject(err);
+      resolve(this.lastID);
     });
   });
 };
@@ -375,14 +427,8 @@ export const getAllWords = async () => {
 
 export const deleteWordGroupById = async (groupId, userId) => {
   const query = `DELETE FROM word_groups WHERE id = ? AND user_id = ?`;
-  return new Promise((resolve, reject) => {
-    db.run(query, [groupId, userId], (err) => {
-      if (err) return reject(err);
-      resolve();
-    });
-  });
+  sqlRun(query, [groupId, userId]);
 };
-
 
 export const getWordGroupById = async (groupId, userId) => {
   const query = `
@@ -510,6 +556,11 @@ export const getMultipleWordGroups = async ({
   return allGroups;
 };
 
+const getTotalds = async (tableName) => {
+  const query = `SELECT COUNT(*) AS total FROM ${tableName}`;
+  const total = await sqlQuery(query);
+  return total[0].total;
+};
 export const getTotalAndPages = async (tableName, limit) => {
   const total = await getTotalds(tableName);
   const pages = Math.floor(total / limit);
