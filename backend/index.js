@@ -1,8 +1,6 @@
 import express from "express";
 import { initDb, closeDb } from "./database/db.js";
 import wordGroupsRouter from "./routes/wordGroups.js";
-import languagesRouter from "./routes/languages.js";
-import wordsRouter from "./routes/words.js";
 import authRouter from "./routes/auth.js";
 import path from "path";
 import "dotenv/config";
@@ -57,8 +55,6 @@ const publicPath = path.join(__dirname, "public");
 app.use(express.static(publicPath));
 
 app.use("/api/word-groups", wordGroupsRouter);
-app.use("/api/languages", languagesRouter);
-app.use("/api/words", wordsRouter);
 app.use("/api/auth", authRouter);
 
 // this is needed when using react router and refreshing the page

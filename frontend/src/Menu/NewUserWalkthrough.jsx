@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import WordGroupItem from "./WordGroupItem";
 
-const NewUserWalkthrough = ({setWordGroups}) => {
+const NewUserWalkthrough = () => {
   const { user, token, firstLogin, setFirstLogin } = useContext(AuthContext);
   const [disableButton, setDisableButton] = useState(false);
   const [publicGroups, setPublicGroups] = useState([]);
@@ -33,7 +33,6 @@ const NewUserWalkthrough = ({setWordGroups}) => {
         }
       );
       setSuccess("Groups copied successfully!");
-      setWordGroups(selectedGroups);
     } catch (error) {
       console.error(error.response?.data?.error);
       setError("Something went wrong. Please try again.");

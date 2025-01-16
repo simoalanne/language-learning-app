@@ -8,13 +8,20 @@ import {
   animals,
 } from "./addStartingTranslations.js";
 
-// Initializes the database by creating following tables:
-// - languages: contains language name and id
-// - words: contains word, language id and group id it belongs to
-// - word_synonyms: contains word id and synonym
-// - word_groups: contains metadata, id and user id to tie the word groups to specific user
-// - tags: contains tag name and id
-// - word_group_tags: many to many table to link word groups and tags together to allow storing multiple tags for a word group
+/**
+ * Initializes the database by creating following tables:
+ * - languages: contains language name and id
+ * - words: contains word, language id and group id it belongs to
+ * - word_synonyms: contains word id and synonym
+ * - word_groups: contains metadata, id and user id to tie the word groups to specific user
+ * - tags: contains tag name and id
+ * - word_group_tags: many to many table to link word groups and tags together to allow storing multiple tags for a word group
+ * - users: contains username and password
+ * - Also inserts starting data for frontend to use
+ * 
+ * @returns {Promise<void>}
+ * @throws {Error} - If an error occurs during the database initialization.
+ */
 export const initDb = async () => {
   try {
     const createTableQueries = [
@@ -86,7 +93,7 @@ export const initDb = async () => {
     // total of 300 words are inserted, 100 for each language
     for (const word of words) {
       await insertRawSql(
-      `INSERT INTO words (language_id, word, group_id) VALUES ${word}`
+        `INSERT INTO words (language_id, word, group_id) VALUES ${word}`
       );
     }
 
@@ -223,15 +230,9 @@ const insertData = (table, columns, values) => {
  * Adds a new word group to the database.
  *
  * @param {Object} wordGroupObj - The word group object to be added.
- * @returns {Promise<Object>} - The group ID of the newly added word group.
- * @example const wordGroupObj = {
- * translations: [
- * [
- * { languageName: "English", word: "Hello", synonyms: ["Hi"] },
- * { languageName: "Finnish", word: "Hei", synonyms: ["Moi"] },
- * {...} // no limit for amount of languages that can be in a word group
- * ],
- * tags: ["greeting", "easy"], // optional, no limit for amount of tags
+ * @param {number} userId - The ID of the user who owns the word group.
+ * @returns {Promise<Object>} - The ID of the new word group.
+ * @throws {Error} - If an error occurs during the insertion.
  */
 export const addNewWordGroup = async (wordGroupObj, userId) => {
   // Insert the group into the word_groups table first
@@ -307,7 +308,6 @@ export const updateWordGroup = async (wordGroupObj, userId, groupId) => {
     [wordGroupObj.translations[0].word, groupId, userId]
   );
 
-
   // Get language IDs
   const languageIds = await Promise.all(
     wordGroupObj.translations.map(async (translations) => {
@@ -358,7 +358,9 @@ export const updateWordGroup = async (wordGroupObj, userId, groupId) => {
   );
 
   // delete old tags
-  await sqlRun("DELETE FROM word_group_tags WHERE word_group_id = ?", [groupId]);
+  await sqlRun("DELETE FROM word_group_tags WHERE word_group_id = ?", [
+    groupId,
+  ]);
 
   // Add the tag IDs to the word_group_tags table to link them to the group ID
   await Promise.all(
@@ -389,6 +391,14 @@ const sqlQuery = (query, params = []) => {
   });
 };
 
+/**
+ * Helper function to run a SQL query like insert, update or delete.
+ * Returns the last inserted ID.
+ * 
+ * @param {string} query - The SQL query to run.
+ * @param {any[]} params - The parameters to pass to the query.
+ * @returns {Promise<number>} - The ID of the last inserted row.
+ */
 const sqlRun = (query, params = []) => {
   return new Promise((resolve, reject) => {
     db.run(query, params, function (err) {
@@ -399,31 +409,26 @@ const sqlRun = (query, params = []) => {
 };
 
 /**
- * Fetches all languages from the database.
- *
- * @returns {Promise<Object[]>} - An array of language objects or an empty array if no languages.
+ * Deletes a word group from the database.
+ * 
+ * @param {number} groupId - The ID of the word group to delete.
+ * @param {number} userId - The ID of the user who owns the word group.
+ * @returns {Promise<void>}
+ * @throws {Error} - If an error occurs during the deletion.
  */
-export const getAllLanguages = async () =>
-  await sqlQuery("SELECT * FROM languages");
-
-/**
- * Fetches all tags from the database.
- *
- * @returns {Promise<Object[]>} - An array of tag objects or an empty array if no tags.
- */
-export const getAllTags = async () => await sqlQuery("SELECT * FROM tags");
-
-export const getAllWords = async () => {
-  const query = `SELECT words.id, words.primary_word as word, languages.language_name as languageName
-  FROM words JOIN languages ON words.language_id = languages.id`;
-  return await sqlQuery(query);
-};
-
 export const deleteWordGroupById = async (groupId, userId) => {
   const query = `DELETE FROM word_groups WHERE id = ? AND user_id = ?`;
   sqlRun(query, [groupId, userId]);
 };
 
+/**
+ * Gets a word group by its ID.
+ * 
+ * @param {number} groupId - The ID of the word group to get.
+ * @param {number} userId - The ID of the user who owns the word group.
+ * @returns {Promise<Object>} - The word group object.
+ * @throws {Error} - If an error occurs during the query.
+ */
 export const getWordGroupById = async (groupId, userId) => {
   const query = `
     WITH user_groups AS (
@@ -473,6 +478,16 @@ export const getWordGroupById = async (groupId, userId) => {
   };
 };
 
+/**
+ * Gets all word groups from the database.
+ * 
+ * @param {number} offset - The offset for pagination.
+ * @param {number} limit - The limit for pagination.
+ * @param {boolean} getAll - If true, gets all word groups.
+ * @param {number} userId - The ID of the user who owns the word groups.
+ * @returns {Promise<Object[]>} - An array of word group objects.
+ * @throws {Error} - If an error occurs during the query.
+ */ 
 export const getMultipleWordGroups = async ({
   offset,
   limit,
@@ -550,23 +565,50 @@ export const getMultipleWordGroups = async ({
   return allGroups;
 };
 
+/**
+ * Returns the total amount of rows in a table.
+ * 
+ * @param {string} tableName - The name of the table.
+ * @returns {Promise<number>} - The total amount of rows.
+ */
 const getTotalds = async (tableName) => {
   const query = `SELECT COUNT(*) AS total FROM ${tableName}`;
   const total = await sqlQuery(query);
   return total[0].total;
 };
+
+/**
+ * Returns the total amount of rows in a table and the amount of pages that can be created with the given limit.
+ * 
+ * @param {string} tableName - The name of the table.
+ * @param {number} limit - The amount of entries per page.
+ * @returns {Promise<Object>} - The total amount of rows and the amount of pages.
+ */
 export const getTotalAndPages = async (tableName, limit) => {
   const total = await getTotalds(tableName);
   const pages = Math.floor(total / limit);
   return { total, pages };
 };
 
+/**
+ * Gets a user by their username.
+ * 
+ * @param {string} username - The username of the user.
+ * @returns {Promise<Object>} - The user object with the username and hashed password.
+ */
 export const getUserByUsername = async (username) => {
   const query = `SELECT * FROM users WHERE username = ?`;
   const user = await sqlQuery(query, [username]);
   return user[0];
 };
 
+/**
+ * Adds a new user to the database.
+ * 
+ * @param {string} username - The username of the user.
+ * @param {string} password - The hashed password of the user.
+ * @returns {Promise<number>} - The ID of the new user.
+ */
 export const addUser = async (username, password) => {
   try {
     const id = await insertData(

@@ -22,7 +22,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "./Authorisation/AuthContext";
 import useWordgroups from "./hooks/useWordgroups";
-const ManageTranslations = ({ languageNames }) => {
+const ManageTranslations = () => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
   const [editModeIndex, setEditModeIndex] = useState(null);
@@ -35,6 +35,7 @@ const ManageTranslations = ({ languageNames }) => {
   const [activeTab, setActiveTab] = useState("");
   const { token } = useContext(AuthContext);
   const { wordgroups, setWordgroups } = useWordgroups();
+  const languageNames = ["English", "Finnish", "French", "German", "Spanish", "Swedish"];
   useEffect(() => {
     if (tab) {
       setActiveTab(tab);

@@ -5,7 +5,6 @@ import "./Flashcard.css";
 const Flashcard = ({
   translations,
   resetIndexesRef,
-  useAdvancedMode,
 }) => {
   const [flipState, setFlipState] = useState(0);
   const [frontIndex, setfrontIndex] = useState(0);
@@ -26,14 +25,6 @@ const Flashcard = ({
   const handleFlip = () => {
     if (isFlipping) return;
     setIsFlipping(true);
-
-    if (!useAdvancedMode) {
-      setFlipState((prev) => (prev === 0 ? 180 : 0));
-      setTimeout(() => {
-        setIsFlipping(false);
-      }, 600);
-      return;
-    }
 
     const flipDirection = 180;
 
@@ -81,93 +72,49 @@ const Flashcard = ({
   };
 
   return (
-    <>
-      {useAdvancedMode && (
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Box
-            className={`card ${isFlipping ? "cardFlipping" : ""}`}
-            onClick={handleFlip}
+    <Box sx={{ display: "flex", justifyContent: "center" }}>
+      <Box
+        className={`card ${isFlipping ? "cardFlipping" : ""}`}
+        onClick={handleFlip}
+      >
+        <div
+          className="cardInner"
+          style={{
+            transform: `rotateY(${flipState}deg)`,
+            transition: disableTransition.current
+              ? "none"
+              : "transform 0.6s",
+          }}
+        >
+          <div
+            className="cardFront"
+            style={{
+              backgroundImage: `url(${translations[frontIndex].languageName}.svg)`,
+            }}
           >
-            <div
-              className="cardInner"
-              style={{
-                transform: `rotateY(${flipState}deg)`,
-                transition: disableTransition.current
-                  ? "none"
-                  : "transform 0.6s",
-              }}
-            >
-              <div
-                className="cardFront"
-                style={{
-                  backgroundImage: `url(${translations[frontIndex].languageName}.svg)`,
-                }}
-              >
-                <Typography variant="h5" className="cardContent">
-                  {translations[frontIndex].word}
-                </Typography>
-                <Typography className="cardFooter">
-                  {`${frontIndex + 1} of ${translations.length}`}
-                </Typography>
-              </div>
-              <div
-                className="cardBack"
-                style={{
-                  backgroundImage: `url(${translations[backIndex].languageName}.svg)`,
-                }}
-              >
-                <Typography variant="h5" className="cardContent">
-                  {translations[backIndex].word}
-                </Typography>
-                <Typography className="cardFooter">
-                  {`${backIndex + 1} of ${translations.length}`}
-                </Typography>
-              </div>
-            </div>
-          </Box>
-        </Box>
-      )}
-
-      {!useAdvancedMode && (
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Box
-            className={`card ${isFlipping ? "cardFlipping" : ""}`}
-            onClick={handleFlip}
+            <Typography variant="h5" className="cardContent">
+              {translations[frontIndex].word}
+            </Typography>
+            <Typography className="cardFooter">
+              {`${frontIndex + 1} of ${translations.length}`}
+            </Typography>
+          </div>
+          <div
+            className="cardBack"
+            style={{
+              backgroundImage: `url(${translations[backIndex].languageName}.svg)`,
+            }}
           >
-            <div
-              className="cardInner"
-              style={{
-                transform: `rotateY(${flipState}deg)`,
-                transition: disableTransition.current
-                  ? "none"
-                  : "transform 0.6s",
-              }}
-            >
-              <div
-                className="cardFront"
-                style={{
-                  backgroundImage: `url(${translations[0].languageName}.svg)`,
-                }}
-              >
-                <Typography variant="h5" className="cardContent">
-                  {translations[0].word}
-                </Typography>
-              </div>
-              <div
-                className="cardBack"
-                style={{
-                  backgroundImage: `url(${translations[1].languageName}.svg)`,
-                }}
-              >
-                <Typography variant="h5" className="cardContent">
-                  {translations[1].word}
-                </Typography>
-              </div>
-            </div>
-          </Box>
-        </Box>
-      )}
-    </>
+            <Typography variant="h5" className="cardContent">
+              {translations[backIndex].word}
+            </Typography>
+            <Typography className="cardFooter">
+              {`${backIndex + 1} of ${translations.length}`}
+            </Typography>
+          </div>
+        </div>
+      </Box>
+    </Box>
   );
 };
 
