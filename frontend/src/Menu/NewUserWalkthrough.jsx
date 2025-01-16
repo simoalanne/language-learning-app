@@ -96,7 +96,9 @@ const NewUserWalkthrough = ({setWordGroups}) => {
           Thanks for signing up! You have now unlocked access to creating your
           own translations. To help you get started, you can copy some public
           translations to your account. They can freely modified or deleted
-          later.
+          later. This can NOT be done later and after copying any amount of
+          groups once with the copy selected button you can NOT copy any more groups. Blame the coder for losing
+          motivation to make this feature more user-friendly.
         </Typography>
 
         <Box sx={{ marginBottom: 2 }}>

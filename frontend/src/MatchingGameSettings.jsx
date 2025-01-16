@@ -116,7 +116,6 @@ const MatchingGameSettings = ({
           </Typography>
           <SelectTags
             wordsAvailableForTags={pairsPerTag}
-            useCollapseMode={false}
             tags={settings.availableTags}
             selectedTags={settings.selectedTags}
             setSelectedTags={(newSelectedTags) =>

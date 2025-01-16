@@ -35,7 +35,6 @@ const ManageTranslations = ({ languageNames }) => {
   const [activeTab, setActiveTab] = useState("");
   const { token } = useContext(AuthContext);
   const { wordgroups, setWordgroups } = useWordgroups();
-  console.log("wordgroups", wordgroups);
   useEffect(() => {
     if (tab) {
       setActiveTab(tab);
@@ -128,7 +127,6 @@ const ManageTranslations = ({ languageNames }) => {
   const handleIndexChange = (index) => {
     setEditModeIndex(index);
     const wordGroup = wordgroups[index];
-    console.log("wordGroup", wordGroup);
     if (!wordGroup) {
       return;
     }
@@ -138,7 +136,6 @@ const ManageTranslations = ({ languageNames }) => {
       synonyms: translation.synonyms,
     }));
     setTranslations(translations);
-    console.log(translations);
     const tags = wordGroup.tags;
     setTags(tags);
   };
@@ -178,7 +175,6 @@ const ManageTranslations = ({ languageNames }) => {
     }
 
     if (activeTab === "edit") {
-      console.log(wordgroups[editModeIndex].id);
       const id = (
         await axios.put(
           `/api/word-groups/${wordgroups[editModeIndex].id}`,

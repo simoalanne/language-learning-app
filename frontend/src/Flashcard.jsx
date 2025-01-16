@@ -5,8 +5,7 @@ import "./Flashcard.css";
 const Flashcard = ({
   translations,
   resetIndexesRef,
-  handleCardComplete,
-  mode = "Carousel Cards",
+  useAdvancedMode,
 }) => {
   const [flipState, setFlipState] = useState(0);
   const [frontIndex, setfrontIndex] = useState(0);
@@ -28,8 +27,7 @@ const Flashcard = ({
     if (isFlipping) return;
     setIsFlipping(true);
 
-    if (mode === "Flashcards") {
-      handleCardComplete();
+    if (!useAdvancedMode) {
       setFlipState((prev) => (prev === 0 ? 180 : 0));
       setTimeout(() => {
         setIsFlipping(false);
@@ -75,7 +73,6 @@ const Flashcard = ({
       setfrontIndex((prev) => prev + 1);
     }
 
-    if (index === translations.length - 2) handleCardComplete();
     setFlipState((prev) => prev + flipDirection);
     setIndex((prev) => prev + 1);
     setTimeout(() => {
@@ -85,7 +82,7 @@ const Flashcard = ({
 
   return (
     <>
-      {mode === "Carousel Cards" && (
+      {useAdvancedMode && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Box
             className={`card ${isFlipping ? "cardFlipping" : ""}`}
@@ -131,7 +128,7 @@ const Flashcard = ({
         </Box>
       )}
 
-      {mode === "Flashcards" && (
+      {!useAdvancedMode && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Box
             className={`card ${isFlipping ? "cardFlipping" : ""}`}

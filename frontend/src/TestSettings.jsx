@@ -10,6 +10,7 @@ import SelectLanguagePair from "./SelectLanguagePair";
 import { useContext } from "react";
 import { AuthContext } from "./Authorisation/AuthContext";
 import SwapLanguagePair from "./SwapLanguagePair";
+import SelectTags from "./SelectTags";
 
 const TestSettings = ({
   testObject,
@@ -17,6 +18,8 @@ const TestSettings = ({
   onTestStart,
   availableQuestions,
   onAppExit,
+  availableTags,
+  pairsPerTag,
 }) => {
   const { isAuthenticated } = useContext(AuthContext);
   return (
@@ -38,7 +41,7 @@ const TestSettings = ({
                     "Spanish",
                     "Swedish",
                   ]
-                : ["English", "Finnish", "Swedish", "French"]
+                : ["English", "Finnish", "Swedish" ]
             }
             selectedLanguages={testObject.selectedLanguages}
             setSelectedLanguages={(languages) =>
@@ -58,6 +61,29 @@ const TestSettings = ({
               }))
             }
           />
+          {availableTags.length > 0 && (
+          <>
+          <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+            Filtering options
+          </Typography>
+          <Typography variant="body2">
+            pair must have at least one of the selected tags to be included in
+            the game. The number in parentheses indicates how many pairs are
+            available with the tag.
+          </Typography>
+          <SelectTags
+            wordsAvailableForTags={pairsPerTag}
+            tags={availableTags}
+            selectedTags={testObject.selectedTags}
+            setSelectedTags={(newSelectedTags) =>
+              setTestObject((prev) => ({
+                ...prev,
+                selectedTags: newSelectedTags,
+              }))
+            }
+          />
+          </>
+          )}
           <Typography variant="body1" sx={{ fontWeight: "bold" }}>
             {`Select the number of questions. Max ${Math.min(
               availableQuestions,
@@ -74,6 +100,11 @@ const TestSettings = ({
               setTestObject((prev) => ({ ...prev, totalQuestions: value }))
             }
           />
+          {availableQuestions === 0 && (
+            <Typography variant="body1" sx={{ color: "red", bgcolor: "rgba(255, 0, 0, 0.2)", p: 1, borderRadius: 1 }}>
+              No questions available with current settings.
+            </Typography>
+          )}
           <Button
             variant="contained"
             onClick={onTestStart}

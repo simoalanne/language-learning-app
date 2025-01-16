@@ -1,15 +1,21 @@
 import { useState, useRef } from "react";
 import Flashcard from "./Flashcard";
-import { Box, Button, Fade, Typography } from "@mui/material";
+import { Box, Button, Fade } from "@mui/material";
 import MoveIcons from "./MoveIcons";
-import Progressbar from "./Progressbar";
 import ContentAligner from "./ContentAligner";
+import useWordgroups from "./hooks/useWordgroups";
+import { useNavigate } from "react-router-dom";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import FlashcardSettings from "./FlashcardSettings";
+import { filterWordGroupsByLanguagesAndTags } from "./util/helpers";
 
-const FlashcardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
+const FlashcardMode = () => {
+  const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState(0); // Track current index
   const [fadeIn, setFadeIn] = useState(true); // Control fade-in animation
-  const [cardsCompleted, setCardsCompleted] = useState([]); // Track completed cards
-  const maxIndex = wordGroups.length - 1;
+  const { wordgroups, loading } = useWordgroups();
+  const maxIndex = wordgroups?.length - 1;
   const resetIndexesRef = useRef(null);
   const handleIndexChange = (newIndex) => {
     setFadeIn(false);
@@ -19,97 +25,94 @@ const FlashcardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
       setFadeIn(true);
     }, 500); // Wait for the fade-out animation to finish before changing the card
   };
+  const [flashcardObject, setFlashcardObject] = useState({
+    settingsOpen: true,
+    selectedLanguages: ["English", "Finnish"],
+    useAdvancedMode: false,
+    cards: 20,
+  });
 
-  // using the unique id of the word group to track completed cards
-  // flashcard calls this function when the card is completed
-  // and this marks it as completed if it was not already
-  const handleCardComplete = () => {
-    const id = wordGroups[selectedIndex].id;
-    const alreadyCompleted = cardsCompleted.find((card) => card.id === id);
-    if (!alreadyCompleted) {
-      setCardsCompleted([...cardsCompleted, { id }]);
-    }
-  };
+  const availableCards = filterWordGroupsByLanguagesAndTags(
+    wordgroups,
+    flashcardObject.selectedLanguages,
+    []
+  );
 
-  if (wordGroups.length === 0) return <Typography>No words to display</Typography>;
+  if (loading) return null;
+  console.log(wordgroups);
   return (
-    <ContentAligner bgcolor="#f4f6f9">
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 3,
-          alignItems: "center",
-          mt: 5,
-          p: 3,
-          backgroundColor: "#f4f6f9",
-          borderRadius: "10px",
-          boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.1)",
-          maxWidth: "800px",
-          width: "100%",
-        }}
-      >
-        <Fade in={fadeIn} timeout={500} mountOnEnter unmountOnExit>
-          <div style={{ width: "100%" }}>
-            <Flashcard
-              translations={wordGroups[selectedIndex].translations}
-              resetIndexesRef={resetIndexesRef}
-              handleCardComplete={handleCardComplete}
-              mode={"Carousel Cards"}
-            />
-          </div>
-        </Fade>
-        <Box sx={{ display: "flex", width: "90%", maxWidth: "400px" }}>
-          <MoveIcons
-            currentIndex={selectedIndex}
-            maxIndex={maxIndex}
-            onClick={(newIndex) => handleIndexChange(newIndex)}
-            alternativeIcons={true}
-          />
-        </Box>
-        <Progressbar
-          total={maxIndex + 1}
-          completed={cardsCompleted.length}
-          boxStyle={{
-            width: "90%",
-            maxWidth: "400px",
-            backgroundColor: "#ecf0f1",
-            borderRadius: "20px",
-          }}
-          barStyle={{
-            height: "30px",
-            borderRadius: "15px",
-          }}
-        />
-        <Typography
-          variant="h6"
+    <ContentAligner sx={{ gap: 3 }}>
+      <Box sx={{ display: "flex", gap: 2 }}>
+        <Button
+          onClick={() =>
+            setFlashcardObject((prev) => ({
+              ...prev,
+              settingsOpen: true,
+            }))
+          }
+          variant="contained"
+          color="primary"
+          disableElevation
           sx={{
+            bgcolor: "#36454F",
+            fontSize: 14,
             fontWeight: "bold",
-            color: "#7f8c8d",
-            textAlign: "center",
+            textTransform: "none",
+            borderRadius: 1,
           }}
+          endIcon={<SettingsIcon fontSize="12" />}
         >
-          {`Progress: ${cardsCompleted.length} / ${maxIndex + 1} ${
-            cardsCompleted.length === maxIndex + 1 ? "🎉" : ""
-          }`}
-        </Typography>
+          Settings
+        </Button>
         <Button
           variant="contained"
-          color="secondary"
-          onClick={onExit}
+          color="primary"
+          disableElevation
           sx={{
-            width: "50%",
-            maxWidth: "200px",
-            height: "50px",
-            borderRadius: "25px",
-            "&:hover": {
-              transform: "scale(1.05)",
-            },
+            bgcolor: "#36454F",
+            fontSize: 14,
+            fontWeight: "bold",
+            textTransform: "none",
+            borderRadius: 1,
           }}
+          endIcon={<ExitToAppIcon />}
+          onClick={() => navigate("/learn")}
         >
           Exit
         </Button>
       </Box>
+      {wordgroups.length > 0 && (
+        <Fade in={fadeIn} timeout={500} mountOnEnter unmountOnExit>
+          <div style={{ width: "100%" }}>
+            <Flashcard
+              translations={wordgroups[selectedIndex]?.translations}
+              resetIndexesRef={resetIndexesRef}
+              useAdvancedMode={flashcardObject.useAdvancedMode}
+            />
+          </div>
+        </Fade>
+      )}
+      <Box sx={{ display: "flex", width: "90%", maxWidth: "400px" }}>
+        <MoveIcons
+          currentIndex={selectedIndex}
+          maxIndex={maxIndex}
+          onClick={(newIndex) => handleIndexChange(newIndex)}
+          alternativeIcons={true}
+        />
+      </Box>
+      <Button
+        variant="contained"
+        sx={{ bgcolor: "#36454F" }}
+        onClick={() => handleIndexChange(Math.floor(Math.random() * maxIndex))}
+      >
+        Random card
+      </Button>
+      <FlashcardSettings
+        flashcardObject={flashcardObject}
+        setFlashcardObject={setFlashcardObject}
+        onAppExit={() => navigate("/learn")}
+        availableCards={availableCards.length}
+      />
     </ContentAligner>
   );
 };

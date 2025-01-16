@@ -5,9 +5,11 @@ import TestItem from "./TestItem";
 import ContentAligner from "./ContentAligner";
 import TestSettings from "./TestSettings";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import TestEndScreen from "./TestEndScreen";
 import { useNavigate } from "react-router-dom";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 
 const TestMode = () => {
   const navigate = useNavigate();
@@ -32,6 +34,22 @@ const TestMode = () => {
     wordgroups,
     testObject.selectedLanguages,
     testObject.selectedTags
+  );
+
+  const availableTags = [...new Set(wordgroups.map((wg) => wg.tags).flat())];
+
+  const newWordGroups = [...wordgroups];
+  // create a new array for each available tag. then include the wordgroups that have the tag in the array
+  // and also have both selected languages
+  const wordgroupsByTags = availableTags.map(
+    (tag) =>
+      newWordGroups.filter(
+        (wg) =>
+          wg.tags.includes(tag) &&
+          testObject.selectedLanguages.every((lang) =>
+            wg.translations.map((t) => t.languageName).includes(lang)
+          )
+      ).length
   );
 
   const testEnded =
@@ -120,7 +138,7 @@ const TestMode = () => {
   if (loading) return null;
   return (
     <ContentAligner>
-      {testObject.testStarted && testObject.heartsLeft > 0 &&  !testEnded && (
+      {testObject.testStarted && testObject.heartsLeft > 0 && !testEnded && (
         <Box
           sx={{
             display: "flex",
@@ -130,6 +148,42 @@ const TestMode = () => {
             alignItems: "center",
           }}
         >
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              onClick={() =>
+                setTestObject((prev) => ({ ...prev, settingsOpen: true }))
+              }
+              variant="contained"
+              color="primary"
+              disableElevation
+              sx={{
+                bgcolor: "#36454F",
+                fontSize: 14,
+                fontWeight: "bold",
+                textTransform: "none",
+                borderRadius: 1,
+              }}
+              endIcon={<SettingsIcon fontSize="12" />}
+            >
+              Settings
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              disableElevation
+              sx={{
+                bgcolor: "#36454F",
+                fontSize: 14,
+                fontWeight: "bold",
+                textTransform: "none",
+                borderRadius: 1,
+              }}
+              endIcon={<ExitToAppIcon />}
+              onClick={() => navigate("/learn")}
+            >
+              Exit
+            </Button>
+          </Box>
           <Typography variant="h5">
             Question {testIndex + 1} / {testObject.totalQuestions}
           </Typography>
@@ -155,6 +209,8 @@ const TestMode = () => {
         onTestStart={generateTest}
         availableQuestions={availableQuestions.length}
         onAppExit={() => navigate("/learn")}
+        availableTags={availableTags}
+        pairsPerTag={wordgroupsByTags}
       />
       {testEnded && (
         <TestEndScreen
