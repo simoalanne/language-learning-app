@@ -233,15 +233,7 @@ const MatchingGameMode = () => {
 
   if (loading) return null;
   return (
-    <ContentAligner background="url(style1.png)">
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 1,
-        }}
-      >
+    <ContentAligner background="url(style1.png)" sx={{ gap: 1 }}>
         <Box
           sx={{
             display: "flex",
@@ -456,7 +448,6 @@ const MatchingGameMode = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
       <MatchingGameSettings
         availablePairsWithoutFilters={availablePairsWithoutFilters}
         pairsPerTag={wordgroupsByTags}

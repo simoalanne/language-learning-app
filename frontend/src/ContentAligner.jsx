@@ -15,6 +15,7 @@ const ContentAligner = ({ children, background, bgcolor, sx }) => (
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
+      flexDirection: "column",
       background,
       bgcolor,
       ...sx,

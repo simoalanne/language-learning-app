@@ -286,7 +286,7 @@ const MatchingGameSettings = ({
                   variant="contained"
                   sx={{ bgcolor: "#36454F", color: "white" }}
                 >
-                  Exit to mode selection
+                  Back to mode selection
                 </Button>
               )}
             </>
