@@ -6,6 +6,8 @@ import wordsRouter from "./routes/words.js";
 import authRouter from "./routes/auth.js";
 import path from "path";
 import "dotenv/config";
+// if running app locally you need to create a .env file that contains variable JWT_SECRET
+// good website to generate jwt: https://jwtsecret.com/generate
 
 // To use __dirname with ES modules, these two lines are needed to define __dirname
 import { fileURLToPath } from "url";

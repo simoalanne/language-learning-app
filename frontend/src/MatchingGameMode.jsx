@@ -77,7 +77,6 @@ const MatchingGameMode = () => {
         settings.selectedTags.some((tag) => wg.tags.includes(tag)))
   );
 
-
   availablePairs = Math.min(availablePairs.length, 25);
 
   const handleCancel = () => {
@@ -103,12 +102,18 @@ const MatchingGameMode = () => {
       return;
     }
 
+    // filter out the wordgroups that don't have any of the selected tags
+    const filteredWordGroups = [...wordgroups].filter(
+      (wg) =>
+        settings.selectedTags.length === 0 ||
+        settings.selectedTags.some((tag) => wg.tags.includes(tag))
+    );
     // select selected amount of pairs randomly from the available pairs
     // use set and while loop and wait until the set is filled with the correct amount of pairs
     const newWordGroups = new Set();
     while (newWordGroups.size < settings.pairs) {
-      const randomIndex = Math.floor(Math.random() * wordgroups.length);
-      newWordGroups.add(wordgroups[randomIndex]);
+      const randomIndex = Math.floor(Math.random() * filteredWordGroups.length);
+      newWordGroups.add(filteredWordGroups[randomIndex]);
     }
 
     // convert set back to array
@@ -226,6 +231,7 @@ const MatchingGameMode = () => {
     navigate("/learn");
   };
 
+  if (loading) return null;
   return (
     <ContentAligner background="url(style1.png)">
       <Box

@@ -128,6 +128,7 @@ const ManageTranslations = ({ languageNames }) => {
   const handleIndexChange = (index) => {
     setEditModeIndex(index);
     const wordGroup = wordgroups[index];
+    console.log("wordGroup", wordGroup);
     if (!wordGroup) {
       return;
     }
@@ -218,7 +219,7 @@ const ManageTranslations = ({ languageNames }) => {
 
     // if the last word group was deleted, switch to the previous one
     if (editModeIndex === updatedWordGroups.length) {
-      handleIndexChange(editModeIndex - 1);
+      handleIndexChange(editModeIndex - 1)
     } else {
       handleIndexChange(editModeIndex);
     }

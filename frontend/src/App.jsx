@@ -15,6 +15,7 @@ import axios from "axios";
 import ManageTranslations from "./ManageTranslations";
 import FlashcardMode from "./FlashcardMode";
 import MatchingGameMode from "./MatchingGameMode";
+import TestMode from "./TestMode";
 
 const App = () => {
   const [wordGroups, setWordGroups] = useState([]);
@@ -94,11 +95,15 @@ const App = () => {
           />
           <Route
             path="/flashcards"
-            element={<FlashcardMode wordGroups={wordGroups} />}
+            element={<FlashcardMode  />}
           />
           <Route
             path="/matching-game"
             element={<MatchingGameMode wordGroups={wordGroups} />}
+          />
+          <Route
+            path="/test"
+            element={<TestMode />}
           />
           <Route path="*" element={<Navigate to="/learn" />} />
         </Routes>

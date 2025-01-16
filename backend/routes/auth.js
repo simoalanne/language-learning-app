@@ -6,12 +6,13 @@ const authRouter = express.Router();
 import { addUser, getUserByUsername } from "../database/db.js";
 import { userValidation } from "../utils/validation.js";
 
-
 authRouter.post("/validate-username", async (req, res) => {
   const { username } = req.body;
   const user = await getUserByUsername(username);
   if (user) {
-    return res.status(409).json({ error: `Username ${username} already exists. please choose another name` });
+    return res.status(409).json({
+      error: `Username ${username} already exists. please choose another name`,
+    });
   }
   res.sendStatus(200);
 });
@@ -25,7 +26,9 @@ authRouter.post("/register", userValidation, async (req, res) => {
     const { username, password } = req.body;
     const user = await getUserByUsername(username);
     if (user) {
-      return res.status(409).json({ error: `Username ${username} already exists. please choose another name` });
+      return res.status(409).json({
+        error: `Username ${username} already exists. please choose another name`,
+      });
     }
 
     const saltRounds = 10;
@@ -70,7 +73,7 @@ const generateToken = (user) => {
   return jwt.sign(
     { username: user.username, id: user.id },
     process.env.JWT_SECRET,
-    { expiresIn: "2h" }
+    { expiresIn: "7d" }
   );
 };
 
@@ -94,7 +97,9 @@ export const verifyToken = async (req, res, next) => {
     // because the app is not persistent and will refresh on inactivity we need to check if the user still exists
     const user = await getUserByUsername(decodedToken.username);
     if (!user) {
-      console.error("Database refreshed due to inactivity, token is valid but cant be used in app anymore");
+      console.error(
+        "Database refreshed due to inactivity, token is valid but cant be used in app anymore"
+      );
       return res.status(401).json({ error: "Invalid or expired token" });
     }
     req.user = decodedToken;

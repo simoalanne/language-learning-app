@@ -2,9 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import "./LearnWords.css";
 import ContentAligner from "./ContentAligner";
+import { AuthContext } from "./Authorisation/AuthContext";
+import { useContext } from "react";
 
 const LearnWords = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const learningModes = [
     {
@@ -35,51 +38,66 @@ const LearnWords = () => {
 
   return (
     <ContentAligner background="url(/style1.png)">
-      <Box
-        sx={{
-          m: 2,
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 4,
-          justifyContent: "center",
-        }}
-      >
-        {learningModes.map((mode) => (
-          <Box
-            key={mode.id}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-              width: "300px",
-              border: "1px solid #ccc",
-              borderRadius: "10px",
-              padding: "20px",
-              textAlign: "center",
-              bgcolor: "white",
-            }}
-          >
-            <Typography variant="h6">{mode.title}</Typography>
-            <Typography variant="body1">{mode.description}</Typography>
-            <Button
-              variant="contained"
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: {xs: 2 }}}>
+        <Typography
+          sx={{
+            textAlign: "center",
+            fontSize: { xs: "1.5rem", sm: "2rem" },
+            fontWeight: "bold",
+            fontFamily: "Comic Sans MS",
+            color: "#333",
+          }}
+        >
+          {`Hello ${
+            user ? user.username : "visitor"
+          }! Ready to learn some words?`}
+        </Typography>
+        <Box
+          sx={{
+            m: 2,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 4,
+            justifyContent: "center",
+          }}
+        >
+          {learningModes.map((mode) => (
+            <Box
+              key={mode.id}
               sx={{
-                width: "50%",
-                maxWidth: "250px",
-                height: "50px",
-                borderRadius: "25px",
-                alignSelf: "center",
-                background: mode.gradient,
-                "&:hover": {
-                  scale: 1.05,
-                },
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+                width: "300px",
+                border: "1px solid #ccc",
+                borderRadius: "10px",
+                padding: "20px",
+                textAlign: "center",
+                bgcolor: "white",
               }}
-              onClick={() => navigate(`/${mode.name}`)}
             >
-              Start
-            </Button>
-          </Box>
-        ))}
+              <Typography variant="h6">{mode.title}</Typography>
+              <Typography variant="body1">{mode.description}</Typography>
+              <Button
+                variant="contained"
+                sx={{
+                  width: "50%",
+                  maxWidth: "250px",
+                  height: "50px",
+                  borderRadius: "25px",
+                  alignSelf: "center",
+                  background: mode.gradient,
+                  "&:hover": {
+                    scale: 1.05,
+                  },
+                }}
+                onClick={() => navigate(`/${mode.name}`)}
+              >
+                Start
+              </Button>
+            </Box>
+          ))}
+        </Box>
       </Box>
     </ContentAligner>
   );

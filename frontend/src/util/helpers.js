@@ -11,3 +11,20 @@ export const shuffle = (array) => {
   }
   return shuffledArray;
 };
+
+/**
+ * Filters word groups based on selected languages and tags
+ * @param {Array} wordGroups - array of word groups
+ * @param {Array} selectedLanguages - array of selected languages
+ * @param {Array} selectedTags - array of selected tags
+ * @returns {Array} - filtered array of word groups
+ */
+export const filterWordGroupsByLanguagesAndTags = (wordGroups, selectedLanguages, selectedTags) => (
+  wordGroups.filter(
+    (wg) =>
+      selectedLanguages.every((lang) =>
+        wg.translations.map((t) => t.languageName).includes(lang)
+      ) &&
+      (selectedTags.length === 0 ||
+        selectedTags.some((tag) => wg.tags.includes(tag)))
+  ));

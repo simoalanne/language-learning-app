@@ -26,7 +26,7 @@ export const initDb = async () => {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     language_id INTEGER REFERENCES languages (id),
     word TEXT NOT NULL,
-    group_id INTEGER REFERENCES word_groups (id) ON DELETE CASCADE 
+    group_id INTEGER REFERENCES word_groups (id) ON DELETE CASCADE
   )`,
       `CREATE TABLE word_synonyms (
     word_id INTEGER REFERENCES words (id) ON DELETE CASCADE,
@@ -47,7 +47,7 @@ export const initDb = async () => {
   )`,
       `CREATE TABLE word_group_tags (
     word_group_id INTEGER REFERENCES word_groups (id) ON DELETE CASCADE, -- if word group is deleted, delete the tag link as well
-    tag_id INTEGER REFERENCES tags (id) ON DELETE CASCADE, 
+    tag_id INTEGER REFERENCES tags (id) ON DELETE CASCADE,
     PRIMARY KEY (word_group_id, tag_id)
   )`,
       `CREATE TABLE users (
@@ -84,14 +84,11 @@ export const initDb = async () => {
     // insert starting translations.
     // array elements are template strings so they can be directly inserted into the query
     // total of 300 words are inserted, 100 for each language
-    await Promise.all(
-      words.map(
-        async (word) =>
-          await insertRawSql(
-            `INSERT INTO words (language_id, word, group_id) VALUES ${word}`
-          )
-      )
-    );
+    for (const word of words) {
+      await insertRawSql(
+      `INSERT INTO words (language_id, word, group_id) VALUES ${word}`
+      );
+    }
 
     // get the english words to use as group names
     const englishWords = await sqlQuery(
@@ -108,12 +105,9 @@ export const initDb = async () => {
 
     // insert starting tags
     const tags = ["common words", "verbs", "adjectives", "sports", "animals"];
-    await Promise.all(
-      tags.map(
-        async (tag) =>
-          await insertRawSql(`INSERT INTO tags (tag_name) VALUES ("${tag}")`)
-      )
-    );
+    for (const tag of tags) {
+      await insertRawSql(`INSERT INTO tags (tag_name) VALUES ("${tag}")`);
+    }
 
     // link the starting tags to the starting word groups. tag index changes after looping through 20 groups
     let tagIndex = 1;
@@ -312,7 +306,7 @@ export const updateWordGroup = async (wordGroupObj, userId, groupId) => {
     "UPDATE word_groups SET group_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?",
     [wordGroupObj.translations[0].word, groupId, userId]
   );
-  
+
 
   // Get language IDs
   const languageIds = await Promise.all(
@@ -433,7 +427,7 @@ export const deleteWordGroupById = async (groupId, userId) => {
 export const getWordGroupById = async (groupId, userId) => {
   const query = `
     WITH user_groups AS (
-    SELECT 
+    SELECT
       wg.id AS id,
       wg.created_at,
       wg.updated_at,
@@ -491,7 +485,7 @@ export const getMultipleWordGroups = async ({
   // pagination to work since it starts from 1 and increments by 1 afer the id changes.
   const query = `
     WITH user_groups AS (
-    SELECT 
+    SELECT
       wg.id AS id,
       wg.created_at,
       wg.updated_at,

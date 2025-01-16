@@ -28,6 +28,7 @@ const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error(error);
+      localstorage.removeItem("token");
     }
     setLoading(false);
   };
@@ -58,7 +59,15 @@ const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, isAuthenticated, login, logout, firstLogin, setFirstLogin }}
+      value={{
+        token,
+        user,
+        isAuthenticated,
+        login,
+        logout,
+        firstLogin,
+        setFirstLogin,
+      }}
     >
       {!loading && children}
     </AuthContext.Provider>

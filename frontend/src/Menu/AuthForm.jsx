@@ -15,6 +15,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Close from "@mui/icons-material/Close";
 import axios from "axios";
 import { AuthContext } from "../Authorisation/AuthContext";
+import {useNavigate} from "react-router-dom";
 
 const AuthForm = ({ open, handleClose, isLogin = true }) => {
   const [username, setUsername] = useState("");
@@ -24,6 +25,7 @@ const AuthForm = ({ open, handleClose, isLogin = true }) => {
   const [passwordError, setPasswordError] = useState(false);
   const [credentialsError, setCredentialsError] = useState("");
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
   const userNameRegex = /^[a-zA-Z0-9_]+$/;
   const handleSubmit = async () => {
     if (isLogin) {
@@ -63,6 +65,7 @@ const AuthForm = ({ open, handleClose, isLogin = true }) => {
         // this will trigger the NewUserWalkthrough component.
         login(res.data.token, firstLogin);
         onClose();
+        navigate("/learn"); // redirect to learn page after login to prevent any errors
         return;
       }
     } catch (e) {
