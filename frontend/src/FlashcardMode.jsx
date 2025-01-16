@@ -3,6 +3,7 @@ import Flashcard from "./Flashcard";
 import { Box, Button, Fade, Typography } from "@mui/material";
 import MoveIcons from "./MoveIcons";
 import Progressbar from "./Progressbar";
+import ContentAligner from "./ContentAligner";
 
 const FlashcardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
   const [selectedIndex, setSelectedIndex] = useState(0); // Track current index
@@ -29,11 +30,12 @@ const FlashcardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
       setCardsCompleted([...cardsCompleted, { id }]);
     }
   };
+
+  if (wordGroups.length === 0) return <Typography>No words to display</Typography>;
   return (
-    <Box sx={{ display: "flex", justifyContent: "center" }}>
+    <ContentAligner bgcolor="#f4f6f9">
       <Box
         sx={{
-          position: "relative",
           display: "flex",
           flexDirection: "column",
           gap: 3,
@@ -47,24 +49,13 @@ const FlashcardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
           width: "100%",
         }}
       >
-        <Typography
-          sx={{
-            fontWeight: "bold",
-            color: "#2c3e50",
-            textAlign: "center",
-            marginBottom: 2,
-            fontSize: { xs: "2rem", sm: "2.5rem" }, // slightly smaller font size on small screens
-          }}
-        >
-          {modeName === "Flashcards" ? "Flashcards 📖" : "Carousel cards 🎠"}
-        </Typography>
         <Fade in={fadeIn} timeout={500} mountOnEnter unmountOnExit>
           <div style={{ width: "100%" }}>
             <Flashcard
-              translations={modeName === "Flashcards" ? wordGroups[selectedIndex] : wordGroups[selectedIndex].translations}
+              translations={wordGroups[selectedIndex].translations}
               resetIndexesRef={resetIndexesRef}
               handleCardComplete={handleCardComplete}
-              mode={modeName}
+              mode={"Carousel Cards"}
             />
           </div>
         </Fade>
@@ -119,7 +110,7 @@ const FlashcardMode = ({ wordGroups, onExit, modeName = "Flashcards" }) => {
           Exit
         </Button>
       </Box>
-    </Box>
+    </ContentAligner>
   );
 };
 

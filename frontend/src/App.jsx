@@ -13,6 +13,8 @@ import { AuthContext } from "./Authorisation/AuthContext";
 import NewUserWalkthrough from "./Menu/NewUserWalkthrough";
 import axios from "axios";
 import ManageTranslations from "./ManageTranslations";
+import FlashcardMode from "./FlashcardMode";
+import MatchingGameMode from "./MatchingGameMode";
 
 const App = () => {
   const [wordGroups, setWordGroups] = useState([]);
@@ -21,13 +23,11 @@ const App = () => {
   useEffect(() => {
     const fetchData = async (url, setFunction) => {
       try {
-        console.log(url);
         const response = await axios.get(`/api/${url}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log(response.data);
         setFunction(response.data);
       } catch (error) {
         console.error(error.response.data);
@@ -40,7 +40,10 @@ const App = () => {
   return (
     <Router>
       <CssBaseline />
-      <AppBar position="static" sx={{ background: "linear-gradient(to right, #D1C4E9, #B3E5FC)" }}>
+      <AppBar
+        position="static"
+        sx={{ background: "linear-gradient(to right, #D1C4E9, #B3E5FC)" }}
+      >
         <>
           <Box
             sx={{
@@ -48,17 +51,20 @@ const App = () => {
               justifyContent: "space-between",
               alignItems: "center",
               py: 1,
-              mx: 2,
+              mx: 1.5,
             }}
           >
-            <Typography fontFamily="Impact, sans-serif" sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}>
+            <Typography
+              fontFamily="Impact, sans-serif"
+              sx={{ fontSize: { xs: "1.25rem", sm: "2rem" } }}
+            >
               To Be Named
             </Typography>
             {isAuthenticated ? <LoggedInButtons /> : <LogInOrRegisterButtons />}
           </Box>
         </>
       </AppBar>
-      <Box component="main" sx={{ p: 2 }}>
+      <Box component="main">
         <Routes>
           <Route
             path="/learn"
@@ -68,7 +74,7 @@ const App = () => {
                   wordGroups={wordGroups}
                   languageNames={languages.map((lang) => lang.languageName)}
                 />
-                <NewUserWalkthrough />
+                <NewUserWalkthrough setWordGroups={setWordGroups} />
               </>
             }
           />
@@ -85,6 +91,14 @@ const App = () => {
                 <Navigate to="/learn" />
               )
             }
+          />
+          <Route
+            path="/flashcards"
+            element={<FlashcardMode wordGroups={wordGroups} />}
+          />
+          <Route
+            path="/matching-game"
+            element={<MatchingGameMode wordGroups={wordGroups} />}
           />
           <Route path="*" element={<Navigate to="/learn" />} />
         </Routes>

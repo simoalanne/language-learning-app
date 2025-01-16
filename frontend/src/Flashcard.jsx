@@ -6,7 +6,7 @@ const Flashcard = ({
   translations,
   resetIndexesRef,
   handleCardComplete,
-  mode,
+  mode = "Carousel Cards",
 }) => {
   const [flipState, setFlipState] = useState(0);
   const [frontIndex, setfrontIndex] = useState(0);
@@ -14,7 +14,6 @@ const Flashcard = ({
   const [index, setIndex] = useState(0);
   const [isFlipping, setIsFlipping] = useState(false);
   const disableTransition = useRef(null);
-
   if (resetIndexesRef)
     resetIndexesRef.current = () => {
       disableTransition.current = true;
@@ -38,28 +37,27 @@ const Flashcard = ({
       return;
     }
 
-    const flipDirection = 180; // Always flip by 180 degrees, no matter where clicked
+    const flipDirection = 180;
 
     if (index === translations.length - 1) {
-      // Reset to the first card but flip forward
       const isFrontside = flipState % 360 === 0;
 
       if (isFrontside) {
         setTimeout(() => {
-          setfrontIndex(0); // Reset front index
+          setfrontIndex(0);
         }, 300);
-        setbackIndex(0); // Immediately reset back index
+        setbackIndex(0);
       } else {
         setTimeout(() => {
-          setbackIndex(0); // Reset back index
+          setbackIndex(0);
         }, 300);
-        setfrontIndex(0); // Immediately reset front index
+        setfrontIndex(0);
       }
       setIndex(0);
-      setFlipState((prev) => prev + flipDirection); // Flip forward even when resetting
+      setFlipState((prev) => prev + flipDirection);
       setTimeout(() => {
         setIsFlipping(false);
-      }, 600); // Wait until the flip is complete before finishing the reset
+      }, 600);
       return;
     }
 
@@ -151,21 +149,21 @@ const Flashcard = ({
               <div
                 className="cardFront"
                 style={{
-                  backgroundImage: `url(${translations.sourceLanguage}.svg)`,
+                  backgroundImage: `url(${translations[0].languageName}.svg)`,
                 }}
               >
                 <Typography variant="h5" className="cardContent">
-                  {translations.sourceWord}
+                  {translations[0].word}
                 </Typography>
               </div>
               <div
                 className="cardBack"
                 style={{
-                  backgroundImage: `url(${translations.targetLanguage}.svg)`,
+                  backgroundImage: `url(${translations[1].languageName}.svg)`,
                 }}
               >
                 <Typography variant="h5" className="cardContent">
-                  {translations.targetWord}
+                  {translations[1].word}
                 </Typography>
               </div>
             </div>

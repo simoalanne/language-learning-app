@@ -43,17 +43,17 @@ const MatchingGameCard = ({
             alignItems: "center",
             backfaceVisibility: "hidden",
             background: "linear-gradient(135deg, #8A2BE2, #FF69B4)",
-            boxShadow: "inset 0 0 50px rgba(255, 255, 255, 0.2)",
           }}
         >
-          <Typography sx={{ fontSize: 2 * cardScale + "rem" }}>⭐</Typography>
         </Box>
         <Box
           sx={{
             position: "absolute",
             width: "100%",
             height: "100%",
-            backgroundColor: "#e0e0e0",
+            bgcolor: "#36454F",
+            fontWeight: "bold",
+            color: "white",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",

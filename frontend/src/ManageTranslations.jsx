@@ -21,7 +21,8 @@ import FlashOnIcon from "@mui/icons-material/FlashOn";
 import EditIcon from "@mui/icons-material/Edit";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "./Authorisation/AuthContext";
-const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
+import useWordgroups from "./hooks/useWordgroups";
+const ManageTranslations = ({ languageNames }) => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
   const [editModeIndex, setEditModeIndex] = useState(null);
@@ -33,7 +34,8 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   const tab = useParams().tab;
   const [activeTab, setActiveTab] = useState("");
   const { token } = useContext(AuthContext);
-
+  const { wordgroups, setWordgroups } = useWordgroups();
+  console.log("wordgroups", wordgroups);
   useEffect(() => {
     if (tab) {
       setActiveTab(tab);
@@ -42,7 +44,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
 
   const allTags = [
     ...new Set(
-      wordGroups
+      wordgroups
         .map((wordGroup) => wordGroup.tags)
         .flat()
         .sort()
@@ -97,7 +99,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   };
 
   const dataChanged = () => {
-    const wordGroup = wordGroups[editModeIndex];
+    const wordGroup = wordgroups[editModeIndex];
     if (!wordGroup) return false;
     const translationsChanged = translations.some((t, i) => {
       const translation = wordGroup.translations[i];
@@ -125,7 +127,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
 
   const handleIndexChange = (index) => {
     setEditModeIndex(index);
-    const wordGroup = wordGroups[index];
+    const wordGroup = wordgroups[index];
     if (!wordGroup) {
       return;
     }
@@ -135,6 +137,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       synonyms: translation.synonyms,
     }));
     setTranslations(translations);
+    console.log(translations);
     const tags = wordGroup.tags;
     setTags(tags);
   };
@@ -159,9 +162,9 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       setToastMsg("Translation group added successfully.");
       setToastOpen(true);
       setToastSeverity("success");
-      const newWordGroups = [...wordGroups];
+      const newWordGroups = [...wordgroups];
       newWordGroups.push({ id, ...wordGroupObj });
-      setWordGroups(newWordGroups);
+      setWordgroups(newWordGroups);
       const newTranslations = translations.map((t) => ({
         languageName: t.languageName,
         word: "",
@@ -174,9 +177,10 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
     }
 
     if (activeTab === "edit") {
+      console.log(wordgroups[editModeIndex].id);
       const id = (
         await axios.put(
-          `/api/word-groups/${wordGroups[editModeIndex].id}`,
+          `/api/word-groups/${wordgroups[editModeIndex].id}`,
           wordGroupObj,
           {
             headers: {
@@ -188,20 +192,20 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
       setToastMsg("Translation group updated successfully.");
       setToastOpen(true);
       setToastSeverity("success");
-      const updatedWordGroups = [...wordGroups];
+      const updatedWordGroups = [...wordgroups];
       updatedWordGroups[editModeIndex] = { id, ...wordGroupObj };
-      setWordGroups(updatedWordGroups);
+      setWordgroups(updatedWordGroups);
     }
   };
 
   const onDeleteTranslationGroup = async () => {
-    await axios.delete(`/api/word-groups/${wordGroups[editModeIndex].id}`, {
+    await axios.delete(`/api/word-groups/${wordgroups[editModeIndex].id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    const updatedWordGroups = wordGroups.filter((_, i) => i !== editModeIndex);
-    setWordGroups(updatedWordGroups);
+    const updatedWordGroups = wordgroups.filter((_, i) => i !== editModeIndex);
+    setWordgroups(updatedWordGroups);
 
     if (updatedWordGroups.length === 0) {
       setToastMsg(
@@ -360,7 +364,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
           {activeTab === "edit" && (
               <MoveIcons
                 currentIndex={editModeIndex}
-                maxIndex={wordGroups.length - 1}
+                maxIndex={wordgroups.length - 1}
                 onClick={(index) => handleIndexChange(index)}
               />
           )}
@@ -413,7 +417,7 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
   // if the initial url is /manage-translations/edit, and there are word groups
   // then the handleIndexChange function has to be called with the first index
   // to correctly display the first word group in edit mode
-  if (tab === "edit" && wordGroups.length > 0 && editModeIndex === null) {
+  if (tab === "edit" && wordgroups.length > 0 && editModeIndex === null) {
     handleIndexChange(0);
   }
 
@@ -459,9 +463,9 @@ const ManageTranslations = ({ wordGroups, setWordGroups, languageNames }) => {
           <Typography variant="body1">Edit</Typography>
         </Box>
       </Box>
-      {activeTab === "edit" && wordGroups.length === 0 && <NothingToEdit />}
+      {activeTab === "edit" && wordgroups.length === 0 && <NothingToEdit />}
       {(activeTab === "add" ||
-        (activeTab === "edit" && wordGroups.length > 0)) && (
+        (activeTab === "edit" && wordgroups.length > 0)) && (
         <Box
           sx={{
             display: "flex",

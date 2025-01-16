@@ -7,12 +7,9 @@ const LogInOrRegisterButtons = () => {
   const btnSx = {
     bgcolor: "#2E7D32",
     color: "white",
-    borderRadius: 5,
     textTransform: "none",
     fontWeight: "bold",
     fontSize: {xs: "0.8rem", sm: "1rem"},
-    py: 1,
-    px: 3,
   };
 
   const handleFormClose = (status) => {

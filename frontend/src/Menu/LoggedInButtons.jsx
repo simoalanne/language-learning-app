@@ -54,7 +54,13 @@ const LoggedInButtons = () => {
             : "Learn Words"}
         </MenuItem>
         <MenuItem
-          onClick={logout}
+          onClick={() => {
+            if (location.pathname !== "/learn") {
+              navigate("/learn");
+            }
+            logout();
+            handleClose();
+          }}
           sx={{
             fontWeight: "bold",
           }}

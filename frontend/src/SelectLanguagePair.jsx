@@ -1,22 +1,24 @@
-import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";;
+import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
 const SelectLanguagePair= ({
-  languageNames,
+  languageNames = ["English", "Finnish", "French", "German", "Spanish", "Swedish"],
   selectedLanguages,
   setSelectedLanguages,
+  labels = ["Question language", "Answer language"],
+  allowSameLanguages = false,
 }) => {
   if (languageNames.length === 0) return;
   const DropDownMenu = ({ index }) => {
     return (
       <FormControl fullWidth>
         <InputLabel id={`language-select-label-${index}`}>
-          {index === 0 ? "Question language" : "Answer language"}
+          {index === 0 ? labels[0] : labels[1]}
         </InputLabel>
         <Select
           labelId={`language-select-label-${index}`}
           id="language-select"
           name="language-select"
-          label={index === 0 ? "Question language" : "Answer language"}
+          label={index === 0 ? labels[0] : labels[1]}
           value={selectedLanguages[index]}
           onChange={(e) => {
             const newSelectedLanguages = [...selectedLanguages];
@@ -26,7 +28,7 @@ const SelectLanguagePair= ({
         >
           {languageNames
             .filter(
-              (lang) => !selectedLanguages[index === 0 ? 1 : 0].includes(lang)
+              (lang) => allowSameLanguages || !selectedLanguages[index === 0 ? 1 : 0].includes(lang)
             )
             .map((language) => (
               <MenuItem key={language} value={language}>
