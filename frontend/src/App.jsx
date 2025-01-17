@@ -39,7 +39,7 @@ const App = () => {
               fontFamily="Impact, sans-serif"
               sx={{ fontSize: { xs: "1.25rem", sm: "2rem" } }}
             >
-              To Be Named
+              Language App
             </Typography>
             {isAuthenticated ? <LoggedInButtons /> : <LogInOrRegisterButtons />}
           </Box>
