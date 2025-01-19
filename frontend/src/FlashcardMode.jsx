@@ -33,72 +33,97 @@ const FlashcardMode = () => {
 
   if (loading) return null;
   const maxIndex = wordgroups.length - 1;
-  console.log(wordgroups);
   return (
     <ContentAligner sx={{ gap: 3 }}>
-      <Box sx={{ display: "flex", gap: 1 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          disableElevation
-          sx={{
-            bgcolor: "#36454F",
-            fontSize: 14,
-            fontWeight: "bold",
-            textTransform: "none",
-            borderRadius: 1,
-          }}
-          endIcon={<ExitToAppIcon />}
-          onClick={() => navigate("/learn")}
-        >
-          Exit
-        </Button>
-        <Button
-          variant="contained"
-          sx={{ bgcolor: "#36454F" }}
-          onClick={() =>
-            handleIndexChange(Math.floor(Math.random() * maxIndex))
-          }
-        >
-          Random card
-        </Button>
-      </Box>
-      {wordgroups.length > 0 && (
-        <Fade in={fadeIn} timeout={500} mountOnEnter unmountOnExit>
-          <div style={{ width: "100%" }}>
-            <Flashcard
-              translations={wordgroups[selectedIndex].translations}
-              resetIndexesRef={resetIndexesRef}
-            />
-          </div>
-        </Fade>
+      {wordgroups.length === 0 && (
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            Not enough translation to play flashcard mode
+          </Typography>
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: "#36454F",
+              width: "50%",
+            }}
+            endIcon={<ExitToAppIcon />}
+            onClick={() => navigate("/learn")}
+          >
+            Exit
+          </Button>
+        </Box>
       )}
-      <Box sx={{ display: "flex", width: "90%", maxWidth: "400px" }}>
-        <MoveIcons
-          currentIndex={selectedIndex}
-          maxIndex={maxIndex}
-          onClick={(newIndex) => handleIndexChange(newIndex)}
-          alternativeIcons={true}
-        />
-      </Box>
-      <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-        Move to any number
-      </Typography>
-      <Box sx={{ display: "flex", gap: 1 }}>
-        <TextField
-          autoComplete="off"
-          variant="outlined"
-          label={`1 - ${wordgroups.length}`}
-          value={inputIndex}
-          onChange={(e) =>
-            // if not number don't allow input
-            !isNaN(e.target.value) && setInputIndex(e.target.value)
-          }
-        />
-        <Button variant="contained" onClick={handleGoToIndex} sx={{ bgcolor: "#36454F" }}>
-          Go
-        </Button>
-      </Box>
+      {wordgroups.length > 0 && (
+        <>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              disableElevation
+              sx={{
+                bgcolor: "#36454F",
+                fontSize: 14,
+                fontWeight: "bold",
+                textTransform: "none",
+                borderRadius: 1,
+              }}
+              endIcon={<ExitToAppIcon />}
+              onClick={() => navigate("/learn")}
+            >
+              Exit
+            </Button>
+            <Button
+              variant="contained"
+              sx={{ bgcolor: "#36454F" }}
+              onClick={() =>
+                handleIndexChange(Math.floor(Math.random() * maxIndex))
+              }
+            >
+              Random card
+            </Button>
+          </Box>
+          {wordgroups.length > 0 && (
+            <Fade in={fadeIn} timeout={500} mountOnEnter unmountOnExit>
+              <div style={{ width: "100%" }}>
+                <Flashcard
+                  translations={wordgroups[selectedIndex].translations}
+                  resetIndexesRef={resetIndexesRef}
+                />
+              </div>
+            </Fade>
+          )}
+          <Box sx={{ display: "flex", width: "90%", maxWidth: "400px" }}>
+            <MoveIcons
+              currentIndex={selectedIndex}
+              maxIndex={maxIndex}
+              onClick={(newIndex) => handleIndexChange(newIndex)}
+              alternativeIcons={true}
+            />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            Move to any number
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <TextField
+              autoComplete="off"
+              variant="outlined"
+              label={`1 - ${wordgroups.length}`}
+              value={inputIndex}
+              onChange={(e) =>
+                // if not number don't allow input
+                !isNaN(e.target.value) && setInputIndex(e.target.value)
+              }
+            />
+            <Button
+              variant="contained"
+              onClick={handleGoToIndex}
+              sx={{ bgcolor: "#36454F" }}
+            >
+              Go
+            </Button>
+          </Box>
+        </>
+      )}
     </ContentAligner>
   );
 };
