@@ -37,8 +37,8 @@ const FlashcardMode = () => {
     <ContentAligner sx={{ gap: 3 }}>
       {wordgroups.length === 0 && (
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            Not enough translation to play flashcard mode
+          <Typography variant="h6" sx={{ fontWeight: "bold", bgcolor: "rgba(255, 0, 0, 0.1)", padding: 1, borderRadius: 1, color: "red" }}>
+            Not enough translations to practise with flashcards
           </Typography>
           <Button
             variant="contained"
