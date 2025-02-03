@@ -46,16 +46,5 @@ The app can be also easily be run with docker. Here's how:
 2. Start the container with `docker run -p 3000:3000 language-learning-app`
 
 ---
-## 🌐 **Link to Project in Cloud**
-You can also access the project on: https://language-learning-app-f8vl.onrender.com/
-
-
-## 🎥 **Screencast**  
-[![Screencast](https://img.youtube.com/vi/RLbBmv0AVQw/0.jpg)](https://www.youtube.com/watch?v=RLbBmv0AVQw)
-
----
-
-## 👩‍💻 **Author**
-**Simo Alanne** 
-
----
+## 🌐 **Cloud**
+Project is also currently hosted on: https://language-learning-app-f8vl.onrender.com/
