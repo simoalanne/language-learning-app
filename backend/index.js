@@ -5,8 +5,6 @@ import authRouter from "./routes/auth.js";
 import wordGenerationRouter from "./routes/wordGeneration.js";
 import path from "path";
 import "dotenv/config";
-console.log("Environment variables loaded from .env file:", process.env.GEMINI_API_KEY);
-console.log("Environment variables loaded from .env file:", process.env.JWT_SECRET);
 // if running app locally you need to create a .env file that contains variable JWT_SECRET
 // good website to generate jwt: https://jwtsecret.com/generate
 

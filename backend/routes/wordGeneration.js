@@ -3,11 +3,10 @@ import { GoogleGenAI } from "@google/genai"
 import { verifyToken } from "./auth.js";
 
 const wordGenerationRouter = express.Router();
-wordGroupsRouter.use(verifyToken);
+wordGenerationRouter.use(verifyToken);
 
 wordGenerationRouter.post("/generate", async (req, res) => {
   const { skillLevel, includedLanguages, wordCount, topic, wordType } = req.body;
-  //parameters e
   const prompt = `Generate a JSON array containing ${wordCount || 10} unique items. Each item should be a ${wordType || "word or a very short expression"}.
   All items must:
   - Be related to the topic: "${topic || "general"}"
