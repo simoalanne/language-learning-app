@@ -35,3 +35,14 @@ Content-Type: application/json
   "username": "test",
   "password": "password123"
 }
+
+### test ai word generation
+POST http://localhost:3000/api/ai/word-generation/generate
+Content-Type: application/json
+
+{
+  "wordCount": 5,
+  "includedLanguages": ["English", "Finnish"],
+  "topic": "animals in the zoo",
+  "skillLevel": "complete beginner"
+}

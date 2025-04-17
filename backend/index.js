@@ -2,8 +2,11 @@ import express from "express";
 import { initDb, closeDb } from "./database/db.js";
 import wordGroupsRouter from "./routes/wordGroups.js";
 import authRouter from "./routes/auth.js";
+import wordGenerationRouter from "./routes/wordGeneration.js";
 import path from "path";
 import "dotenv/config";
+console.log("Environment variables loaded from .env file:", process.env.GEMINI_API_KEY);
+console.log("Environment variables loaded from .env file:", process.env.JWT_SECRET);
 // if running app locally you need to create a .env file that contains variable JWT_SECRET
 // good website to generate jwt: https://jwtsecret.com/generate
 
@@ -55,6 +58,7 @@ const publicPath = path.join(__dirname, "public");
 app.use(express.static(publicPath));
 
 app.use("/api/word-groups", wordGroupsRouter);
+app.use("/api/ai/word-generation", wordGenerationRouter);
 app.use("/api/auth", authRouter);
 
 // this is needed when using react router and refreshing the page
