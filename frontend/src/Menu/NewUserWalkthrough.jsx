@@ -9,8 +9,8 @@ import {
   MenuItem,
   Menu,
 } from "@mui/material";
-import axios from "axios";
 import WordGroupItem from "./WordGroupItem";
+import { addWordGroupsBulk, getWordGroups } from "../api/api";
 
 const NewUserWalkthrough = () => {
   const { user, token, firstLogin, setFirstLogin } = useContext(AuthContext);
@@ -23,15 +23,7 @@ const NewUserWalkthrough = () => {
   const handleCopyPublicGroups = async () => {
     setDisableButton(true);
     try {
-      await axios.post(
-        "/api/word-groups/bulk",
-        { bulkData: selectedGroups },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await addWordGroupsBulk(selectedGroups, token);
       setSuccess("Groups copied successfully!");
     } catch (error) {
       console.error(error.response?.data?.error);
@@ -43,8 +35,8 @@ const NewUserWalkthrough = () => {
     if (!firstLogin) return;
     const fetchPublicGroups = async () => {
       try {
-        const res = await axios.get("/api/word-groups/public");
-        setPublicGroups(res.data);
+        const groups = await getWordGroups();
+        setPublicGroups(groups);
       } catch (error) {
         console.error(error.response?.data?.error);
       }

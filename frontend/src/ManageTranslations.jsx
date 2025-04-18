@@ -9,7 +9,6 @@ import {
   Icon,
 } from "@mui/material";
 import { useEffect, useState, useContext } from "react";
-import axios from "axios";
 import ToggleOption from "./ToggleOption";
 import TranslationCard from "./TranslationCard";
 import QuickAdd from "./QuickAdd";
@@ -23,6 +22,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "./Authorisation/AuthContext";
 import useWordgroups from "./hooks/useWordgroups";
 import ContentAligner from "./ContentAligner";
+import { addWordGroup, editWordGroup, deleteWordGroup } from "./api/api";
 const ManageTranslations = () => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
@@ -152,13 +152,8 @@ const ManageTranslations = () => {
       tags: tags.map((tag) => tag?.trim()),
     };
     if (activeTab === "add" || activeTab === "quick-add") {
-      const id = (
-        await axios.post("/api/word-groups", wordGroupObj, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-      ).data.id;
+      const data = await addWordGroup(wordGroupObj, token);
+      const id = data.id;
       setToastMsg("Translation group added successfully.");
       setToastOpen(true);
       setToastSeverity("success");
@@ -177,17 +172,8 @@ const ManageTranslations = () => {
     }
 
     if (activeTab === "edit") {
-      const id = (
-        await axios.put(
-          `/api/word-groups/${wordgroups[editModeIndex].id}`,
-          wordGroupObj,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-      ).data.id;
+      const data = await editWordGroup(wordGroupObj, wordgroups[editModeIndex].id, token);
+      const id = data.id;
       setToastMsg("Translation group updated successfully.");
       setToastOpen(true);
       setToastSeverity("success");
@@ -198,11 +184,7 @@ const ManageTranslations = () => {
   };
 
   const onDeleteTranslationGroup = async () => {
-    await axios.delete(`/api/word-groups/${wordgroups[editModeIndex].id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    await deleteWordGroup(wordgroups[editModeIndex].id, token);
     const updatedWordGroups = wordgroups.filter((_, i) => i !== editModeIndex);
     setWordgroups(updatedWordGroups);
 
@@ -361,11 +343,11 @@ const ManageTranslations = () => {
             </Button>
           )}
           {activeTab === "edit" && (
-              <MoveIcons
-                currentIndex={editModeIndex}
-                maxIndex={wordgroups.length - 1}
-                onClick={(index) => handleIndexChange(index)}
-              />
+            <MoveIcons
+              currentIndex={editModeIndex}
+              maxIndex={wordgroups.length - 1}
+              onClick={(index) => handleIndexChange(index)}
+            />
           )}
         </CardContent>
       </Card>
@@ -466,52 +448,52 @@ const ManageTranslations = () => {
       {activeTab === "edit" && wordgroups.length === 0 && <NothingToEdit />}
       {(activeTab === "add" ||
         (activeTab === "edit" && wordgroups.length > 0)) && (
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            alignItems: "flex-start",
-            gap: 4,
-          }}
-        >
           <Box
             sx={{
               display: "flex",
-              justifyContent: "center",
               flexWrap: "wrap",
-              maxWidth: 900 + 4 * 8,
-              gap: 2,
+              justifyContent: "center",
+              alignItems: "flex-start",
+              gap: 4,
             }}
           >
-            {translations.map((translation, index) => (
-              <TranslationCard
-                key={index}
-                languages={languageNames}
-                selectedLanguage={translation.languageName}
-                setSelectedLanguage={(language) =>
-                  handleTranslationChange(index, "languageName", language)
-                }
-                selectedWord={translation.word}
-                setSelectedWord={(word) =>
-                  handleTranslationChange(index, "word", word)
-                }
-                synonyms={translation.synonyms}
-                setSynonyms={(synonyms) =>
-                  handleTranslationChange(index, "synonyms", synonyms)
-                }
-                onremoveTranslation={() => removeTranslation(index)}
-                index={index}
-                usedLanguages={translations.map((t) => t.languageName)}
-                hideSynonyms={hideSynonyms}
-                onClearCard={() => onClearCard(index)}
-                hideLanguageSelection={hideLanguageSelections}
-              />
-            ))}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                flexWrap: "wrap",
+                maxWidth: 900 + 4 * 8,
+                gap: 2,
+              }}
+            >
+              {translations.map((translation, index) => (
+                <TranslationCard
+                  key={index}
+                  languages={languageNames}
+                  selectedLanguage={translation.languageName}
+                  setSelectedLanguage={(language) =>
+                    handleTranslationChange(index, "languageName", language)
+                  }
+                  selectedWord={translation.word}
+                  setSelectedWord={(word) =>
+                    handleTranslationChange(index, "word", word)
+                  }
+                  synonyms={translation.synonyms}
+                  setSynonyms={(synonyms) =>
+                    handleTranslationChange(index, "synonyms", synonyms)
+                  }
+                  onremoveTranslation={() => removeTranslation(index)}
+                  index={index}
+                  usedLanguages={translations.map((t) => t.languageName)}
+                  hideSynonyms={hideSynonyms}
+                  onClearCard={() => onClearCard(index)}
+                  hideLanguageSelection={hideLanguageSelections}
+                />
+              ))}
+            </Box>
+            <DetailsCard />
           </Box>
-          <DetailsCard />
-        </Box>
-      )}
+        )}
       {activeTab === "quick-add" && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <QuickAdd

@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
 import { AuthContext } from "../Authorisation/AuthContext";
+import { getWordGroups } from '../api/api';
 
 /**
   * Fetches word groups from the server and returns them.
@@ -14,12 +14,8 @@ const useWordgroups = () => {
   useEffect(() => {
     const fetchWordgroups = async () => {
       try {
-        const res = await axios.get(`/api/word-groups/${token ? "" : "public/"}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setWordgroups(res.data);
+        const groups = await getWordGroups(token);
+        setWordgroups(groups);
       } catch (error) {
         console.error(error.response?.data?.error);
       }

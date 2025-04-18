@@ -13,9 +13,9 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Close from "@mui/icons-material/Close";
-import axios from "axios";
 import { AuthContext } from "../Authorisation/AuthContext";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { loginOrRegister } from "../api/api";
 
 const AuthForm = ({ open, handleClose, isLogin = true }) => {
   const [username, setUsername] = useState("");
@@ -52,18 +52,12 @@ const AuthForm = ({ open, handleClose, isLogin = true }) => {
 
   const handleSignInOrRegister = async () => {
     try {
-      const res = await axios.post(
-        `/api/auth/${isLogin ? "login" : "register"}`,
-        {
-          username,
-          password,
-        }
-      );
-      if (res.data?.token) {
+      const data = await loginOrRegister(username, password, isLogin);
+      if (data?.token) {
         const firstLogin = !isLogin;
         // pass firstLogin as true if user is registering
         // this will trigger the NewUserWalkthrough component.
-        login(res.data.token, firstLogin);
+        login(data.token, firstLogin);
         onClose();
         navigate("/learn"); // redirect to learn page after login to prevent any errors
         return;

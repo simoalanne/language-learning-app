@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
-import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { verifyToken as verifyJwtToken } from "../api/api";
 
 const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
@@ -13,14 +13,10 @@ const AuthProvider = ({ children }) => {
     try {
       const localStorageToken = localStorage.getItem("token");
       if (localStorageToken) {
-        const res = await axios.get("/api/auth/verify-token", {
-          headers: {
-            Authorization: `Bearer ${localStorageToken}`,
-          },
-        });
-        if (res.data?.isValid) {
+        const res = await verifyJwtToken(localStorageToken);
+        if (res?.isValid) {
           setToken(localStorageToken);
-          setUser(res.data.user);
+          setUser(res.user);
         } else {
           setToken(null);
           localStorage.removeItem("token");

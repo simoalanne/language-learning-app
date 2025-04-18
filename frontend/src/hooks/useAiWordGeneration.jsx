@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../Authorisation/AuthContext";
-import { generateWords, saveWordsBulk } from "../api/api";
+import { addWordGroupsBulk, generateWords } from "../api/api";
 
 const formConfig = {
   languageNames: ["English", "Finnish", "French", "German", "Spanish", "Swedish"],
@@ -99,7 +99,7 @@ export const useAiWordGeneration = () => {
     }));
 
     try {
-      await saveWordsBulk(bulkData, token);
+      await addWordGroupsBulk(bulkData, token);
       setGeneratedWords([]);
       setForm(initialForm);
     } catch (error) {
