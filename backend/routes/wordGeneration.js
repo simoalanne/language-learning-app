@@ -1,6 +1,6 @@
 import express from "express";
 import { GoogleGenAI } from "@google/genai"
-import { verifyToken } from "./auth.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const wordGenerationRouter = express.Router();
 wordGenerationRouter.use(verifyToken);

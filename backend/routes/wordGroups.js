@@ -8,9 +8,9 @@ import {
   getTotalAndPages,
 } from "../database/db.js";
 import { wordGroupValidation } from "../utils/validation.js";
-import { verifyToken } from "./auth.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 const wordGroupsRouter = express.Router();
-import { body, param, query, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 const validLanguages = [
   "English",
   "Finnish",
