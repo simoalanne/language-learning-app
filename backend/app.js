@@ -3,7 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import wordGroupsRouter from "./routes/wordGroups.js";
-import authRouter from "./routes/auth.js";
+import authRouter from "./routes/authRouter.js";
 import aiRouter from "./routes/aiRouter.js";
 import { handleInvalidJsonError, enforceJsonContentType } from "./middleware/errorHandlingMiddleware.js";
 
