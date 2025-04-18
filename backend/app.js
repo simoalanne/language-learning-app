@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 
 import wordGroupsRouter from "./routes/wordGroups.js";
 import authRouter from "./routes/auth.js";
-import wordGenerationRouter from "./routes/wordGeneration.js";
+import aiRouter from "./routes/aiRouter.js";
 import { handleInvalidJsonError, enforceJsonContentType } from "./middleware/errorHandlingMiddleware.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -17,9 +17,8 @@ app.use(handleInvalidJsonError);
 app.use(enforceJsonContentType);
 app.use(express.static(publicPath));
 
-// API Routes
 app.use("/api/word-groups", wordGroupsRouter);
-app.use("/api/ai/word-generation", wordGenerationRouter);
+app.use("/api/ai/", aiRouter);
 app.use("/api/auth", authRouter);
 
 export default app;

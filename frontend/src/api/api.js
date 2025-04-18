@@ -10,7 +10,7 @@ import axios from "axios";
 export const generateWords = async (data, token) => {
   console.log("Generating words with data:", data);
   const response = await axios.post(
-    "/api/ai/word-generation/generate",
+    "/api/ai/generate-words",
     data,
     {
       headers: { Authorization: `Bearer ${token}` },

@@ -8,9 +8,6 @@ const validLanguages = [
   "Swedish",
 ];
 
-const userNameRegex = /^[a-zA-Z0-9_]+$/;
-// Validation for word group object
-// used in POST and PUT requests
 export const wordGroupValidation = [
   body("translations").isArray().withMessage("Translations must be an array"),
   body("translations")
@@ -41,18 +38,3 @@ export const wordGroupValidation = [
   body("tags.*").isString().withMessage("Each tag must be a string"),
 ];
 
-export const userValidation = [
-  body("username")
-    .isLength({ min: 2, max: 25 })
-    .withMessage("Username must be between 2 and 25 characters long"),
-  body("username")
-    .matches(userNameRegex)
-    .withMessage(
-      "Username must contain only letters, numbers, and underscores"
-    ),
-  body("password")
-    .isLength({ min: 8, max: 50 })
-    .withMessage(
-      "Password must be between 8 and 50 characters long"
-    ),
-];

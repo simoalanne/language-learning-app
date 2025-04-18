@@ -13,19 +13,19 @@ import { getUserByUsername } from "../database/db.js";
  */
 export const userValidation = [
   body("username")
-    .isString()
-    .withMessage("Username must be a string")
-    .notEmpty()
-    .withMessage("Username is required"),
+    .isLength({ min: 2, max: 25 })
+    .withMessage("Username must be between 2 and 25 characters long")
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage("Username must contain only letters, numbers, and underscores"),
+
   body("password")
-    .isString()
-    .withMessage("Password must be a string")
-    .notEmpty()
-    .withMessage("Password is required"),
+    .isLength({ min: 8, max: 50 })
+    .withMessage("Password must be between 8 and 50 characters long"),
+
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ error: errors.array()[0].msg });
+      return res.status(400).json({ errors: errors.array() });
     }
     next();
   },
