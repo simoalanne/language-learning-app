@@ -22,6 +22,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "./Authorisation/AuthContext";
 import useWordgroups from "./hooks/useWordgroups";
+import ContentAligner from "./ContentAligner";
 const ManageTranslations = () => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
@@ -420,9 +421,10 @@ const ManageTranslations = () => {
   }
 
   return (
-    <div>
+    <ContentAligner centerVertically={false}>
       <Box
         sx={{
+          width: "100%",
           display: "flex",
           justifyContent: "center",
           bgcolor: "#f0f0f0",
@@ -542,7 +544,7 @@ const ManageTranslations = () => {
         message={toastMsg}
         severity={toastSeverity}
       />
-    </div>
+    </ContentAligner>
   );
 };
 

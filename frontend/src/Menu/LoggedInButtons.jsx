@@ -37,10 +37,9 @@ const LoggedInButtons = () => {
         <MenuItem
           onClick={() => {
             navigate(
-              `${
-                location.pathname === "/learn"
-                  ? "/manage-translations/add"
-                  : "/learn"
+              `${location.pathname === "/learn"
+                ? "/manage-translations/add"
+                : "/learn"
               }`
             );
             handleClose();
@@ -52,6 +51,17 @@ const LoggedInButtons = () => {
           {location.pathname === "/learn"
             ? "Manage Translations"
             : "Learn Words"}
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            navigate("/ai-translation-generation");
+            handleClose();
+          }}
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
+          Generate Translations with AI
         </MenuItem>
         <MenuItem
           onClick={() => {

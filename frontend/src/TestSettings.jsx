@@ -10,7 +10,7 @@ import SelectLanguagePair from "./SelectLanguagePair";
 import { useContext } from "react";
 import { AuthContext } from "./Authorisation/AuthContext";
 import SwapLanguagePair from "./SwapLanguagePair";
-import SelectTags from "./SelectTags";
+import ChipSelect from "./ChipSelect";
 
 const TestSettings = ({
   testObject,
@@ -71,11 +71,11 @@ const TestSettings = ({
             the game. The number in parentheses indicates how many pairs are
             available with the tag.
           </Typography>
-          <SelectTags
-            wordsAvailableForTags={pairsPerTag}
-            tags={availableTags}
-            selectedTags={testObject.selectedTags}
-            setSelectedTags={(newSelectedTags) =>
+          <ChipSelect
+            options={availableTags}
+            labels={availableTags.map((tag, i) => `${tag} (${pairsPerTag[i]})`)}
+            selectedOptions={testObject.selectedTags}
+            setSelectedOptions={(newSelectedTags) =>
               setTestObject((prev) => ({
                 ...prev,
                 selectedTags: newSelectedTags,

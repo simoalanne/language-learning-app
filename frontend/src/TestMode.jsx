@@ -74,11 +74,18 @@ const TestMode = () => {
   };
   const generateTest = () => {
     // get selected amount of ranzomided word groups
+    if (availableQuestions.length < testObject.totalQuestions) {
+      // failsafe check to prevent infinite loop
+      setTestObject((prev) => ({
+        ...prev,
+        totalQuestions: availableQuestions.length,
+      }));
+    }
     let randomWordGroups = new Set();
     while (randomWordGroups.size < testObject.totalQuestions) {
       randomWordGroups.add(
         availableQuestions[
-          Math.floor(Math.random() * availableQuestions.length)
+        Math.floor(Math.random() * availableQuestions.length)
         ]
       );
     }
