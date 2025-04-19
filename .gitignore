@@ -134,5 +134,5 @@ out
 .yarn/install-state.gz
 .pnp.*
 
-# .gitignore
-.env
+# .http files used for testing
+*.http

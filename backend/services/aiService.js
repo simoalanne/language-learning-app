@@ -9,7 +9,7 @@ import { GoogleGenAI } from "@google/genai";
  * @returns {object} - The parsed JSON object.
  * @throws Will throw an error if the JSON parsing fails.
  */
-export const parseAIResponseToJson = (response) => {
+const parseAIResponseToJson = (response) => {
   try {
     const rawText = response?.text?.replace(/```json/g, "").replace(/```/g, "");
     return JSON.parse(rawText);
