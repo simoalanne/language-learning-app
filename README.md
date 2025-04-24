@@ -8,30 +8,30 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 ## 📸 Screenshots
 
-<div align="center" style="margin-bottom: 20px">
-  <img src="./screenshots/home-screen.png" alt="Home Page" width="600"/><br/>
-  <em>Home Page</em>
-</div>
+<div align="center"><br/>
+    <img src="./screenshots/home-screen.png" alt="Home Page" width="600"/><br/>
+    <em>Home Page</em>
+</div><br/>
 
-<div align="center" style="margin-bottom: 20px">
-  <img src="./screenshots/ai-vocabulary-generation.png" alt="Add Vocabulary with AI" width="600"/><br/>
-  <em>Add Vocabulary with AI</em>
-</div>
+<div align="center"><br/>
+    <img src="./screenshots/ai-vocabulary-generation.png" alt="Add Vocabulary with AI" width="600"/><br/>
+    <em>Add Vocabulary with AI</em>
+</div><br/>
 
-<div align="center" style="margin-bottom: 20px">
+<div align="center"><br/>
     <img src="./screenshots/matching-game.png" alt="Matching Game" width="600"/><br/>
     <em>Matching Game Mode</em>
-</div>
+</div><br/>
 
-<div align="center" style="margin-bottom: 20px">
+<div align="center"><br/>
     <img src="./screenshots/test-mode.png" alt="Test Mode" width="600"/><br/>
     <em>Test Mode</em>
-</div>
+</div><br/>
 
-<div align="center" style="margin-bottom: 20px">
+<div align="center"><br/>
     <img src="./screenshots/flashcards.png" alt="Flashcards Mode" width="600"/><br/>
     <em>Flashcards Mode</em>
-</div>
+</div><br/>
 
 ## 🌟 **Features**
 
