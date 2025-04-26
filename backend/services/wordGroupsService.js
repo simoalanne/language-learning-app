@@ -7,7 +7,7 @@ import {
   getTotalAndPages
 } from "../database/db.js";
 
-export const fetchWordGroups = (userId, offset, limit) => getMultipleWordGroups({ offset, limit, getAll: !limit, userId });
+export const fetchWordGroups = (userId, offset, limit) => getMultipleWordGroups(userId);
 
 export const fetchPublicWordGroups = () => getMultipleWordGroups({ offset: 0, limit: 0, getAll: true });
 
