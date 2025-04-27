@@ -155,7 +155,6 @@ export const getMultipleWordGroups = async (userId) => {
       ) AS translations
     FROM word_groups wg
     LEFT JOIN words w ON wg.id = w.group_id
-    WHERE wg.user_id = $1
     GROUP BY wg.id, wg.updated_at
     ORDER BY wg.updated_at DESC
     `,
@@ -200,7 +199,10 @@ export const getUserByUsername = async (username) => {
   const user = await query("SELECT * FROM users WHERE username = $1", [username], {
     onlyFirstRow: true,
   });
-  return user;
+  if (!user) {
+    return null;
+  }
+  return {...user, password: user?.password_hash };
 };
 
 /**
@@ -213,7 +215,7 @@ export const getUserByUsername = async (username) => {
 export const addUser = async (username, password) => {
   try {
     const id = await query(
-      `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`,
+      `INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id`,
       [username, password],
       { onlyFirstRow: true }
     );

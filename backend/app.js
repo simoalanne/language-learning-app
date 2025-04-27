@@ -5,6 +5,8 @@ import { fileURLToPath } from "url";
 import wordGroupsRouter from "./routes/wordGroupsRouter.js";
 import authRouter from "./routes/authRouter.js";
 import aiRouter from "./routes/aiRouter.js";
+import topicsRouter from "./topics/topicsRouter.js";
+import tagsRouter from "./tags/tagsRouter.js";
 import { handleInvalidJsonError, enforceJsonContentType } from "./middleware/errorHandlingMiddleware.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -19,6 +21,8 @@ app.use(express.static(publicPath));
 app.use("/api/word-groups", wordGroupsRouter);
 app.use("/api/ai/", aiRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/topics", topicsRouter);
+app.use("/api/tags", tagsRouter);
 
 // needed for react router to work properly in production
 // when the user refreshes the page or tries to access a route directly

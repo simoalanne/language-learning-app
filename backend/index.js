@@ -11,7 +11,7 @@ const startServer = () => {
   setupShutdown(server);
 };
 
-const setupShutdown = (server) =>  {
+const setupShutdown = (server) => {
   const shutdown = () => {
     console.info("Shutting down server");
     server.close(async (err) => {
