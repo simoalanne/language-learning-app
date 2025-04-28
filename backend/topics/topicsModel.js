@@ -1,5 +1,5 @@
 import camelcaseKeys from 'camelcase-keys';
-import { query } from "../database/db.js";
+import { query } from "../config/db.js";
 
 export const fetchUserTopics = async (userId) => {
   const topics = await query(`
@@ -15,7 +15,7 @@ export const fetchUserTopics = async (userId) => {
       (SELECT COUNT(*) FROM translation_groups tg WHERE tg.topic_id = t.id AND tg.group_type = 'long_text') AS long_text_groups_count,
       -- Ensure languages always return an empty array if no values exist
       COALESCE(
-        (SELECT json_agg(w.language) FILTER (WHERE w.language IS NOT NULL)
+        (SELECT json_agg(DISTINCT w.language) FILTER (WHERE w.language IS NOT NULL)
          FROM words w
          JOIN translation_groups tg ON tg.id = w.translation_group_id
          WHERE tg.topic_id = t.id),
@@ -36,7 +36,12 @@ export const fetchUserTopics = async (userId) => {
 
 
 
-export const fetchPublicTopics = async (publicUserId) => {
+export const fetchPublicTopics = async () => {
+  const publicUserId = (await query(
+    `SELECT id FROM users WHERE (user_data -> 'isPublic')::boolean = true`,
+    [],
+    { onlyFirstRow: true }
+  ))?.id || 0;
   return await fetchUserTopics(publicUserId);
 };
 

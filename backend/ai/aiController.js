@@ -1,4 +1,4 @@
-import { generateWordsWithAI } from "../services/aiService.js";
+import { generateWordsWithAI } from "./aiService.js";
 
 export const generateWords = async (req, res) => {
   try {

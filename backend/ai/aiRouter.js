@@ -1,5 +1,5 @@
 import express from "express";
-import { generateWords } from "../controllers/aiController.js";
+import { generateWords } from "./aiController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
 const aiRouter = express.Router();

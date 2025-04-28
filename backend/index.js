@@ -1,12 +1,13 @@
 import "dotenv/config";
-import { closeDb } from "./database/db.js";
+import { config, envCheck } from "./config/config.js";
+import { connectDb, closeDb } from "./config/db.js";
 import app from "./app.js";
 
-const port = process.env.PORT || 3000;
-
-const startServer = () => {
-  const server = app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+const startServer = async () => {
+  envCheck();
+  await connectDb();
+  const server = app.listen(config.port, () => {
+    console.log(`Server is running on port ${config.port}`);
   });
   setupShutdown(server);
 };

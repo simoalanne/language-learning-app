@@ -2,18 +2,6 @@ import * as topicsModel from './topicsModel.js';
 
 export const getPublicTopics = async (_, res) => {
   try {
-    const publicUserId = Number(process.env.PUBLIC_USER_ID);
-    if (isNaN(publicUserId)) {
-      console.warn(`
-        WARNING: PUBLIC_USER_ID is not set or is not a valid number.
-        To allow non-logged-in users to view public topics, please:
-        1. Set the PUBLIC_USER_ID environment variable to a valid user ID.
-        2. Ensure this user has desired topics associated with them.
-      `);
-      res.json([]);
-      return;
-    }
-
     const topics = await topicsModel.fetchPublicTopics();
     res.json(topics);
   } catch (error) {
