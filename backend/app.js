@@ -6,7 +6,6 @@ import translationGroupsRouter from "./translation-groups/translationGroupsRoute
 import aiRouter from "./ai/aiRouter.js";
 import topicsRouter from "./topics/topicsRouter.js";
 import usersRouter from "./users/usersRouter.js";
-import tagsRouter from "./tags/tagsRouter.js";
 import { handleInvalidJsonError, enforceJsonContentType } from "./middleware/errorHandlingMiddleware.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -21,7 +20,6 @@ app.use(express.static(publicPath));
 app.use("/api/translation-groups", translationGroupsRouter);
 app.use("/api/ai/", aiRouter);
 app.use("/api/topics", topicsRouter);
-app.use("/api/tags", tagsRouter);
 app.use("/api/users", usersRouter);
 
 // needed for react router to work properly in production

@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import SelectLanguagePair from "./SelectLanguagePair";
 import ToggleOption from "./ToggleOption";
-import ChipSelect from "./ChipSelect";
+import ChipSelect from "./components/ChipSelect";
 import { useContext } from "react";
 import { AuthContext } from "./Authorisation/AuthContext";
 

@@ -10,7 +10,7 @@ import SelectLanguagePair from "./SelectLanguagePair";
 import { useContext } from "react";
 import { AuthContext } from "./Authorisation/AuthContext";
 import SwapLanguagePair from "./SwapLanguagePair";
-import ChipSelect from "./ChipSelect";
+import ChipSelect from "./components/ChipSelect";
 
 const TestSettings = ({
   testObject,

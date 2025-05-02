@@ -12,7 +12,7 @@ const passwordSchema = z
 const usernameSchema = z
   .string()
   .min(2, { message: 'Username must be at least 2 characters long' })
-  .max(50, { message: 'Username must be at most 50 characters long' })
+  .max(20, { message: 'Username must be at most 20 characters long' })
   .regex(/^[a-zA-Z0-9_]+$/, { message: 'Username can only contain letters, numbers, and underscores' });
 
 

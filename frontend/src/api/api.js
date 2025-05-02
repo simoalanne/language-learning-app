@@ -11,7 +11,7 @@ import axios from "axios";
  */
 export const loginOrRegister = async (username, password, isLogin) => {
   const res = await axios.post(
-    `/api/auth/${isLogin ? "login" : "register"}`,
+    `/api/users/${isLogin ? "login" : "register"}`,
     {
       username,
       password,
@@ -131,5 +131,19 @@ export const generateWords = async (data, token) => {
       headers: { Authorization: `Bearer ${token}` },
     }
   );
+  return response.data;
+};
+
+export const getUserTopics = async (token) => {
+  const response = await axios.get("/api/topics/", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const getPublicTopics = async () => {
+  const response = await axios.get("/api/topics/public");
   return response.data;
 };

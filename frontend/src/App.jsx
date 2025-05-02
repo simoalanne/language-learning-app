@@ -10,7 +10,6 @@ import LogInOrRegisterButtons from "./Menu/LogInOrRegisterButtons";
 import LoggedInButtons from "./Menu/LoggedInButtons";
 import LearnWords from "./LearnWords";
 import { AuthContext } from "./Authorisation/AuthContext";
-import NewUserWalkthrough from "./Menu/NewUserWalkthrough";
 import ManageTranslations from "./ManageTranslations";
 import FlashcardMode from "./FlashcardMode";
 import MatchingGameMode from "./MatchingGameMode";
@@ -54,7 +53,6 @@ const App = () => {
               element={
                 <>
                   <LearnWords />
-                  <NewUserWalkthrough />
                 </>
               }
             />

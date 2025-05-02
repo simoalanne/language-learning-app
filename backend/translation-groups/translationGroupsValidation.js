@@ -1,155 +1,84 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-const idSchema = z.number().positive();
-const languageEnum = z.enum(["English", "Finnish", "French", "German", "Spanish", "Swedish"]);
-const wordTypeEnum = z.enum(["noun", "verb", "adjective"]).optional();
-const toneEnum = z.enum(["serious", "playful"]);
-const sentenceTypeEnum = z.enum(["statement", "question", "exclamation"]);
+const groupTypeEnum = z.enum(["word", "sentence", "text"]);
+const languageEnum = z.enum([
+  'English',
+  'Finnish',
+  'French',
+  'German',
+  'Spanish',
+  'Swedish'
+]);
 
-const wordGroupSchema = z.object({
-  wordType: wordTypeEnum,
-  difficultyLevel: z.number().min(1).max(5),
-  words: z.array(
-    z.object({
-      language: languageEnum,
-      word: z.string().min(1),
-      synonyms: z.array(z.string()).max(2)
-    })
-  ).min(2)
+const translationGroupFilterSchema = z.object({
+  topicId: z.coerce.number().int().optional(),
+  groupType: groupTypeEnum.optional(),
+  minDifficultyLevel: z.coerce.number().int().min(1).max(5).optional(),
 });
 
-
-const sentenceGroupSchema = z.object({
-  sentenceType: sentenceTypeEnum,
-  sentences: z.array(
-    z.object({
-      language: languageEnum,
-      sentence: z.string().min(1)
-    })
-  ).min(2)
+const groupDataSchema = z.object({
+  groupType: groupTypeEnum,
+  difficultyLevel: z.coerce.number().int().min(1).max(5).optional(),
+  entries: z.array(z.object({
+    language: languageEnum,
+    content: z.string().min(1)
+  }).strict()),
+  meta: z.object({}).optional().nullable(),
 });
 
-
-const longTextGroupSchema = z.object({
-  title: z.string(),
-  description: z.string().optional(),
-  tone: toneEnum,
-  longTexts: z.array(
-    z.object({
-      language: languageEnum,
-      title: z.string().min(1),
-      body: z.string().min(1),
-    })
-  ).min(2)
-});
-
-const idsSchema = z.array(z.number().positive()).min(1);
+const topicIdSchema = z.coerce.number().int().min(1);
 
 export const validateGetTranslationGroups = (req, res, next) => {
-  const { topicId } = req.params;
-  const result = idSchema.safeParse(Number(topicId));
+  const result = translationGroupFilterSchema.safeParse(req.query);
   if (!result.success) {
-    return res.status(400).json({ error: "Invalid topic ID" });
+    return res.status(400).json({ error: result.error.errors });
   }
   next();
-}
-
-export const validateAddWordGroup = (req, res, next) => {
-  const { wordGroup, topicId } = req.body;
-  const wgResult = wordGroupSchema.safeParse(wordGroup);
-  const topicIdResult = idSchema.safeParse(Number(topicId));
-  const errors = [
-    ...wgResult.error?.errors || [],
-    ...topicIdResult.error?.errors || []
-  ].map(err => err.message);
-  if (!wgResult.success || !topicIdResult.success) {
-    return res.status(400).json({ errors });
-  }
-  next();
-}
-
-export const validateAddSentenceGroup = (req, res, next) => {
-  const { sentenceGroup, topicId } = req.body;
-  const sgResult = sentenceGroupSchema.safeParse(sentenceGroup);
-  const topicIdResult = idSchema.safeParse(Number(topicId));
-  const errors = [
-    ...sgResult.error?.errors || [],
-    ...topicIdResult.error?.errors || []
-  ].map(err => err.message);
-  if (!sgResult.success || !topicIdResult.success) {
-    return res.status(400).json({ errors });
-  }
-  next();
-}
-
-export const validateAddLongTextGroup = (req, res, next) => {
-  const { longTextGroup, topicId } = req.body;
-  const ltgResult = longTextGroupSchema.safeParse(longTextGroup);
-  const topicIdResult = idSchema.safeParse(Number(topicId));
-  const errors = [
-    ...ltgResult.error?.errors || [],
-    ...topicIdResult.error?.errors || []
-  ].map(err => err.message);
-  if (!ltgResult.success || !topicIdResult.success) {
-    return res.status(400).json({ errors });
-  }
-  next();
-}
-
-export const validateUpdateWordGroup = (req, res, next) => {
-  const { wordGroup, groupId, topicId } = req.body;
-  const wgResult = wordGroupSchema.safeParse(wordGroup);
-  const groupIdResult = idSchema.safeParse(groupId);
-  const topicIdResult = idSchema.safeParse(topicId);
-  const errors = [
-    ...wgResult.error?.errors || [],
-    ...groupIdResult.error?.errors || [],
-    ...topicIdResult.error?.errors || []
-  ].map(err => err.message);
-  if (!wgResult.success || !groupIdResult.success || !topicIdResult.success) {
-    return res.status(400).json({ errors });
-  }
-  next();
-}
-
-export const validateUpdateSentenceGroup = (req, res, next) => {
-  const { sentenceGroup, groupId, topicId } = req.body;
-  const sgResult = sentenceGroupSchema.safeParse(sentenceGroup);
-  const groupIdResult = idSchema.safeParse(groupId);
-  const topicIdResult = idSchema.safeParse(topicId);
-  const errors = [
-    ...sgResult.error?.errors || [],
-    ...groupIdResult.error?.errors || [],
-    ...topicIdResult.error?.errors || []
-  ].map(err => err.message);
-  if (!sgResult.success || !groupIdResult.success || !topicIdResult.success) {
-    return res.status(400).json({ errors });
-  }
-  next();
-}
-
-export const validateUpdateLongTextGroup = (req, res, next) => {
-  const { longTextGroup, groupId, topicId } = req.body;
-  const ltgResult = longTextGroupSchema.safeParse(longTextGroup);
-  const groupIdResult = idSchema.safeParse(groupId);
-  const topicIdResult = idSchema.safeParse(topicId);
-  const errors = [
-    ...ltgResult.error?.errors || [],
-    ...groupIdResult.error?.errors || [],
-    ...topicIdResult.error?.errors || []
-  ].map(err => err.message);
-  if (!ltgResult.success || !groupIdResult.success || !topicIdResult.success) {
-    return res.status(400).json({ errors });
-  }
-  next();
-}
+};
 
 export const validateDeleteTranslationGroups = (req, res, next) => {
-  const groupIds = req.body.groupIds;
-
-  const result = idsSchema.safeParse(groupIds);
+  const groupIdsSchema = z.array(z.number().int().min(1));
+  const result = groupIdsSchema.safeParse(req.body.groupIds);
   if (!result.success) {
-    return res.status(400).json({ error: result.error.errors.map(err => err.message) });
+    return res.status(400).json({ error: result.error.errors });
+  }
+  // check for duplicates
+  if (new Set(req.body.groupIds).size !== req.body.groupIds.length) {
+    return res.status(400).json({ error: "Duplicate group IDs are not allowed" });
   }
   next();
-}
+};
+
+export const validateUpdateTranslationGroup = (req, res, next) => {
+  const extendedGroupDataSchema = groupDataSchema.extend({
+    groupId: z.number().int().min(1),
+  });
+  const result = extendedGroupDataSchema.safeParse(req.body.groupData);
+  const topicIdResult = topicIdSchema.safeParse(req.body.topicId);
+  if (!result.success || !topicIdResult.success) {
+    const errors = [
+      ...(result.error?.errors || []),
+      ...(topicIdResult.error?.errors || [])
+    ];
+    return res.status(400).json({ error: errors });
+  }
+  next();
+};
+
+export const validateAddTranslationGroups = (req, res, next) => {
+  const topicIdSchema = z.coerce.number().int().min(1);
+  const groupsDataSchema = z.array(groupDataSchema).nonempty({ message: "At least one group is required" });
+
+  const groupsResult = groupsDataSchema.safeParse(req.body.groupsData);
+  const topicIdResult = topicIdSchema.safeParse(req.body.topicId);
+
+  if (!groupsResult.success || !topicIdResult.success) {
+    const errors = [
+      ...(groupsResult.error?.errors || []),
+      ...(topicIdResult.error?.errors || [])
+    ];
+    return res.status(400).json({ error: errors });
+  }
+  next();
+};
+

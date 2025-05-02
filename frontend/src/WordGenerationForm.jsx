@@ -1,6 +1,6 @@
 import { Box, TextField, Typography, Slider, Button, CircularProgress } from "@mui/material";
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import ChipSelect from "./ChipSelect";
+import ChipSelect from "./components/ChipSelect";
 import LanguageFlag from "./LanguageFlag";
 
 const WordGenerationForm = ({

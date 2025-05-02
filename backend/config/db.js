@@ -26,10 +26,15 @@ export const connectDb = async () => {
   }
 };
 
-export const query = async (text, params, { onlyFirstRow = false } = {}) => {
+export const querySingleRow = async (text, params) => {
   const res = await client.query(text, params);
-  return onlyFirstRow ? res.rows[0] : res.rows;
+  return res.rows[0];
 };
+
+export const query = async (text, params) => {
+  const res = await client.query(text, params);
+  return res.rows;
+}
 
 export const closeDb = async () => {
   try {

@@ -1,4 +1,4 @@
-import { query } from "../config/db.js";
+import { query, querySingleRow } from "../config/db.js";
 import camelcaseKeys from "camelcase-keys";
 
 /**
@@ -10,12 +10,11 @@ import camelcaseKeys from "camelcase-keys";
  * @returns {Promise<number|null>} - The ID of the new user or null if the username already exists.
  */
 export const createUser = async (username, passwordHash) => {
-  const result = await query(
+  const result = await querySingleRow(
     `INSERT INTO users (username, password_hash) VALUES ($1, $2)
     ON CONFLICT (username) DO NOTHING
     RETURNING id`,
     [username, passwordHash],
-    { onlyFirstRow: true }
   );
   return result?.id || null;
 }
@@ -30,10 +29,9 @@ export const createUser = async (username, passwordHash) => {
  * - password: The hashed password of the user.
  */
 export const getUserByUsername = async (username) => {
-  const user = await query(
+  const user = await querySingleRow(
     `SELECT id, username, password_hash as password FROM users WHERE username = $1`,
-    [username],
-    { onlyFirstRow: true }
+    [username]
   );
   return user;
 };
@@ -48,10 +46,9 @@ export const getUserByUsername = async (username) => {
  * - password: The hashed password of the user.
  */
 export const getUserById = async (userId) => {
-  const user = await query(
+  const user = await querySingleRow(
     `SELECT id, username, password_hash as password FROM users WHERE id = $1`,
-    [userId],
-    { onlyFirstRow: true }
+    [userId]
   );
   return user;
 }
@@ -65,14 +62,14 @@ export const getUserById = async (userId) => {
  * @returns {Promise<boolean>} - Returns a promise that resolves to true if the username was changed successfully, false otherwise.
  */
 export const changeUsername = async (userId, newUsername) => {
-  const result = await query(`
+  const result = await querySingleRow(`
     UPDATE users
     SET username = $1
     WHERE id = $2 AND NOT EXISTS (
         SELECT 1 FROM users WHERE username = $1
     )
     RETURNING id;
-  `, [newUsername, userId], { onlyFirstRow: true });
+  `, [newUsername, userId]);
 
   const success = !!result?.id;
   return success;
@@ -86,10 +83,9 @@ export const changeUsername = async (userId, newUsername) => {
  * @returns {Promise<boolean>} - Returns a promise that resolves to true if the password was changed successfully, false otherwise.
  */
 export const changePassword = async (userId, newPasswordHash) => {
-  const result = await query(
+  const result = await querySingleRow(
     `UPDATE users SET password_hash = $1 WHERE id = $2 RETURNING id`,
     [newPasswordHash, userId],
-    { onlyFirstRow: true }
   );
   const success = !!result?.id;
   return success;
@@ -102,10 +98,9 @@ export const changePassword = async (userId, newPasswordHash) => {
  * @returns {Promise<Object>} - Returns a promise that resolves to the user's profile data.
  */
 export const getUserProfile = async (userId) => {
-  const userData = await query(
+  const userData = await querySingleRow(
     `SELECT username, created_at, user_data FROM users WHERE id = $1`,
     [userId],
-    { onlyFirstRow: true }
   );
   return camelcaseKeys(userData, { deep: true });
 };
@@ -118,7 +113,7 @@ export const getUserProfile = async (userId) => {
  * @returns {Promise<boolean>} - Returns a promise that resolves to true if the profile was updated successfully, false otherwise.
  */
 export const updateUserProfile = async (userId, userData) => {
-  const result = await query(
+  const result = await querySingleRow(
     `UPDATE users SET user_data = $1 WHERE id = $2 RETURNING id`,
     [userData, userId]
   );
@@ -133,9 +128,9 @@ export const updateUserProfile = async (userId, userData) => {
  * @returns {Promise<boolean>} - Returns a promise that resolves to true if the account was deleted successfully, false otherwise.
  */
 export const deleteUserAccount = async (userId) => {
-  const result = await query(
+  const result = await querySingleRow(
     `DELETE FROM users WHERE id = $1 RETURNING id`,
-    [userId], { onlyFirstRow: true }
+    [userId]
   );
   const success = !!result?.id;
   return success;

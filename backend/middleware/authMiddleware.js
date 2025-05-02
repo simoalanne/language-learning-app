@@ -12,7 +12,9 @@ export const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Token is missing" });
   try {
-    req.user = decodeJwtToken(token);
+    const decoded = decodeJwtToken(token);
+    if (!decoded) return res.status(401).json({ error: "Invalid or expired token" });
+    req.user = decoded;
     next();
   } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
