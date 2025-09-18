@@ -136,3 +136,5 @@ out
 
 # .http files used for testing
 *.http
+
+.idea/
