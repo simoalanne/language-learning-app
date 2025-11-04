@@ -101,4 +101,4 @@ The app can also be easily run with docker. Here's how:
 
 ## 🌐 **Cloud**
 
-Deployed project can be checked out here: [language-learning-app](https://language-learning-app-efps.onrender.com)
+Deployed project can be checked out here: https://language-learning-app.simoalanne.com
