@@ -11,11 +11,7 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      react: path.resolve(__dirname, "../node_modules/react"),
-      "react-dom": path.resolve(__dirname, "../node_modules/react-dom"),
-    },
-    preserveSymlinks: true,
+    preserveSymlinks: false,
   },
   cacheDir: path.resolve(__dirname, "../.vite-cache"), // Set cache directory outside frontend
 });

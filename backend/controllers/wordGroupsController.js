@@ -27,6 +27,7 @@ export const getWordGroups = async (req, res) => {
 
 export const getPublicWordGroups = async (_, res) => {
   try {
+    console.log("Fetching public word groups");
     const wordGroups = await fetchPublicWordGroups();
     res.json(wordGroups);
   } catch (error) {

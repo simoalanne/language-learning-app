@@ -6,6 +6,7 @@ import wordGroupsRouter from "./routes/wordGroupsRouter.js";
 import authRouter from "./routes/authRouter.js";
 import aiRouter from "./routes/aiRouter.js";
 import { handleInvalidJsonError, enforceJsonContentType } from "./middleware/errorHandlingMiddleware.js";
+import { dbReadyMiddleware } from "./middleware/dbReadyMiddleware.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicPath = path.join(__dirname, "public");
@@ -16,6 +17,10 @@ app.use(express.json());
 app.use(handleInvalidJsonError);
 app.use(enforceJsonContentType);
 app.use(express.static(publicPath));
+
+// Add database ready check before API routes
+app.use("/api/", dbReadyMiddleware);
+
 app.use("/api/word-groups", wordGroupsRouter);
 app.use("/api/ai/", aiRouter);
 app.use("/api/auth", authRouter);
