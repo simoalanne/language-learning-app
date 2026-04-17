@@ -8,7 +8,7 @@ import {
   Typography,
   Icon,
 } from "@mui/material";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import ToggleOption from "./ToggleOption";
 import TranslationCard from "./TranslationCard";
 import QuickAdd from "./QuickAdd";
@@ -19,10 +19,10 @@ import AddIcon from "@mui/icons-material/Add";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import EditIcon from "@mui/icons-material/Edit";
 import { useNavigate, useParams } from "react-router-dom";
-import { AuthContext } from "./Authorisation/AuthContext";
 import useWordgroups from "./hooks/useWordgroups";
 import ContentAligner from "./ContentAligner";
 import { addWordGroup, editWordGroup, deleteWordGroup } from "./api/api";
+import { useAppAuth } from "./Authorisation/useAppAuth";
 const ManageTranslations = () => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
@@ -34,7 +34,7 @@ const ManageTranslations = () => {
   const navigate = useNavigate();
   const tab = useParams().tab;
   const [activeTab, setActiveTab] = useState("");
-  const { token } = useContext(AuthContext);
+  const { getToken } = useAppAuth();
   const { wordgroups, setWordgroups } = useWordgroups();
   const languageNames = ["English", "Finnish", "French", "German", "Spanish", "Swedish"];
   useEffect(() => {
@@ -152,7 +152,7 @@ const ManageTranslations = () => {
       tags: tags.map((tag) => tag?.trim()),
     };
     if (activeTab === "add" || activeTab === "quick-add") {
-      const data = await addWordGroup(wordGroupObj, token);
+      const data = await addWordGroup(wordGroupObj, getToken);
       const id = data.id;
       setToastMsg("Translation group added successfully.");
       setToastOpen(true);
@@ -172,7 +172,7 @@ const ManageTranslations = () => {
     }
 
     if (activeTab === "edit") {
-      const data = await editWordGroup(wordGroupObj, wordgroups[editModeIndex].id, token);
+      const data = await editWordGroup(wordGroupObj, wordgroups[editModeIndex].id, getToken);
       const id = data.id;
       setToastMsg("Translation group updated successfully.");
       setToastOpen(true);
@@ -184,7 +184,7 @@ const ManageTranslations = () => {
   };
 
   const onDeleteTranslationGroup = async () => {
-    await deleteWordGroup(wordgroups[editModeIndex].id, token);
+    await deleteWordGroup(wordgroups[editModeIndex].id, getToken);
     const updatedWordGroups = wordgroups.filter((_, i) => i !== editModeIndex);
     setWordgroups(updatedWordGroups);
 

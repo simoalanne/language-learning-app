@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Checkbox, TextField, InputAdornment, Typography, Tooltip, Card, CardContent } from "@mui/material";
 import LanguageFlag from "./LanguageFlag";
 

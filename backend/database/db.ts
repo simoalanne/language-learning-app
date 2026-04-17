@@ -170,21 +170,46 @@ export const getTotalAndPages = async (tableName, limit) => {
   return { total, pages };
 };
 
-export const getUserByUsername = async (username) => {
+export const upsertClerkUser = async ({
+  clerkId,
+  email,
+  firstName,
+  lastName,
+}: {
+  clerkId: string;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+}) => {
+  const [user] = await db
+    .insert(schema.users)
+    .values({
+      clerk_id: clerkId,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+    })
+    .onConflictDoUpdate({
+      target: schema.users.clerk_id,
+      set: {
+        email,
+        first_name: firstName,
+        last_name: lastName,
+      },
+    })
+    .returning();
+
+  return user;
+};
+
+export const deleteClerkUser = async (clerkId: string) => {
+  await db.delete(schema.users).where(eq(schema.users.clerk_id, clerkId));
+};
+
+export const getUserByClerkId = async (clerkId: string) => {
   const user = await db
     .select()
     .from(schema.users)
-    .where(eq(schema.users.username, username));
+    .where(eq(schema.users.clerk_id, clerkId));
   return user[0];
-};
-
-export const addUser = async (username, password) => {
-  const [newUser] = await db
-    .insert(schema.users)
-    .values({
-      username,
-      password,
-    })
-    .returning();
-  return newUser.id;
 };

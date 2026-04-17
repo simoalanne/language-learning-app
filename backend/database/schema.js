@@ -2,16 +2,16 @@ import {
   pgTable,
   serial,
   text,
-  integer,
   timestamp,
   jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  clerk_id: text("clerk_id").primaryKey(),
+  email: text("email"),
+  first_name: text("first_name"),
+  last_name: text("last_name"),
 });
 
 /**
@@ -30,7 +30,7 @@ export const users = pgTable("users", {
  */
 export const word_groups = pgTable("word_groups", {
   id: serial("id").primaryKey(),
-  user_id: integer("user_id").references(() => users.id, {
+  user_id: text("user_id").references(() => users.clerk_id, {
     onDelete: "cascade",
   }),
   data: jsonb("data").notNull(),
@@ -46,6 +46,6 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const word_groupsRelations = relations(word_groups, ({ one }) => ({
   user: one(users, {
     fields: [word_groups.user_id],
-    references: [users.id],
+    references: [users.clerk_id],
   }),
 }));

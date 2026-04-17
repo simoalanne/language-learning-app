@@ -1,6 +1,6 @@
-import { useState, useContext } from "react";
-import { AuthContext } from "../Authorisation/AuthContext";
+import { useState } from "react";
 import { addWordGroupsBulk, generateWords } from "../api/api";
+import { useAppAuth } from "../Authorisation/useAppAuth";
 
 const formConfig = {
   languageNames: ["English", "Finnish", "French", "German", "Spanish", "Swedish"],
@@ -28,7 +28,7 @@ export const useAiWordGeneration = () => {
   const [generatedWords, setGeneratedWords] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const { token } = useContext(AuthContext);
+  const { getToken } = useAppAuth();
 
   /**
    * Updates a single field in the form state.
@@ -57,7 +57,7 @@ export const useAiWordGeneration = () => {
           wordCount: form.wordCount,
           wordTypes: form.selectedWordTypes,
           includedLanguages: form.languages,
-        }, token
+        }, getToken
       );
 
       const generated = words.map(item => ({
@@ -99,7 +99,7 @@ export const useAiWordGeneration = () => {
     }));
 
     try {
-      await addWordGroupsBulk(bulkData, token);
+      await addWordGroupsBulk(bulkData, getToken);
       setGeneratedWords([]);
       setForm(initialForm);
     } catch (error) {

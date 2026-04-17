@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,16 +8,20 @@ import { CssBaseline, AppBar, Typography, Box } from "@mui/material";
 import LogInOrRegisterButtons from "./Menu/LogInOrRegisterButtons";
 import LoggedInButtons from "./Menu/LoggedInButtons";
 import LearnWords from "./LearnWords";
-import { AuthContext } from "./Authorisation/AuthContext";
-import NewUserWalkthrough from "./Menu/NewUserWalkthrough";
 import ManageTranslations from "./ManageTranslations";
 import FlashcardMode from "./FlashcardMode";
 import MatchingGameMode from "./MatchingGameMode";
 import TestMode from "./TestMode";
 import AiTranslationGeneration from "./AiTranslationGeneratation";
+import { useAppAuth } from "./Authorisation/useAppAuth";
 
 const App = () => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, isLoaded } = useAppAuth();
+
+  if (!isLoaded) {
+    return null;
+  }
+
   return (
     <Router>
       <CssBaseline />
@@ -52,10 +55,7 @@ const App = () => {
             <Route
               path="/learn"
               element={
-                <>
-                  <LearnWords />
-                  <NewUserWalkthrough />
-                </>
+                <LearnWords />
               }
             />
             <Route

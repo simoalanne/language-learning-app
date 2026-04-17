@@ -71,6 +71,12 @@ const Flashcard = ({
     }, 600);
   };
 
+  const resolveFlagUrl = (index) => {
+    const languageName = translations[index].languageName;
+    const capitalized = languageName.charAt(0).toUpperCase() + languageName.slice(1);
+    return `url(${capitalized}.svg)`;
+  }
+
   return (
     <Box sx={{ display: "flex", justifyContent: "center" }}>
       <Box
@@ -89,7 +95,7 @@ const Flashcard = ({
           <div
             className="cardFront"
             style={{
-              backgroundImage: `url(${translations[frontIndex].languageName}.svg)`,
+              backgroundImage: resolveFlagUrl(frontIndex),
             }}
           >
             <Typography variant="h5" className="cardContent">
@@ -102,7 +108,7 @@ const Flashcard = ({
           <div
             className="cardBack"
             style={{
-              backgroundImage: `url(${translations[backIndex].languageName}.svg)`,
+              backgroundImage: resolveFlagUrl(backIndex),
             }}
           >
             <Typography variant="h5" className="cardContent">

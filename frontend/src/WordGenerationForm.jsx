@@ -50,7 +50,7 @@ const WordGenerationForm = ({
     <ChipSelect
       minimumSelectedCount={2}
       options={formConfig.languageNames}
-      icons={formConfig.languageNames.map((lang) => <LanguageFlag languageName={lang} />)}
+      icons={formConfig.languageNames.map((lang) => <LanguageFlag key={lang} languageName={lang} />)}
       selectedOptions={form.languages}
       setSelectedOptions={(langs) => onChange("languages", langs)}
       selectedColor="secondary"

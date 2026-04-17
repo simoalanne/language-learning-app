@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../middleware/authMiddleware.js";
+import { requireApiAuth } from "../middleware/authMiddleware.ts";
 import { validateWordGroup, validateBulkWordGroups } from "../middleware/wordGroupsMiddleware.js";
 import {
   getWordGroups,
@@ -15,11 +15,11 @@ const wordGroupsRouter = express.Router();
 
 // API Routes
 wordGroupsRouter.get("/public", getPublicWordGroups);
-wordGroupsRouter.get("/users", verifyToken, getWordGroups);
-wordGroupsRouter.get("/users/:id", verifyToken, getWordGroup);
-wordGroupsRouter.post("/users", verifyToken, validateWordGroup, createWordGroup);
-wordGroupsRouter.post("/users/bulk", verifyToken, validateBulkWordGroups, createBulkWordGroups);
-wordGroupsRouter.delete("/users/:id", verifyToken, deleteWordGroup);
-wordGroupsRouter.put("/users/:id", verifyToken, validateWordGroup, updateWordGroup);
+wordGroupsRouter.get("/users", requireApiAuth, getWordGroups);
+wordGroupsRouter.get("/users/:id", requireApiAuth, getWordGroup);
+wordGroupsRouter.post("/users", requireApiAuth, validateWordGroup, createWordGroup);
+wordGroupsRouter.post("/users/bulk", requireApiAuth, validateBulkWordGroups, createBulkWordGroups);
+wordGroupsRouter.delete("/users/:id", requireApiAuth, deleteWordGroup);
+wordGroupsRouter.put("/users/:id", requireApiAuth, validateWordGroup, updateWordGroup);
 
 export default wordGroupsRouter;

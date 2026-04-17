@@ -47,7 +47,7 @@ export const isDbInitialized = () => isDbReady && client && !client.state?.close
 /**
  * Adds a new word group to the database with JSONB storage.
  * @param {Object} wordGroupObj - { translations: [...], tags: [...] }
- * @param {number} userId - The ID of the user who owns the word group.
+ * @param {string | null | undefined} userId - The Clerk ID of the user who owns the word group.
  * @returns {Promise<Object>} - The created word group with ID.
  */
 export const addNewWordGroup = async (wordGroupObj, userId) => {
@@ -72,7 +72,7 @@ export const addNewWordGroup = async (wordGroupObj, userId) => {
 /**
  * Updates an existing word group.
  * @param {Object} wordGroupObj - { translations: [...], tags: [...] }
- * @param {number} userId - The ID of the user who owns the word group.
+ * @param {string} userId - The Clerk ID of the user who owns the word group.
  * @param {number} groupId - The ID of the word group to update.
  * @returns {Promise<Object>} - The updated word group.
  */
@@ -97,7 +97,7 @@ export const updateWordGroup = async (wordGroupObj, userId, groupId) => {
  * Deletes a word group from the database.
  * 
  * @param {number} groupId - The ID of the word group to delete.
- * @param {number} userId - The ID of the user who owns the word group.
+ * @param {string} userId - The Clerk ID of the user who owns the word group.
  * @returns {Promise<void>}
  * @throws {Error} - If an error occurs during the deletion.
  */
@@ -119,7 +119,7 @@ export const deleteWordGroupById = async (groupId, userId) => {
  * Gets a word group by its ID.
  *
  * @param {number} groupId - The ID of the word group to get.
- * @param {number} userId - The ID of the user who owns the word group.
+ * @param {string | null | undefined} userId - The Clerk ID of the user who owns the word group.
  * @returns {Promise<Object>} - The word group object.
  * @throws {Error} - If an error occurs during the query.
  */
@@ -162,7 +162,7 @@ export const getWordGroupById = async (groupId, userId) => {
  * @param {number} offset - The offset for pagination.
  * @param {number} limit - The limit for pagination.
  * @param {boolean} getAll - If true, gets all word groups.
- * @param {number} userId - The ID of the user who owns the word groups.
+ * @param {string | null | undefined} userId - The Clerk ID of the user who owns the word groups.
  * @returns {Promise<Object[]>} - An array of word group objects with JSONB data.
  */
 export const getMultipleWordGroups = async ({
@@ -244,43 +244,70 @@ export const getTotalAndPages = async (tableName, limit) => {
 };
 
 /**
- * Gets a user by their username.
- * 
- * @param {string} username - The username of the user.
- * @returns {Promise<Object>} - The user object with the username and hashed password.
+ * Upserts a Clerk user snapshot into the local database.
+ *
+ * @param {{ clerkId: string, email: string | null, firstName: string | null, lastName: string | null }} userData
+ * @returns {Promise<Object>} - The upserted user row.
  */
-export const getUserByUsername = async (username) => {
+export const upsertClerkUser = async ({ clerkId, email, firstName, lastName }) => {
   try {
-    const user = await db
-      .select()
-      .from(schema.users)
-      .where(eq(schema.users.username, username));
-    return user[0];
+    const [user] = await db
+      .insert(schema.users)
+      .values({
+        clerk_id: clerkId,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+      })
+      .onConflictDoUpdate({
+        target: schema.users.clerk_id,
+        set: {
+          email,
+          first_name: firstName,
+          last_name: lastName,
+        },
+      })
+      .returning();
+
+    return user;
   } catch (error) {
-    console.error("Error getting user by username:", error);
+    console.error("Error upserting Clerk user:", error);
     throw error;
   }
 };
 
 /**
- * Adds a new user to the database.
- * 
- * @param {string} username - The username of the user.
- * @param {string} password - The hashed password of the user.
- * @returns {Promise<number>} - The ID of the new user.
+ * Deletes a Clerk user snapshot from the local database.
+ *
+ * @param {string} clerkId - The Clerk user ID.
+ * @returns {Promise<void>}
  */
-export const addUser = async (username, password) => {
+export const deleteClerkUser = async (clerkId) => {
   try {
-    const [newUser] = await db
-      .insert(schema.users)
-      .values({
-        username,
-        password,
-      })
-      .returning();
-    return newUser.id;
+    await db
+      .delete(schema.users)
+      .where(eq(schema.users.clerk_id, clerkId));
   } catch (error) {
-    console.error("Error adding user:", error);
-    return { error: "Internal server error" };
+    console.error("Error deleting Clerk user:", error);
+    throw error;
+  }
+};
+
+/**
+ * Gets a user by their Clerk ID.
+ *
+ * @param {string} clerkId - The Clerk user ID.
+ * @returns {Promise<Object | undefined>} - The user object.
+ */
+export const getUserByClerkId = async (clerkId) => {
+  try {
+    const user = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.clerk_id, clerkId));
+    return user[0];
+  } catch (error) {
+    console.error("Error getting user by Clerk ID:", error);
+    throw error;
   }
 };

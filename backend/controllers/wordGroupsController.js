@@ -13,7 +13,7 @@ export const getWordGroups = async (req, res) => {
     const includePagination = req.query.paginationIncluded === "true";
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit);
-    const wordGroups = await fetchWordGroups(req.user.id, offset, limit);
+    const wordGroups = await fetchWordGroups(req.clerkId, offset, limit);
     
     if (!includePagination) return res.json(wordGroups);
     
@@ -39,7 +39,7 @@ export const getPublicWordGroups = async (_, res) => {
 export const getWordGroup = async (req, res) => {
   try {
     const groupId = parseInt(req.params.id);
-    const response = await fetchWordGroupById(groupId, req.user.id);
+    const response = await fetchWordGroupById(groupId, req.clerkId);
     res.json(response);
   } catch (error) {
     console.error(error);
@@ -49,7 +49,7 @@ export const getWordGroup = async (req, res) => {
 
 export const createWordGroup = async (req, res) => {
   try {
-    const id = await insertWordGroup(req.body, req.user.id);
+    const id = await insertWordGroup(req.body, req.clerkId);
     res.json(id);
   } catch (error) {
     console.error(error);
@@ -59,7 +59,7 @@ export const createWordGroup = async (req, res) => {
 
 export const createBulkWordGroups = async (req, res) => {
   try {
-    const ids = await insertBulkWordGroups(req.body.bulkData, req.user.id);
+    const ids = await insertBulkWordGroups(req.body.bulkData, req.clerkId);
     res.json(ids);
   } catch (error) {
     console.error(error);
@@ -69,7 +69,7 @@ export const createBulkWordGroups = async (req, res) => {
 
 export const deleteWordGroup = async (req, res) => {
   try {
-    const id = await removeWordGroup(parseInt(req.params.id), req.user.id);
+    const id = await removeWordGroup(parseInt(req.params.id), req.clerkId);
     res.json(id);
   } catch (error) {
     console.error(error);
@@ -79,7 +79,7 @@ export const deleteWordGroup = async (req, res) => {
 
 export const updateWordGroup = async (req, res) => {
   try {
-    const response = await modifyWordGroup(req.body, req.user.id, parseInt(req.params.id));
+    const response = await modifyWordGroup(req.body, req.clerkId, parseInt(req.params.id));
     res.status(response?.error ? 400 : 200).json(response);
   } catch (error) {
     console.error(error);

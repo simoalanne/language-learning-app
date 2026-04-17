@@ -1,10 +1,11 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import { clerkMiddleware } from "@clerk/express";
 
 import wordGroupsRouter from "./routes/wordGroupsRouter.js";
-import authRouter from "./routes/authRouter.js";
 import aiRouter from "./routes/aiRouter.js";
+import clerkRouter from "./routes/clerkRouter.ts";
 import { handleInvalidJsonError, enforceJsonContentType } from "./middleware/errorHandlingMiddleware.js";
 import { dbReadyMiddleware } from "./middleware/dbReadyMiddleware.js";
 
@@ -13,9 +14,11 @@ const publicPath = path.join(__dirname, "public");
 
 const app = express();
 
+app.use("/api/auth/clerk", dbReadyMiddleware, clerkRouter);
 app.use(express.json());
 app.use(handleInvalidJsonError);
 app.use(enforceJsonContentType);
+app.use(clerkMiddleware());
 app.use(express.static(publicPath));
 
 // Add database ready check before API routes
@@ -23,7 +26,6 @@ app.use("/api/", dbReadyMiddleware);
 
 app.use("/api/word-groups", wordGroupsRouter);
 app.use("/api/ai/", aiRouter);
-app.use("/api/auth", authRouter);
 
 // needed for react router to work properly in production
 // when the user refreshes the page or tries to access a route directly
