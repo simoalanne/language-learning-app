@@ -6,9 +6,10 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
+    "typecheck": "tsc --noEmit",
+    "start": "node src/index.ts",
     "db:generate": "drizzle-kit push",
-    "db:seed": "node database/seed.js"
+    "db:seed": "node scripts/seeding/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,18 +17,18 @@
   "description": "",
   "dependencies": {
     "@clerk/express": "^2.1.0",
-    "@google/genai": "^0.10.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.6.1",
-    "drizzle-orm": "^0.45.1",
-    "express": "^4.21.2",
-    "express-validator": "^7.2.1",
-    "pg": "^8.20.0"
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "@contract-first-api/express": "^2.0.0",
+    "@language-learning-app/contracts": "workspace:*"
   },
   "devDependencies": {
-    "@types/express": "^5.0.3",
-    "@types/pg": "^8.18.0",
-    "drizzle-kit": "^0.31.9",
-    "typescript": "^5.9.3"
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^6.0.3"
   }
 }

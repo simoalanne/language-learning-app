@@ -1,4 +1,3 @@
-import useWordgroups from "./hooks/useWordgroups";
 import { useState } from "react";
 import { filterWordGroupsByLanguagesAndTags } from "./util/helpers";
 import TestItem from "./TestItem";
@@ -10,10 +9,29 @@ import TestEndScreen from "./TestEndScreen";
 import { useNavigate } from "react-router-dom";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { useAppAuth } from "./Authorisation/useAppAuth";
+import { useApiClient } from "./api/api";
+import { normalizeWordGroup } from "./api/wordGroups";
 
 const TestMode = () => {
   const navigate = useNavigate();
-  const { wordgroups, loading } = useWordgroups();
+  const { api } = useApiClient();
+  const { isAuthenticated, isLoaded } = useAppAuth();
+  const publicWordGroupsQuery = api.wordGroups.public.list.useQuery(
+    isLoaded && !isAuthenticated ? {} : false,
+    {
+      select: (data) => data.wordGroups.map(normalizeWordGroup),
+    }
+  );
+  const userWordGroupsQuery = api.wordGroups.users.list.useQuery(
+    isLoaded && isAuthenticated ? {} : false,
+    {
+      select: (data) => data.wordGroups.map(normalizeWordGroup),
+    }
+  );
+  const wordGroupsQuery = isAuthenticated ? userWordGroupsQuery : publicWordGroupsQuery;
+  const wordgroups = wordGroupsQuery.data ?? [];
+  const loading = !isLoaded || wordGroupsQuery.isLoading;
   const [testObject, setTestObject] = useState({
     test: {
       questions: [],

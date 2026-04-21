@@ -18,7 +18,11 @@
     "axios": "^1.7.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.0.1"
+    "react-router-dom": "^7.0.1",
+    "@contract-first-api/api-client": "^2.1.1",
+    "@contract-first-api/react-query": "^2.0.0",
+    "@tanstack/react-query": "^5.99.2",
+    "@language-learning-app/contracts": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

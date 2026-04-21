@@ -3,15 +3,33 @@ import Flashcard from "./Flashcard";
 import { Box, Button, Fade, TextField, Typography } from "@mui/material";
 import MoveIcons from "./MoveIcons";
 import ContentAligner from "./ContentAligner";
-import useWordgroups from "./hooks/useWordgroups";
 import { useNavigate } from "react-router-dom";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { useAppAuth } from "./Authorisation/useAppAuth";
+import { useApiClient } from "./api/api";
+import { normalizeWordGroup } from "./api/wordGroups";
 
 const FlashcardMode = () => {
   const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState(0); // Track current index
   const [fadeIn, setFadeIn] = useState(true); // Control fade-in animation
-  const { wordgroups, loading } = useWordgroups();
+  const { api } = useApiClient();
+  const { isAuthenticated, isLoaded } = useAppAuth();
+  const publicWordGroupsQuery = api.wordGroups.public.list.useQuery(
+    isLoaded && !isAuthenticated ? {} : false,
+    {
+      select: (data) => data.wordGroups.map(normalizeWordGroup),
+    }
+  );
+  const userWordGroupsQuery = api.wordGroups.users.list.useQuery(
+    isLoaded && isAuthenticated ? {} : false,
+    {
+      select: (data) => data.wordGroups.map(normalizeWordGroup),
+    }
+  );
+  const wordGroupsQuery = isAuthenticated ? userWordGroupsQuery : publicWordGroupsQuery;
+  const wordgroups = wordGroupsQuery.data ?? [];
+  const loading = !isLoaded || wordGroupsQuery.isLoading;
   const resetIndexesRef = useRef(null);
   const [inputIndex, setInputIndex] = useState("");
 
