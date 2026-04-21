@@ -1,6 +1,5 @@
-import { useState, useContext } from "react";
-import { AuthContext } from "../Authorisation/AuthContext";
-import { addWordGroupsBulk, generateWords } from "../api/api";
+import { useState } from "react";
+import { useApiClient } from "../api/api";
 
 const formConfig = {
   languageNames: ["English", "Finnish", "French", "German", "Spanish", "Swedish"],
@@ -26,9 +25,9 @@ const initialForm = {
 export const useAiWordGeneration = () => {
   const [form, setForm] = useState(initialForm);
   const [generatedWords, setGeneratedWords] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const { token } = useContext(AuthContext);
+  const { api } = useApiClient();
+  const generateWordsMutation = api.ai.generateWords.useMutation();
+  const createBulkWordGroupsMutation = api.wordGroups.users.createBulk.useMutation();
 
   /**
    * Updates a single field in the form state.
@@ -48,16 +47,15 @@ export const useAiWordGeneration = () => {
    */
   const handleWordGenerationFormSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      const words = await generateWords(
+      const words = await generateWordsMutation.mutateAsync(
         {
           topic: form.topic,
           skillLevel: form.skillLevel,
           wordCount: form.wordCount,
           wordTypes: form.selectedWordTypes,
           includedLanguages: form.languages,
-        }, token
+        }
       );
 
       const generated = words.map(item => ({
@@ -72,8 +70,6 @@ export const useAiWordGeneration = () => {
       setGeneratedWords(generated);
     } catch (error) {
       console.error("Word generation failed:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -82,7 +78,6 @@ export const useAiWordGeneration = () => {
    * Filters out unselected and empty translations before submission.
    */
   const handleSaveWordsToDatabase = async () => {
-    setLoading(true);
     const selectedItems = generatedWords.filter((item) => item.isSelected);
     // Filter out empty translations tags so they are not sent to the backend
     const tags = [form.topic.toLowerCase(), form.skillLevel.toLowerCase()].filter(t => t.trim() !== "");
@@ -99,13 +94,13 @@ export const useAiWordGeneration = () => {
     }));
 
     try {
-      await addWordGroupsBulk(bulkData, token);
+      await createBulkWordGroupsMutation.mutateAsync({ bulkData });
+      void api.wordGroups.users.list.invalidate({});
       setGeneratedWords([]);
       setForm(initialForm);
     } catch (error) {
       console.error("Saving words failed:", error);
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -154,7 +149,7 @@ export const useAiWordGeneration = () => {
     handleSaveWordsToDatabase,
     handleWordItemSelectChange,
     handleWordItemTranslationChange,
-    loading,
+    loading: generateWordsMutation.isPending || createBulkWordGroupsMutation.isPending,
   };
 };
 

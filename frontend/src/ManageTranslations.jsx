@@ -8,7 +8,7 @@ import {
   Typography,
   Icon,
 } from "@mui/material";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import ToggleOption from "./ToggleOption";
 import TranslationCard from "./TranslationCard";
 import QuickAdd from "./QuickAdd";
@@ -19,10 +19,10 @@ import AddIcon from "@mui/icons-material/Add";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import EditIcon from "@mui/icons-material/Edit";
 import { useNavigate, useParams } from "react-router-dom";
-import { AuthContext } from "./Authorisation/AuthContext";
-import useWordgroups from "./hooks/useWordgroups";
 import ContentAligner from "./ContentAligner";
-import { addWordGroup, editWordGroup, deleteWordGroup } from "./api/api";
+import { useAppAuth } from "./Authorisation/useAppAuth";
+import { useApiClient } from "./api/api";
+import { normalizeWordGroup } from "./api/wordGroups";
 const ManageTranslations = () => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);
@@ -34,14 +34,30 @@ const ManageTranslations = () => {
   const navigate = useNavigate();
   const tab = useParams().tab;
   const [activeTab, setActiveTab] = useState("");
-  const { token } = useContext(AuthContext);
-  const { wordgroups, setWordgroups } = useWordgroups();
+  const { api } = useApiClient();
+  const { isAuthenticated, isLoaded } = useAppAuth();
+  const wordGroupsQuery = api.wordGroups.users.list.useQuery(
+    isLoaded && isAuthenticated ? {} : false,
+    {
+      select: (data) => data.wordGroups.map(normalizeWordGroup),
+    }
+  );
+  const createWordGroup = api.wordGroups.users.create.useMutation();
+  const updateWordGroup = api.wordGroups.users.update.useMutation();
+  const removeWordGroup = api.wordGroups.users.remove.useMutation();
+  const wordgroups = wordGroupsQuery.data ?? [];
   const languageNames = ["English", "Finnish", "French", "German", "Spanish", "Swedish"];
   useEffect(() => {
     if (tab) {
       setActiveTab(tab);
     }
   }, [tab]);
+
+  useEffect(() => {
+    if (tab === "edit" && wordgroups.length > 0 && editModeIndex === null) {
+      handleIndexChange(0);
+    }
+  }, [tab, wordgroups, editModeIndex]);
 
   const allTags = [
     ...new Set(
@@ -152,14 +168,11 @@ const ManageTranslations = () => {
       tags: tags.map((tag) => tag?.trim()),
     };
     if (activeTab === "add" || activeTab === "quick-add") {
-      const data = await addWordGroup(wordGroupObj, token);
-      const id = data.id;
+      const id = await createWordGroup.mutateAsync(wordGroupObj);
+      void api.wordGroups.users.list.invalidate({});
       setToastMsg("Translation group added successfully.");
       setToastOpen(true);
       setToastSeverity("success");
-      const newWordGroups = [...wordgroups];
-      newWordGroups.push({ id, ...wordGroupObj });
-      setWordgroups(newWordGroups);
       const newTranslations = translations.map((t) => ({
         languageName: t.languageName,
         word: "",
@@ -172,21 +185,19 @@ const ManageTranslations = () => {
     }
 
     if (activeTab === "edit") {
-      const data = await editWordGroup(wordGroupObj, wordgroups[editModeIndex].id, token);
-      const id = data.id;
+      const id = wordgroups[editModeIndex].id;
+      await updateWordGroup.mutateAsync({ id, ...wordGroupObj });
+      void api.wordGroups.users.list.invalidate({});
       setToastMsg("Translation group updated successfully.");
       setToastOpen(true);
       setToastSeverity("success");
-      const updatedWordGroups = [...wordgroups];
-      updatedWordGroups[editModeIndex] = { id, ...wordGroupObj };
-      setWordgroups(updatedWordGroups);
     }
   };
 
   const onDeleteTranslationGroup = async () => {
-    await deleteWordGroup(wordgroups[editModeIndex].id, token);
+    await removeWordGroup.mutateAsync({ id: wordgroups[editModeIndex].id });
+    void api.wordGroups.users.list.invalidate({});
     const updatedWordGroups = wordgroups.filter((_, i) => i !== editModeIndex);
-    setWordgroups(updatedWordGroups);
 
     if (updatedWordGroups.length === 0) {
       setToastMsg(
@@ -395,11 +406,8 @@ const ManageTranslations = () => {
     },
   });
 
-  // if the initial url is /manage-translations/edit, and there are word groups
-  // then the handleIndexChange function has to be called with the first index
-  // to correctly display the first word group in edit mode
-  if (tab === "edit" && wordgroups.length > 0 && editModeIndex === null) {
-    handleIndexChange(0);
+  if (!isLoaded || wordGroupsQuery.isLoading) {
+    return null;
   }
 
   return (

@@ -15,13 +15,15 @@ import {
   DialogContent,
   DialogContentText,
 } from "@mui/material";
-import useWordgroups from "./hooks/useWordgroups";
 import ContentAligner from "./ContentAligner";
 import MatchingGameSettings from "./MatchingGameSettings";
 import { shuffle } from "./util/helpers";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useNavigate } from "react-router-dom";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { useAppAuth } from "./Authorisation/useAppAuth";
+import { useApiClient } from "./api/api";
+import { normalizeWordGroup } from "./api/wordGroups";
 
 const MatchingGameMode = () => {
   const [flippedCards, setFlippedCards] = useState([]); // store the indexes of the flipped cards
@@ -33,7 +35,23 @@ const MatchingGameMode = () => {
   const [openedPairIsMatch, setOpenedPairIsMatch] = useState(false);
   const [timer, setTimer] = useState(null);
   const [cardScale, setCardScale] = useState(1);
-  const { wordgroups, loading } = useWordgroups();
+  const { api } = useApiClient();
+  const { isAuthenticated, isLoaded } = useAppAuth();
+  const publicWordGroupsQuery = api.wordGroups.public.list.useQuery(
+    isLoaded && !isAuthenticated ? {} : false,
+    {
+      select: (data) => data.wordGroups.map(normalizeWordGroup),
+    }
+  );
+  const userWordGroupsQuery = api.wordGroups.users.list.useQuery(
+    isLoaded && isAuthenticated ? {} : false,
+    {
+      select: (data) => data.wordGroups.map(normalizeWordGroup),
+    }
+  );
+  const wordGroupsQuery = isAuthenticated ? userWordGroupsQuery : publicWordGroupsQuery;
+  const wordgroups = wordGroupsQuery.data ?? [];
+  const loading = !isLoaded || wordGroupsQuery.isLoading;
   const [settings, setSettings] = useState({
     open: true,
     gameStartedAtLeastOnce: false, // changes the initial message of the button from start and restart

@@ -1,13 +1,20 @@
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import { StrictMode } from 'react'
-import AuthProvider from "./Authorisation/AuthProvider"
+import { createRoot } from "react-dom/client";
+import { ClerkProvider } from "@clerk/react";
+import { StrictMode } from "react";
 
-createRoot(document.getElementById('root')).render(
+import "./index.css";
+import App from "./App.jsx";
+import { clerkPublishableKey } from "./Authorisation/clerk";
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthProvider>
+    <ClerkProvider
+      publishableKey={clerkPublishableKey}
+      signInForceRedirectUrl="/learn"
+      signUpForceRedirectUrl="/learn"
+      afterSignOutUrl="/learn"
+    >
       <App />
-    </AuthProvider>
+    </ClerkProvider>
   </StrictMode>
-)
+);

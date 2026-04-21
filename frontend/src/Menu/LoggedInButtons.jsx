@@ -1,10 +1,10 @@
 import { Button, Box, Menu, MenuItem } from "@mui/material";
-import { useContext, useState } from "react";
-import { AuthContext } from "../Authorisation/AuthContext";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAppAuth } from "../Authorisation/useAppAuth";
 
 const LoggedInButtons = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { displayName, signOut } = useAppAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,7 +31,7 @@ const LoggedInButtons = () => {
         }}
         onClick={handleClick}
       >
-        {user.username}
+        {displayName}
       </Button>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem
@@ -68,7 +68,7 @@ const LoggedInButtons = () => {
             if (location.pathname !== "/learn") {
               navigate("/learn");
             }
-            logout();
+            signOut();
             handleClose();
           }}
           sx={{

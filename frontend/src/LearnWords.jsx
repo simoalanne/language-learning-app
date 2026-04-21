@@ -2,12 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import "./LearnWords.css";
 import ContentAligner from "./ContentAligner";
-import { AuthContext } from "./Authorisation/AuthContext";
-import { useContext } from "react";
+import { useAppAuth } from "./Authorisation/useAppAuth";
 
 const LearnWords = () => {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { displayName, isAuthenticated } = useAppAuth();
 
   const learningModes = [
     {
@@ -48,9 +47,7 @@ const LearnWords = () => {
             color: "#333",
           }}
         >
-          {`Hello ${
-            user ? user.username : "visitor"
-          }! Ready to learn some words?`}
+          {`Hello ${isAuthenticated ? displayName : "visitor"}! Ready to learn some words?`}
         </Typography>
         <Box
           sx={{

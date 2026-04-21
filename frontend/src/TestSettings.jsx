@@ -7,10 +7,9 @@ import {
   Slider,
 } from "@mui/material";
 import SelectLanguagePair from "./SelectLanguagePair";
-import { useContext } from "react";
-import { AuthContext } from "./Authorisation/AuthContext";
 import SwapLanguagePair from "./SwapLanguagePair";
 import ChipSelect from "./ChipSelect";
+import { useAppAuth } from "./Authorisation/useAppAuth";
 
 const TestSettings = ({
   testObject,
@@ -21,7 +20,7 @@ const TestSettings = ({
   availableTags,
   pairsPerTag,
 }) => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated } = useAppAuth();
   return (
     <Dialog open={testObject.settingsOpen} fullWidth>
       <DialogContent>

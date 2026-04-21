@@ -1,0 +1,14 @@
+{
+  "name": "@language-learning-app/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@contract-first-api/core": "^2.0.0",
+    "zod": "^4.3.6"
+  }
+}

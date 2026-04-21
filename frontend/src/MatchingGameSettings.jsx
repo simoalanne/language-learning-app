@@ -9,8 +9,7 @@ import {
 import SelectLanguagePair from "./SelectLanguagePair";
 import ToggleOption from "./ToggleOption";
 import ChipSelect from "./ChipSelect";
-import { useContext } from "react";
-import { AuthContext } from "./Authorisation/AuthContext";
+import { useAppAuth } from "./Authorisation/useAppAuth";
 
 const MatchingGameSettings = ({
   open,
@@ -23,7 +22,7 @@ const MatchingGameSettings = ({
   availablePairsWithoutFilters,
   pairsPerTag,
 }) => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated } = useAppAuth();
   return (
     <Dialog
       open={open}

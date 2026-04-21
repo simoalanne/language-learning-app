@@ -37,7 +37,7 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 - **AI-based vocabulary generation:** Users can create their own vocabulary to practise using an **LLM** or by themselves for full control.
 - **Variety in learning modes:** From familiar **FlashCards** to **Matching Game** to just traditional **Test**, there is a mode that fits your way of learning the best.
-- **Authentication**: Secure JWT token-based user authentication.
+- **Authentication**: Clerk-powered authentication with synced local user records.
 - **Responsive Design**: Optimized for desktop and mobile devices.
 
 ---
@@ -56,7 +56,7 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 ### Database:
 
-- **SQLite**
+- **PostgreSQL**
 
 ---
 
@@ -72,20 +72,43 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 2. **Install dependencies**
 
    ```bash
-   npm install
+   pnpm install
    ```
 
-3. **Create .env file to backend directory**
+3. **Create `.env` files**
 
    ```bash
-   JWT_SECRET="your JWT secret"
+   # backend/.env
+   DATABASE_URL="your postgres connection string"
    GEMINI_API_KEY="your Gemini API key"
+   CLERK_SECRET_KEY="your Clerk secret key"
+   CLERK_WEBHOOK_SIGNING_SECRET="your Clerk webhook signing secret"
+
+   # frontend/.env
+   VITE_CLERK_PUBLISHABLE_KEY="your Clerk publishable key"
 
    ```
 
 4. **Run app locally with command**
    ```bash
-   npm start
+   pnpm --filter backend start
+   pnpm --filter frontend dev
+   ```
+
+5. **Configure Clerk webhook**
+
+   Point Clerk user webhooks to:
+
+   ```text
+   /api/auth/clerk/webhooks
+   ```
+
+   Enable the following events:
+
+   ```text
+   user.created
+   user.updated
+   user.deleted
    ```
 
 ---
