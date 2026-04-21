@@ -128,6 +128,8 @@ export const wordGroupsService = {
 						eq(schema.word_groups.user_id, context.clerkId),
 					),
 				);
+
+			return null;
 		},
 		remove: async ({ context, id }) => {
 			await db
@@ -138,7 +140,7 @@ export const wordGroupsService = {
 						eq(schema.word_groups.user_id, context.clerkId),
 					),
 				);
-			return undefined;
+			return null;
 		},
 	}),
 };

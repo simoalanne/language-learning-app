@@ -84,6 +84,7 @@ export default contractTools.defineContract({
 					params: wordGroupIdParamsSchema,
 					body: wordGroupInputSchema,
 				},
+				response: z.null(),
 				meta: {
 					requiresAuth: true,
 				},
@@ -94,6 +95,7 @@ export default contractTools.defineContract({
 				request: {
 					params: wordGroupIdParamsSchema,
 				},
+				response: z.null(),
 				meta: {
 					requiresAuth: true,
 				},
