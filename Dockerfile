@@ -1,45 +1,53 @@
-# Stage 1: Build the frontend
-FROM node:20 AS frontend-builder
+# syntax=docker/dockerfile:1.7
+
+FROM node:25-bookworm-slim AS base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN npm install -g pnpm
+
+FROM base AS deps
 
 WORKDIR /app
 
-# Copy root package.json and package-lock.json
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY backend/package.json backend/package.json
+COPY contracts/package.json contracts/package.json
+COPY frontend/package.json frontend/package.json
 
-# Copy frontend package.json
-COPY frontend/package*.json frontend/
+RUN pnpm install --frozen-lockfile
 
-# Install dependencies for the frontend workspace
-RUN npm install --workspace=frontend
-
-# Copy frontend source code
-COPY frontend/ frontend/
-
-# Build the frontend for production
-RUN npm run build --workspace=frontend
-
-# Stage 2: Build the backend and serve the frontend
-FROM node:20
+FROM deps AS frontend-builder
 
 WORKDIR /app
 
-# Copy root package.json and package-lock.json
-COPY package*.json ./
+ARG VITE_CLERK_PUBLISHABLE_KEY
+ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 
-# Copy backend package.json
-COPY backend/package*.json backend/
+COPY backend backend
+COPY contracts contracts
+COPY frontend frontend
 
-# Install dependencies for the backend workspace
-RUN npm install --omit=dev --workspace=backend
+RUN pnpm --filter frontend build
 
-# Copy backend source code
-COPY backend/ backend/
+FROM base AS runtime
 
-# Copy the built frontend assets from the first stage
-COPY --from=frontend-builder /app/frontend/dist backend/public
+WORKDIR /app
 
-# Expose the backend port
+ENV NODE_ENV=production
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY backend/package.json backend/package.json
+COPY contracts/package.json contracts/package.json
+COPY frontend/package.json frontend/package.json
+
+RUN pnpm install --prod --frozen-lockfile --filter backend...
+
+COPY backend backend
+COPY contracts contracts
+COPY --from=frontend-builder /app/frontend/dist frontend/dist
+
 EXPOSE 3000
 
-# Start the backend server
-CMD ["npm", "start", "--workspace=backend"]
+CMD ["pnpm", "--filter", "backend", "start"]
