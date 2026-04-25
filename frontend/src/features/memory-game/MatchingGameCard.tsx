@@ -17,8 +17,8 @@ const MatchingGameCard = ({
 }: MatchingGameCardProps) => {
 	const fontSize =
 		backsideContent.length > 25
-			? 0.75 * cardScale + "rem"
-			: 1 * cardScale + "rem";
+			? `${0.75 * cardScale}rem`
+			: `${1 * cardScale}rem`;
 	return (
 		<Box
 			onClick={() => !isFlipped && handleClick(index)}

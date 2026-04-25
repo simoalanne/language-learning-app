@@ -62,7 +62,7 @@ const WordListDisplay = ({
 			<ToggleButtonGroup
 				value={viewMode}
 				exclusive
-				onChange={(e, next) => next && setViewMode(next)}
+				onChange={(_e, next) => next && setViewMode(next)}
 				size="small"
 				sx={{ mb: 2 }}
 			>

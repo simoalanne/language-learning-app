@@ -11,7 +11,13 @@ import {
 	Icon,
 	Typography,
 } from "@mui/material";
-import { type SyntheticEvent, useEffect, useState } from "react";
+import {
+	type SyntheticEvent,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type {
 	LanguageName,
@@ -32,6 +38,7 @@ import { normalizeWordGroup } from "./wordGroups";
 
 type EditableTranslation = WordGroupTranslation;
 type TabName = "add" | "quick-add" | "edit";
+type EditableTranslationWithId = EditableTranslation & { localId: string };
 
 const LANGUAGE_NAMES: LanguageName[] = [
 	"English",
@@ -55,6 +62,7 @@ const ManageTranslations = () => {
 	const [toastOpen, setToastOpen] = useState(false);
 	const [toastMsg, setToastMsg] = useState("");
 	const [toastSeverity, setToastSeverity] = useState<AlertColor>("success");
+	const translationIdRef = useRef(0);
 	const navigate = useNavigate();
 	const tab = useParams().tab;
 	const [activeTab, setActiveTab] = useState<TabName>("add");
@@ -70,6 +78,40 @@ const ManageTranslations = () => {
 	const updateWordGroup = api.wordGroups.users.update.useMutation();
 	const removeWordGroup = api.wordGroups.users.remove.useMutation();
 	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? [];
+	const createEditableTranslation = useCallback(
+		(translation: EditableTranslation): EditableTranslationWithId => ({
+			...translation,
+			localId: `translation-${translationIdRef.current++}`,
+		}),
+		[],
+	);
+	const createInitialTranslations = useCallback(
+		() => INITIAL_TRANSLATIONS.map(createEditableTranslation),
+		[createEditableTranslation],
+	);
+	const [translations, setTranslations] = useState<EditableTranslationWithId[]>(
+		() => createInitialTranslations(),
+	);
+	const [tags, setTags] = useState<string[]>([]);
+
+	const handleIndexChange = useCallback(
+		(index: number) => {
+			setEditModeIndex(index);
+			const wordGroup = wordgroups[index];
+			if (!wordGroup) {
+				return;
+			}
+			const translations = wordGroup.translations.map((translation) => ({
+				languageName: translation.languageName,
+				word: translation.word,
+				synonyms: translation.synonyms,
+			}));
+			setTranslations(translations.map(createEditableTranslation));
+			const tags = wordGroup.tags;
+			setTags(tags);
+		},
+		[wordgroups, createEditableTranslation],
+	);
 
 	useEffect(() => {
 		if (tab === "add" || tab === "quick-add" || tab === "edit") {
@@ -81,14 +123,11 @@ const ManageTranslations = () => {
 		if (tab === "edit" && wordgroups.length > 0 && editModeIndex === null) {
 			handleIndexChange(0);
 		}
-	}, [tab, wordgroups, editModeIndex]);
+	}, [tab, wordgroups, editModeIndex, handleIndexChange]);
 
 	const allTags = [
 		...new Set(wordgroups.flatMap((wordGroup) => wordGroup.tags).sort()),
 	];
-	const [translations, setTranslations] =
-		useState<EditableTranslation[]>(INITIAL_TRANSLATIONS);
-	const [tags, setTags] = useState<string[]>([]);
 
 	const isValidForm = () => {
 		return translations.every((translation) => translation.word.trim() !== "");
@@ -99,9 +138,13 @@ const ManageTranslations = () => {
 		field: K,
 		value: EditableTranslation[K],
 	) => {
-		const newTranslations = [...translations];
-		newTranslations[index][field] = value;
-		setTranslations(newTranslations);
+		setTranslations((currentTranslations) =>
+			currentTranslations.map((translation, translationIndex) =>
+				translationIndex === index
+					? { ...translation, [field]: value }
+					: translation,
+			),
+		);
 	};
 
 	const addTranslation = () => {
@@ -114,7 +157,7 @@ const ManageTranslations = () => {
 		}
 		setTranslations([
 			...translations,
-			{ languageName, word: "", synonyms: [] },
+			createEditableTranslation({ languageName, word: "", synonyms: [] }),
 		]);
 	};
 
@@ -149,29 +192,13 @@ const ManageTranslations = () => {
 
 	const handleTabChange = (nextTab: TabName) => {
 		if (tab === "add" || tab === "quick-add") {
-			setTranslations(INITIAL_TRANSLATIONS);
+			setTranslations(createInitialTranslations());
 			setTags([]);
 		}
 		if (nextTab === "edit") {
 			handleIndexChange(0);
 		}
 		navigate(`/manage-translations/${nextTab}`);
-	};
-
-	const handleIndexChange = (index: number) => {
-		setEditModeIndex(index);
-		const wordGroup = wordgroups[index];
-		if (!wordGroup) {
-			return;
-		}
-		const translations = wordGroup.translations.map((translation) => ({
-			languageName: translation.languageName,
-			word: translation.word,
-			synonyms: translation.synonyms,
-		}));
-		setTranslations(translations);
-		const tags = wordGroup.tags;
-		setTags(tags);
 	};
 
 	const onSubmit = async () => {
@@ -190,6 +217,7 @@ const ManageTranslations = () => {
 			setToastOpen(true);
 			setToastSeverity("success");
 			const newTranslations = translations.map((t) => ({
+				localId: t.localId,
 				languageName: t.languageName,
 				word: "",
 				synonyms: [],
@@ -244,6 +272,7 @@ const ManageTranslations = () => {
 	const onClearCard = (index: number) => {
 		const newTranslations = [...translations];
 		newTranslations[index] = {
+			localId: translations[index].localId,
 			languageName: translations[index].languageName,
 			word: "",
 			synonyms: [],
@@ -498,7 +527,7 @@ const ManageTranslations = () => {
 					>
 						{translations.map((translation, index) => (
 							<TranslationCard
-								key={index}
+								key={translation.localId}
 								languages={LANGUAGE_NAMES}
 								selectedLanguage={translation.languageName}
 								setSelectedLanguage={(language) =>

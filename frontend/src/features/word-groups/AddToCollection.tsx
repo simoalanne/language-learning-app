@@ -38,7 +38,7 @@ const AddToCollection = ({
 
 	const handleInputChange = (newValue: string | null) => {
 		const nextValue = newValue ?? "";
-		if (invalidInputFunction && invalidInputFunction(nextValue)) {
+		if (invalidInputFunction?.(nextValue)) {
 			return;
 		}
 		setCurrentItem(nextValue);
@@ -51,7 +51,9 @@ const AddToCollection = ({
 		<>
 			{hasExistingItems && (
 				<Autocomplete
-					options={existingItems!.filter((item) => !collection.includes(item))}
+					options={
+						existingItems?.filter((item) => !collection.includes(item)) ?? []
+					}
 					value={currentItem}
 					onChange={(_, newValue) => handleInputChange(newValue)}
 					freeSolo={freeSolo}
@@ -91,7 +93,7 @@ const AddToCollection = ({
 			</Button>
 			{collection.map((item, i) => (
 				<Chip
-					key={i}
+					key={item}
 					label={item}
 					onDelete={() =>
 						onCollectionChange(collection.filter((_, index) => index !== i))

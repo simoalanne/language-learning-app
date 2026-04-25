@@ -82,7 +82,7 @@ const TestMode = () => {
 			setTestObject((prev) => ({
 				...prev,
 				heartsLeft: prev.heartsLeft - 1,
-				testStarted: prev.heartsLeft === 1 ? false : true,
+				testStarted: prev.heartsLeft !== 1,
 			}));
 		}
 		if (correct) {
@@ -144,21 +144,23 @@ const TestMode = () => {
 	};
 
 	const Hearts = () => {
-		const heartArray = Array(testObject.totalHearts).fill(null);
+		const heartArray = Array.from(
+			{ length: testObject.totalHearts },
+			(_, i) => i,
+		);
 		return (
 			<Box sx={{ display: "flex", gap: 2 }}>
-				{heartArray.map((_, index) => (
+				{heartArray.map((heartIndex) => (
 					<FavoriteIcon
-						key={index}
+						key={heartIndex}
 						sx={{
 							color: "red",
-							opacity: index < testObject.heartsLeft ? 1 : 0.2,
+							opacity: heartIndex < testObject.heartsLeft ? 1 : 0.2,
 							fontSize: 50,
 							animation:
-								index === 0 && testObject.heartsLeft === 1
+								heartIndex === 0 && testObject.heartsLeft === 1
 									? "pulse 1s infinite"
 									: "none",
-							// below code is AI generated
 							"@keyframes pulse": {
 								"0%": { transform: "scale(1)" },
 								"50%": { transform: "scale(1.2)" },
@@ -226,9 +228,9 @@ const TestMode = () => {
 					<Hearts />
 					{testObject.test.questions
 						.filter((_, index) => index === testIndex)
-						.map((question, index) => (
+						.map((question) => (
 							<TestItem
-								key={index}
+								key={question}
 								question={question}
 								correctAnswer={testObject.test.correctAnswers[testIndex]}
 								answerLanguage={testObject.selectedLanguages[1]}

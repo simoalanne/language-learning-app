@@ -39,7 +39,7 @@ const FlashcardMode = () => {
 	const handleIndexChange = (newIndex: number) => {
 		setFadeIn(false);
 		setTimeout(() => {
-			resetIndexesRef.current && resetIndexesRef.current(); // reset card indexes so new card starts from the first translation
+			resetIndexesRef.current?.(); // reset card indexes so new card starts from the first translation
 			setSelectedIndex(newIndex);
 			setFadeIn(true);
 		}, 500); // Wait for the fade-out animation to finish before changing the card
@@ -47,7 +47,7 @@ const FlashcardMode = () => {
 
 	const handleGoToIndex = () => {
 		const index = Number.parseInt(inputIndex, 10) - 1;
-		if (!isNaN(index) && index >= 0 && index < wordgroups.length) {
+		if (!Number.isNaN(index) && index >= 0 && index < wordgroups.length) {
 			handleIndexChange(index);
 		}
 	};
