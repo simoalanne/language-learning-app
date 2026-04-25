@@ -1,4 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import {
@@ -33,6 +34,7 @@ type GeneratedWordsDisplayProps = {
 		key: K,
 		value: AiWordGenerationForm[K],
 	) => void;
+	onBack: () => void;
 	onSave: () => void;
 	loading: boolean;
 };
@@ -43,6 +45,7 @@ const WordListDisplay = ({
 	onChangeTranslation,
 	onSelect,
 	onFormChange,
+	onBack,
 	onSave,
 	loading,
 }: GeneratedWordsDisplayProps) => {
@@ -59,6 +62,22 @@ const WordListDisplay = ({
 				gap: 2,
 			}}
 		>
+			<Box
+				sx={{
+					width: "100%",
+					maxWidth: "1500px",
+					display: "flex",
+					justifyContent: "flex-start",
+				}}
+			>
+				<Button
+					variant="text"
+					onClick={onBack}
+					startIcon={<ArrowBackIcon />}
+				>
+					Back to Generator
+				</Button>
+			</Box>
 			<ToggleButtonGroup
 				value={viewMode}
 				exclusive

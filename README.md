@@ -80,9 +80,14 @@ This app helps users expand their vocabulary across multiple languages. It's ide
    ```bash
    # backend/.env
    DATABASE_URL="your postgres connection string"
-   GEMINI_API_KEY="your Gemini API key"
    CLERK_SECRET_KEY="your Clerk secret key"
    CLERK_WEBHOOK_SIGNING_SECRET="your Clerk webhook signing secret"
+   OPENAI_API_KEY="your OpenAI API key"
+   OPENAI_MODEL="gpt-4o-mini"
+   # Optional. Set to a positive number to enforce a per-user rolling 30-day quota.
+   AI_GENERATION_LIMIT="25"
+   # Optional, defaults to https://api.openai.com/v1
+   OPENAI_BASE_URL="https://api.openai.com/v1"
 
    # frontend/.env
    VITE_CLERK_PUBLISHABLE_KEY="your Clerk publishable key"

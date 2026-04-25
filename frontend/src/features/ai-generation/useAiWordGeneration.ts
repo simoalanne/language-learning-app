@@ -1,8 +1,11 @@
 import { useState } from "react";
 import type {
+	AiGenerationHistoryItem,
+	AiUsageStatus,
 	GeneratedWord,
 	GeneratedWordTranslation,
 	GenerateWordsInput,
+	GenerateWordsResponse,
 	LanguageName,
 	WordGroupInput,
 } from "@/types/api";
@@ -62,9 +65,23 @@ export const useAiWordGeneration = () => {
 		SelectableGeneratedWord[]
 	>([]);
 	const { api } = useApiClient();
+	const usageQuery = api.ai.getUsage.useQuery({});
+	const generationHistoryQuery = api.ai.listGenerations.useQuery({});
 	const generateWordsMutation = api.ai.generateWords.useMutation();
 	const createBulkWordGroupsMutation =
 		api.wordGroups.users.createBulk.useMutation();
+
+	const toSelectableGeneratedWords = (
+		words: GenerateWordsResponse,
+	): SelectableGeneratedWord[] =>
+		words.map((item) => ({
+			...item,
+			isSelected: true,
+			translations: item.translations.map((t) => ({
+				...t,
+				word: t.word.slice(0, formConfig.maxWordLength),
+			})),
+		}));
 
 	/**
 	 * Updates a single field in the form state.
@@ -98,20 +115,29 @@ export const useAiWordGeneration = () => {
 				includedLanguages: form.languages,
 			};
 			const words = await generateWordsMutation.mutateAsync(payload);
-
-			const generated: SelectableGeneratedWord[] = words.map((item) => ({
-				...item,
-				isSelected: true,
-				translations: item.translations.map((t) => ({
-					...t,
-					word: t.word.slice(0, formConfig.maxWordLength),
-				})),
-			}));
-
-			setGeneratedWords(generated);
+			setGeneratedWords(toSelectableGeneratedWords(words));
+			void usageQuery.refetch();
+			void generationHistoryQuery.refetch();
 		} catch (error) {
 			console.error("Word generation failed:", error);
+			void usageQuery.refetch();
+			throw error;
 		}
+	};
+
+	const handleLoadHistoryGeneration = (generation: AiGenerationHistoryItem) => {
+		setForm({
+			topic: generation.request.topic,
+			skillLevel: generation.request.skillLevel,
+			wordCount: generation.request.wordCount,
+			languages: generation.request.includedLanguages,
+			selectedWordTypes: generation.request.wordTypes,
+		});
+		setGeneratedWords(toSelectableGeneratedWords(generation.response));
+	};
+
+	const handleReturnToGenerationForm = () => {
+		setGeneratedWords([]);
 	};
 
 	/**
@@ -194,8 +220,14 @@ export const useAiWordGeneration = () => {
 	return {
 		form,
 		formConfig,
+		usageStatus: usageQuery.data as AiUsageStatus | undefined,
+		usageLoading: usageQuery.isLoading,
+		generationHistory: generationHistoryQuery.data?.generations ?? [],
+		generationHistoryLoading: generationHistoryQuery.isLoading,
 		handleWordGenerationFormChange,
 		handleWordGenerationFormSubmit,
+		handleLoadHistoryGeneration,
+		handleReturnToGenerationForm,
 		generatedWords,
 		handleSaveWordsToDatabase,
 		handleWordItemSelectChange,

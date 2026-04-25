@@ -9,7 +9,7 @@ if (!connString) {
 
 export default defineConfig({
 	out: "./drizzle",
-	schema: "./src/db/schema.ts",
+	schema: "./src/drizzle/schema.ts",
 	dialect: "postgresql",
 	dbCredentials: {
 		url: connString,
