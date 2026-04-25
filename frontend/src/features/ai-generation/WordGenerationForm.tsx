@@ -1,84 +1,115 @@
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { Box, Button, CircularProgress, Slider, TextField, Typography } from "@mui/material";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import {
+	Box,
+	Button,
+	CircularProgress,
+	Slider,
+	TextField,
+	Typography,
+} from "@mui/material";
 import ChipSelect from "../../components/ChipSelect";
 import LanguageFlag from "../../components/LanguageFlag";
-import type { AiWordGenerationForm, AiWordGenerationFormConfig } from "./useAiWordGeneration";
+import type {
+	AiWordGenerationForm,
+	AiWordGenerationFormConfig,
+} from "./useAiWordGeneration";
 
 type WordGenerationFormProps = {
-  form: AiWordGenerationForm;
-  formConfig: AiWordGenerationFormConfig;
-  onChange: <K extends keyof AiWordGenerationForm>(
-    key: K,
-    value: AiWordGenerationForm[K],
-  ) => void;
-  onSubmit: () => void;
-  loading: boolean;
+	form: AiWordGenerationForm;
+	formConfig: AiWordGenerationFormConfig;
+	onChange: <K extends keyof AiWordGenerationForm>(
+		key: K,
+		value: AiWordGenerationForm[K],
+	) => void;
+	onSubmit: () => void;
+	loading: boolean;
 };
 
 const WordGenerationForm = ({
-  form,
-  formConfig,
-  onChange,
-  onSubmit,
-  loading
+	form,
+	formConfig,
+	onChange,
+	onSubmit,
+	loading,
 }: WordGenerationFormProps) => (
-  <Box sx={{ mb: 2 }}>
-    <Typography variant="h5" sx={{ mb: 2, textAlign: "center" }}>Generate Vocabulary</Typography>
+	<Box sx={{ mb: 2 }}>
+		<Typography variant="h5" sx={{ mb: 2, textAlign: "center" }}>
+			Generate Vocabulary
+		</Typography>
 
-    <TextField
-      label="Topic"
-      placeholder="Describe any topic you can think of (e.g., travel, food)"
-      value={form.topic}
-      onChange={(e) => onChange("topic", e.target.value)}
-      fullWidth
-      sx={{ mb: 2 }}
-    />
-    <TextField
-      label="Skill Level"
-      value={form.skillLevel}
-      placeholder="Describe your skill level"
-      onChange={(e) => onChange("skillLevel", e.target.value)}
-      fullWidth
-      sx={{ mb: 2 }}
-    />
-    <Typography gutterBottom>Amount of words to generate: {form.wordCount}</Typography>
-    <Slider
-      value={form.wordCount}
-      onChange={(_, newValue) => onChange("wordCount", newValue as number)}
-      min={1}
-      max={formConfig.maxGeneratedWordsPerRequest}
-      step={1}
-      valueLabelDisplay="auto"
-      sx={{ mb: 2 }}
-    />
-    <Typography gutterBottom>Specify word type(s) (optional):</Typography>
-    <ChipSelect
-      options={formConfig.wordTypes}
-      selectedOptions={form.selectedWordTypes}
-      setSelectedOptions={(val) => onChange("selectedWordTypes", val as string[])}
-      selectedColor="primary"
-    />
-    <Typography gutterBottom>Select languages to include (at least 2):</Typography>
-    <ChipSelect
-      minimumSelectedCount={2}
-      options={formConfig.languageNames}
-      icons={formConfig.languageNames.map((lang) => <LanguageFlag key={lang} languageName={lang} />)}
-      selectedOptions={form.languages}
-      setSelectedOptions={(langs) => onChange("languages", langs as AiWordGenerationForm["languages"])}
-      selectedColor="secondary"
-      boxSx={{ mb: 2 }}
-    />
-    <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={onSubmit} disabled={loading} endIcon={<AutoAwesomeIcon />}>
-      Generate Words
-    </Button>
+		<TextField
+			label="Topic"
+			placeholder="Describe any topic you can think of (e.g., travel, food)"
+			value={form.topic}
+			onChange={(e) => onChange("topic", e.target.value)}
+			fullWidth
+			sx={{ mb: 2 }}
+		/>
+		<TextField
+			label="Skill Level"
+			value={form.skillLevel}
+			placeholder="Describe your skill level"
+			onChange={(e) => onChange("skillLevel", e.target.value)}
+			fullWidth
+			sx={{ mb: 2 }}
+		/>
+		<Typography gutterBottom>
+			Amount of words to generate: {form.wordCount}
+		</Typography>
+		<Slider
+			value={form.wordCount}
+			onChange={(_, newValue) => onChange("wordCount", newValue as number)}
+			min={1}
+			max={formConfig.maxGeneratedWordsPerRequest}
+			step={1}
+			valueLabelDisplay="auto"
+			sx={{ mb: 2 }}
+		/>
+		<Typography gutterBottom>Specify word type(s) (optional):</Typography>
+		<ChipSelect
+			options={formConfig.wordTypes}
+			selectedOptions={form.selectedWordTypes}
+			setSelectedOptions={(val) =>
+				onChange("selectedWordTypes", val as string[])
+			}
+			selectedColor="primary"
+		/>
+		<Typography gutterBottom>
+			Select languages to include (at least 2):
+		</Typography>
+		<ChipSelect
+			minimumSelectedCount={2}
+			options={formConfig.languageNames}
+			icons={formConfig.languageNames.map((lang) => (
+				<LanguageFlag key={lang} languageName={lang} />
+			))}
+			selectedOptions={form.languages}
+			setSelectedOptions={(langs) =>
+				onChange("languages", langs as AiWordGenerationForm["languages"])
+			}
+			selectedColor="secondary"
+			boxSx={{ mb: 2 }}
+		/>
+		<Button
+			variant="contained"
+			fullWidth
+			sx={{ mt: 2 }}
+			onClick={onSubmit}
+			disabled={loading}
+			endIcon={<AutoAwesomeIcon />}
+		>
+			Generate Words
+		</Button>
 
-    {loading && (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 1 }}>
-        <Typography variant="body1">Letting the AI do its magic. This may take a while. Please wait...</Typography>
-        <CircularProgress size={24} />
-      </Box>
-    )}
-  </Box>
+		{loading && (
+			<Box sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 1 }}>
+				<Typography variant="body1">
+					Letting the AI do its magic. This may take a while. Please wait...
+				</Typography>
+				<CircularProgress size={24} />
+			</Box>
+		)}
+	</Box>
 );
 
 export default WordGenerationForm;

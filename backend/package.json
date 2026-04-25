@@ -1,34 +1,35 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "private": true,
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "typecheck": "tsc --noEmit",
-    "start": "node src/index.ts",
-    "db:generate": "drizzle-kit push",
-    "db:seed": "node scripts/seeding/seed.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "@clerk/express": "^2.1.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "drizzle-orm": "^0.45.2",
-    "express": "^5.2.1",
-    "pg": "^8.20.0",
-    "@contract-first-api/express": "^2.0.0",
-    "@language-learning-app/contracts": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/pg": "^8.20.0",
-    "drizzle-kit": "^0.31.10",
-    "typescript": "^6.0.3"
-  }
+	"name": "backend",
+	"version": "1.0.0",
+	"private": true,
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"lint": "biome check --write .",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"typecheck": "tsc --noEmit",
+		"start": "node src/index.ts",
+		"db:generate": "drizzle-kit push",
+		"db:seed": "node scripts/seeding/seed.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"@clerk/express": "^2.1.0",
+		"cors": "^2.8.6",
+		"dotenv": "^17.4.2",
+		"drizzle-orm": "^0.45.2",
+		"express": "^5.2.1",
+		"pg": "^8.20.0",
+		"@contract-first-api/express": "^2.0.0",
+		"@language-learning-app/contracts": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/express": "^5.0.6",
+		"@types/pg": "^8.20.0",
+		"drizzle-kit": "^0.31.10",
+		"typescript": "^6.0.3"
+	}
 }

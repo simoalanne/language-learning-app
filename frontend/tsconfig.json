@@ -1,23 +1,23 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "target": "ES2022",
-    "useDefineForClassFields": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "ignoreDeprecations": "6.0",
-    "skipLibCheck": true,
-    "paths": {
-      "@/*": ["src/*"]
-    },
-    "types": ["vite/client"]
-  },
-  "include": ["src"]
+	"compilerOptions": {
+		"baseUrl": ".",
+		"target": "ES2022",
+		"useDefineForClassFields": true,
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"strict": true,
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"ignoreDeprecations": "6.0",
+		"skipLibCheck": true,
+		"paths": {
+			"@/*": ["src/*"]
+		},
+		"types": ["vite/client"]
+	},
+	"include": ["src"]
 }

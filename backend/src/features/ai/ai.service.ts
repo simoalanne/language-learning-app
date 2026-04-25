@@ -1,6 +1,4 @@
-import type {
-	ApiRequest	,
-} from "@language-learning-app/contracts";
+import type { ApiRequest } from "@language-learning-app/contracts";
 import { defineService } from "../../initServives.ts";
 
 const sampleWords = [

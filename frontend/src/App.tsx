@@ -43,11 +43,7 @@ const App = () => {
 						>
 							Language App
 						</Typography>
-						{isAuthenticated ? (
-							<LoggedInButtons />
-						) : (
-							<LogInOrRegisterButtons />
-						)}
+						{isAuthenticated ? <LoggedInButtons /> : <LogInOrRegisterButtons />}
 					</Box>
 				</AppBar>
 				<Box component="main" sx={{ display: "flex", flexGrow: 1 }}>

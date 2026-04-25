@@ -1,84 +1,105 @@
-import { Box, Checkbox, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
-import LanguageFlag from "../../components/LanguageFlag";
+import {
+	Box,
+	Checkbox,
+	InputAdornment,
+	TextField,
+	Tooltip,
+	Typography,
+} from "@mui/material";
 import type { LanguageName } from "@/types/api";
+import LanguageFlag from "../../components/LanguageFlag";
 import type { SelectableGeneratedWord } from "./useAiWordGeneration";
 
 type WordTranslationRowProps = {
-  wordItem: SelectableGeneratedWord;
-  isSelected: boolean;
-  onSelect: (id: number, isSelected: boolean) => void;
-  onChangeTranslation: (
-    id: number,
-    languageName: LanguageName,
-    newWord: string,
-  ) => void;
+	wordItem: SelectableGeneratedWord;
+	isSelected: boolean;
+	onSelect: (id: number, isSelected: boolean) => void;
+	onChangeTranslation: (
+		id: number,
+		languageName: LanguageName,
+		newWord: string,
+	) => void;
 };
 
 const WordTranslationRow = ({
-  wordItem,
-  isSelected,
-  onSelect,
-  onChangeTranslation,
+	wordItem,
+	isSelected,
+	onSelect,
+	onChangeTranslation,
 }: WordTranslationRowProps) => {
+	const maxTextLength = 50;
+	return (
+		<Box
+			sx={{
+				display: "flex",
+				alignItems: "center",
+				gap: 2,
+				py: 1.5,
+				px: 2,
+				mb: 1,
+				borderRadius: 2,
+				backgroundColor: isSelected ? "#e3f2fd" : "#f9f9f9",
+				overflowX: "auto",
+				whiteSpace: "nowrap",
+				boxShadow: "inset 0 0 0 1px #e0e0e0",
+				transition: "background-color 0.2s ease-in-out",
+			}}
+		>
+			<Checkbox
+				checked={isSelected}
+				onChange={(e) => onSelect(wordItem.id, e.target.checked)}
+				sx={{ flexShrink: 0 }}
+			/>
 
-  const maxTextLength = 50;
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 2,
-        py: 1.5,
-        px: 2,
-        mb: 1,
-        borderRadius: 2,
-        backgroundColor: isSelected ? "#e3f2fd" : "#f9f9f9",
-        overflowX: "auto",
-        whiteSpace: "nowrap",
-        boxShadow: "inset 0 0 0 1px #e0e0e0",
-        transition: "background-color 0.2s ease-in-out",
-      }}
-    >
-      <Checkbox
-        checked={isSelected}
-        onChange={(e) => onSelect(wordItem.id, e.target.checked)}
-        sx={{ flexShrink: 0 }}
-      />
-
-      {wordItem.translations.map((t) => (
-        <Box
-          key={t.languageName}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            flexShrink: 0,
-          }}
-        >
-          <LanguageFlag languageName={t.languageName} />
-          <TextField
-            value={t.word}
-            onChange={(e) => onChangeTranslation(wordItem.id, t.languageName, e.target.value)}
-            size="small"
-            sx={{ width: "225px" }}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Tooltip title={t.word.length >= maxTextLength ? "Maximum length reached" : ""} placement="top">
-                      <Typography variant="caption" sx={{ color: t.word.length >= maxTextLength ? "red" : "inherit" }}>
-                        {`${t.word.length}/${maxTextLength}`}
-                      </Typography>
-                    </Tooltip>
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        </Box>
-      ))}
-    </Box>
-  );
+			{wordItem.translations.map((t) => (
+				<Box
+					key={t.languageName}
+					sx={{
+						display: "flex",
+						alignItems: "center",
+						gap: 1,
+						flexShrink: 0,
+					}}
+				>
+					<LanguageFlag languageName={t.languageName} />
+					<TextField
+						value={t.word}
+						onChange={(e) =>
+							onChangeTranslation(wordItem.id, t.languageName, e.target.value)
+						}
+						size="small"
+						sx={{ width: "225px" }}
+						slotProps={{
+							input: {
+								endAdornment: (
+									<InputAdornment position="end">
+										<Tooltip
+											title={
+												t.word.length >= maxTextLength
+													? "Maximum length reached"
+													: ""
+											}
+											placement="top"
+										>
+											<Typography
+												variant="caption"
+												sx={{
+													color:
+														t.word.length >= maxTextLength ? "red" : "inherit",
+												}}
+											>
+												{`${t.word.length}/${maxTextLength}`}
+											</Typography>
+										</Tooltip>
+									</InputAdornment>
+								),
+							},
+						}}
+					/>
+				</Box>
+			))}
+		</Box>
+	);
 };
 
 export default WordTranslationRow;

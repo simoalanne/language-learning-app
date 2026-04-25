@@ -1,6 +1,6 @@
-import { createRoot } from "react-dom/client";
 import { ClerkProvider } from "@clerk/react";
 import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
 import "./index.css";
 import App from "./App";
@@ -10,20 +10,20 @@ import { clerkPublishableKey } from "./providers/clerk";
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-  throw new Error("Root element not found");
+	throw new Error("Root element not found");
 }
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <ClerkProvider
-      publishableKey={clerkPublishableKey}
-      signInForceRedirectUrl="/learn"
-      signUpForceRedirectUrl="/learn"
-      afterSignOutUrl="/learn"
-    >
-      <ApiClientProvider>
-        <App />
-      </ApiClientProvider>
-    </ClerkProvider>
-  </StrictMode>
+	<StrictMode>
+		<ClerkProvider
+			publishableKey={clerkPublishableKey}
+			signInForceRedirectUrl="/learn"
+			signUpForceRedirectUrl="/learn"
+			afterSignOutUrl="/learn"
+		>
+			<ApiClientProvider>
+				<App />
+			</ApiClientProvider>
+		</ClerkProvider>
+	</StrictMode>,
 );

@@ -43,13 +43,14 @@ const parseCSV = (csvContent: string) => {
 	}
 
 	return dataLines.map((line, index) => {
-		const [language, word, groupId] = line.split(",").map((cell) => cell.trim());
+		const [language, word, groupId] = line
+			.split(",")
+			.map((cell) => cell.trim());
 
 		return csvRowSchema.parse(
 			{ language, word, groupId },
 			{
-				error: (issue) =>
-					`Invalid CSV row ${index + 2}: ${issue.message}`,
+				error: (issue) => `Invalid CSV row ${index + 2}: ${issue.message}`,
 			},
 		);
 	});
@@ -59,7 +60,8 @@ const buildWordGroups = (rows: Array<z.infer<typeof csvRowSchema>>) => {
 	const groupsMap = new Map<number, Map<string, string>>();
 
 	for (const row of rows) {
-		const translations = groupsMap.get(row.groupId) ?? new Map<string, string>();
+		const translations =
+			groupsMap.get(row.groupId) ?? new Map<string, string>();
 
 		if (translations.has(row.language)) {
 			throw new Error(
@@ -74,20 +76,21 @@ const buildWordGroups = (rows: Array<z.infer<typeof csvRowSchema>>) => {
 	return Array.from(groupsMap.entries())
 		.sort(([leftId], [rightId]) => leftId - rightId)
 		.map(([groupId, translations]) =>
-			wordGroupInputSchema.parse({
-				translations: Array.from(translations.entries()).map(
-					([languageName, word]) => ({
-						languageName,
-						word,
-						synonyms: [],
-					}),
-				),
-				tags: [],
-			},
-			{
-				error: (issue) =>
-					`Invalid word group ${groupId}: ${issue.message}`,
-			}),
+			wordGroupInputSchema.parse(
+				{
+					translations: Array.from(translations.entries()).map(
+						([languageName, word]) => ({
+							languageName,
+							word,
+							synonyms: [],
+						}),
+					),
+					tags: [],
+				},
+				{
+					error: (issue) => `Invalid word group ${groupId}: ${issue.message}`,
+				},
+			),
 		);
 };
 
@@ -104,7 +107,9 @@ export const seedDatabase = async () => {
 			throw new Error("No word groups were parsed from the CSV file.");
 		}
 
-		console.log(`Loaded ${rows.length} translations across ${wordGroups.length} groups.`);
+		console.log(
+			`Loaded ${rows.length} translations across ${wordGroups.length} groups.`,
+		);
 
 		await db.transaction(async (tx) => {
 			const deletedPublicGroups = await tx
@@ -112,7 +117,9 @@ export const seedDatabase = async () => {
 				.where(isNull(schema.word_groups.user_id))
 				.returning({ id: schema.word_groups.id });
 
-			console.log(`Removed ${deletedPublicGroups.length} existing public groups.`);
+			console.log(
+				`Removed ${deletedPublicGroups.length} existing public groups.`,
+			);
 
 			const insertedGroups = await tx
 				.insert(schema.word_groups)
