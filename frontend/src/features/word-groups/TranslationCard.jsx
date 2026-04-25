@@ -1,20 +1,20 @@
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  Box,
-  Tooltip,
-  IconButton,
-  Menu,
-} from "@mui/material";
-import LanguageFlag from "./LanguageFlag";
-import SelectLanguage from "./SelectLanguage";
-import WordInputField from "./WordInputField";
-import AddToCollection from "./AddToCollection";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { useState, useRef } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  IconButton,
+  Menu,
+  Tooltip,
+} from "@mui/material";
+import { useRef, useState } from "react";
+import AddToCollection from "./AddToCollection";
+import LanguageFlag from "../../components/LanguageFlag";
+import SelectLanguage from "../../components/SelectLanguage";
+import WordInputField from "../ai-generation/WordInputField";
 
 const TranslationCard = ({
   languages,

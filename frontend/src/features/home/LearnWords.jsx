@@ -1,8 +1,8 @@
-import { useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import "./LearnWords.css";
-import ContentAligner from "./ContentAligner";
-import { useAppAuth } from "./Authorisation/useAppAuth";
+import ContentAligner from "../../components/ContentAligner";
+import { useAppAuth } from "../../providers/use-app-auth";
 
 const LearnWords = () => {
   const navigate = useNavigate();

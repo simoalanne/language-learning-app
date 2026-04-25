@@ -1,9 +1,9 @@
 import { useState } from "react";
-import ContentAligner from "./ContentAligner";
-import WordGenerationForm from "./WordGenerationForm";
+import ContentAligner from "../../components/ContentAligner";
+import ToastMessage from "../../components/ToastMessage";
 import GeneratedWordsDisplay from "./GeneratedWordsDisplay";
-import ToastMessage from "./ToastMessage";
-import useAiWordGeneration from "./hooks/useAiWordGeneration";
+import useAiWordGeneration from "./useAiWordGeneration";
+import WordGenerationForm from "./WordGenerationForm";
 
 const AiTranslationGeneratation = () => {
   const {

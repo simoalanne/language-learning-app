@@ -29,11 +29,6 @@ export const ApiClientProvider = ({
 
 	apiClient.setHeaders(async () => {
 		const token = await getToken();
-
-		if (!token) {
-			return {};
-		}
-
 		return {
 			Authorization: `Bearer ${token}`,
 		};

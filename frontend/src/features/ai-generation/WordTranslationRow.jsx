@@ -1,5 +1,5 @@
-import { Box, Checkbox, TextField, InputAdornment, Typography, Tooltip } from "@mui/material";
-import LanguageFlag from "./LanguageFlag";
+import { Box, Checkbox, InputAdornment, TextField, Tooltip, Typography } from "@mui/material";
+import LanguageFlag from "../../components/LanguageFlag";
 
 const WordTranslationRow = ({
   wordItem,

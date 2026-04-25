@@ -1,28 +1,30 @@
 /* eslint react/prop-types: */
+
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
 import {
+  Box,
+  Button,
   Card,
   CardContent,
   CardHeader,
-  Button,
-  Box,
-  Typography,
   Icon,
+  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import ToggleOption from "./ToggleOption";
-import TranslationCard from "./TranslationCard";
-import QuickAdd from "./QuickAdd";
-import AddToCollection from "./AddToCollection";
-import MoveIcons from "./MoveIcons"; // used to navigate between existing word groups
-import ToastMessage from "./ToastMessage";
-import AddIcon from "@mui/icons-material/Add";
-import FlashOnIcon from "@mui/icons-material/FlashOn";
-import EditIcon from "@mui/icons-material/Edit";
 import { useNavigate, useParams } from "react-router-dom";
-import ContentAligner from "./ContentAligner";
-import { useAppAuth } from "./Authorisation/useAppAuth";
-import { useApiClient } from "./api/api";
-import { normalizeWordGroup } from "./api/wordGroups";
+import AddToCollection from "./AddToCollection";
+import { normalizeWordGroup } from "./wordGroups";
+import ContentAligner from "../../components/ContentAligner";
+import MoveIcons from "../../components/MoveIcons"; // used to navigate between existing word groups
+import ToastMessage from "../../components/ToastMessage";
+import ToggleOption from "../../components/ToggleOption";
+import { useApiClient } from "../../providers/api-client";
+import { useAppAuth } from "../../providers/use-app-auth";
+import QuickAdd from "./QuickAdd";
+import TranslationCard from "./TranslationCard";
+
 const ManageTranslations = () => {
   const [hideSynonyms, setHideSynonyms] = useState(false);
   const [resetTagsOnSubmit, setResetTagsOnSubmit] = useState(false);

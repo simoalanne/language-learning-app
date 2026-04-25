@@ -1,15 +1,15 @@
-import SelectLanguage from "./SelectLanguage";
-import WordInputField from "./WordInputField";
-import LanguageFlag from "./LanguageFlag";
-import ToggleOption from "./ToggleOption";
 import {
-  Card,
-  CardHeader,
-  CardContent,
-  Button,
   Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
 } from "@mui/material";
 import { useState } from "react";
+import LanguageFlag from "../../components/LanguageFlag";
+import SelectLanguage from "../../components/SelectLanguage";
+import ToggleOption from "../../components/ToggleOption";
+import WordInputField from "../ai-generation/WordInputField";
 
 const QuickAdd = ({
   languages,

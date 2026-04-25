@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { filterWordGroupsByLanguagesAndTags } from "./util/helpers";
-import TestItem from "./TestItem";
-import ContentAligner from "./ContentAligner";
-import TestSettings from "./TestSettings";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import { Box, Typography, Button } from "@mui/material";
-import TestEndScreen from "./TestEndScreen";
-import { useNavigate } from "react-router-dom";
-import SettingsIcon from "@mui/icons-material/Settings";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import { useAppAuth } from "./Authorisation/useAppAuth";
-import { useApiClient } from "./api/api";
-import { normalizeWordGroup } from "./api/wordGroups";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import SettingsIcon from "@mui/icons-material/Settings";
+import { Box, Button, Typography } from "@mui/material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { normalizeWordGroup } from "../word-groups/wordGroups";
+import ContentAligner from "../../components/ContentAligner";
+import { useApiClient } from "../../providers/api-client";
+import { useAppAuth } from "../../providers/use-app-auth";
+import TestEndScreen from "./TestEndScreen";
+import TestItem from "./TestItem";
+import TestSettings from "./TestSettings";
+import { filterWordGroupsByLanguagesAndTags } from "../../utils/helpers";
 
 const TestMode = () => {
   const navigate = useNavigate();

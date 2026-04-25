@@ -6,10 +6,10 @@ import {
   Typography,
   Slider,
 } from "@mui/material";
-import SelectLanguagePair from "./SelectLanguagePair";
-import SwapLanguagePair from "./SwapLanguagePair";
-import ChipSelect from "./ChipSelect";
-import { useAppAuth } from "./Authorisation/useAppAuth";
+import ChipSelect from "../../components/ChipSelect";
+import SelectLanguagePair from "../../components/SelectLanguagePair";
+import SwapLanguagePair from "../../components/SwapLanguagePair";
+import { useAppAuth } from "../../providers/use-app-auth";
 
 const TestSettings = ({
   testObject,

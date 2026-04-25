@@ -4,7 +4,8 @@ import { StrictMode } from "react";
 
 import "./index.css";
 import App from "./App.jsx";
-import { clerkPublishableKey } from "./Authorisation/clerk";
+import { ApiClientProvider } from "./providers/api-client";
+import { clerkPublishableKey } from "./providers/clerk";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -14,7 +15,9 @@ createRoot(document.getElementById("root")).render(
       signUpForceRedirectUrl="/learn"
       afterSignOutUrl="/learn"
     >
-      <App />
+      <ApiClientProvider>
+        <App />
+      </ApiClientProvider>
     </ClerkProvider>
   </StrictMode>
 );

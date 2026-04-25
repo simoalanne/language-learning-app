@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useApiClient } from "../api/api";
+import { useApiClient } from "../../providers/api-client";
 
 const formConfig = {
   languageNames: ["English", "Finnish", "French", "German", "Spanish", "Swedish"],

@@ -1,29 +1,27 @@
-import MatchingGameCard from "./MatchingGameCard";
+import AddIcon from "@mui/icons-material/Add";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import RemoveIcon from "@mui/icons-material/Remove";
+import SettingsIcon from "@mui/icons-material/Settings";
 import {
   Box,
-  Typography,
   Button,
-  DialogTitle,
-  IconButton,
-} from "@mui/material";
-import { useState, useEffect } from "react";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import {
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
+  DialogTitle,
+  IconButton,
+  Typography,
 } from "@mui/material";
-import ContentAligner from "./ContentAligner";
-import MatchingGameSettings from "./MatchingGameSettings";
-import { shuffle } from "./util/helpers";
-import SettingsIcon from "@mui/icons-material/Settings";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import { useAppAuth } from "./Authorisation/useAppAuth";
-import { useApiClient } from "./api/api";
-import { normalizeWordGroup } from "./api/wordGroups";
+import { normalizeWordGroup } from "../word-groups/wordGroups";
+import ContentAligner from "../../components/ContentAligner";
+import MatchingGameCard from "./MatchingGameCard";
+import MatchingGameSettings from "./MatchingGameSettings";
+import { useApiClient } from "../../providers/api-client";
+import { useAppAuth } from "../../providers/use-app-auth";
+import { shuffle } from "../../utils/helpers";
 
 const MatchingGameMode = () => {
   const [flippedCards, setFlippedCards] = useState([]); // store the indexes of the flipped cards

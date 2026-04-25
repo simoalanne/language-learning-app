@@ -1,15 +1,15 @@
 import {
-  Dialog,
-  DialogContent,
   Box,
   Button,
-  Typography,
+  Dialog,
+  DialogContent,
   Slider,
+  Typography,
 } from "@mui/material";
-import SelectLanguagePair from "./SelectLanguagePair";
-import ToggleOption from "./ToggleOption";
-import ChipSelect from "./ChipSelect";
-import { useAppAuth } from "./Authorisation/useAppAuth";
+import ChipSelect from "../../components/ChipSelect";
+import SelectLanguagePair from "../../components/SelectLanguagePair";
+import ToggleOption from "../../components/ToggleOption";
+import { useAppAuth } from "../../providers/use-app-auth";
 
 const MatchingGameSettings = ({
   open,

@@ -1,13 +1,13 @@
-import { useState, useRef } from "react";
-import Flashcard from "./Flashcard";
-import { Box, Button, Fade, TextField, Typography } from "@mui/material";
-import MoveIcons from "./MoveIcons";
-import ContentAligner from "./ContentAligner";
-import { useNavigate } from "react-router-dom";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import { useAppAuth } from "./Authorisation/useAppAuth";
-import { useApiClient } from "./api/api";
-import { normalizeWordGroup } from "./api/wordGroups";
+import { Box, Button, Fade, TextField, Typography } from "@mui/material";
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { normalizeWordGroup } from "../word-groups/wordGroups";
+import ContentAligner from "../../components/ContentAligner";
+import MoveIcons from "../../components/MoveIcons";
+import Flashcard from "./Flashcard";
+import { useApiClient } from "../../providers/api-client";
+import { useAppAuth } from "../../providers/use-app-auth";
 
 const FlashcardMode = () => {
   const navigate = useNavigate();
