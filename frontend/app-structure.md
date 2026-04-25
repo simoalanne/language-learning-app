@@ -57,14 +57,37 @@ The migration should be done in this order:
 - Improve duplicated logic, oversized files, unclear ownership, and weak boundaries
 - Let the new structure reveal the real cleanup targets instead of guessing too early
 
+## Current Status
+
+The following work is already done:
+
+- frontend folder structure has been reorganized into root app files, shared root folders, and feature folders
+- `providers/`, `components/`, `utils/`, and `features/` are in place
+- route assembly lives at the root in `src/router.jsx`
+- provider wiring lives in `src/providers/`
+- shared generic UI lives in `src/components/`
+- feature-owned files have been moved out of the old flat `src/` layout
+- frontend-local ESLint setup has been removed in favor of the repo-level Biome config
+- dead dependency cleanup has been started and `axios` / frontend ESLint packages were removed
+- TypeScript support has been added with `frontend/tsconfig.json`, `src/vite-env.d.ts`, and a `typecheck` script
+- `@/` path alias support has been added for Vite and TypeScript
+- `vite.config` has been converted to TypeScript
+- frontend dependencies have been updated to the latest compatible versions in the repo
+
+Current verification status:
+
+- `pnpm --filter frontend build` passes
+- `pnpm --filter frontend typecheck` passes
+
 The target shape is intentionally flat:
 
 ```text
 src/
-  App.tsx
-  main.tsx
-  router.tsx
+  App.(j|t)sx
+  main.(j|t)sx
+  router.(j|t)sx
   index.css
+  vite-env.d.ts
 
   features/
     home/
@@ -76,9 +99,7 @@ src/
 
   providers/
   components/
-  hooks/
   utils/
-  styles/
 ```
 
 ## Folder Rules
@@ -91,24 +112,75 @@ src/
 - Avoid adding deeper role-based nesting unless there is a strong reason.
 - If a file is only used by one feature, keep it inside that feature even if it is a component, hook, helper, or CSS file.
 
+## Current Structure
+
+The frontend currently looks roughly like this:
+
+```text
+src/
+  App.jsx
+  main.jsx
+  router.jsx
+  index.css
+  vite-env.d.ts
+  LearningModeSettings.jsx
+
+  providers/
+    api-client.tsx
+    clerk.ts
+    use-app-auth.ts
+
+  components/
+    ChipSelect.jsx
+    ContentAligner.jsx
+    LanguageFlag.jsx
+    MoveIcons.jsx
+    SelectLanguage.jsx
+    SelectLanguagePair.jsx
+    SwapLanguagePair.jsx
+    ToastMessage.jsx
+    ToggleOption.jsx
+
+  utils/
+    helpers.js
+
+  features/
+    home/
+    word-groups/
+    ai-generation/
+    flashcards/
+    memory-game/
+    test-mode/
+```
+
 ## Target Mapping
 
 ### Root files
 
-- `src/App.jsx` -> `src/App.tsx`
-- `src/main.jsx` -> `src/main.tsx`
-- create `src/router.tsx`
-- `src/index.css` stays at `src/index.css`
+- `src/App.jsx` stays at root for now
+- `src/main.jsx` stays at root for now
+- `src/router.jsx` stays at root for now
+- `src/index.css` stays at root
+- `src/vite-env.d.ts` exists at root
+
+Status:
+
+- done structurally
+- TypeScript conversion of these files is still pending
 
 ### `src/providers/`
 
-- `src/api/api.tsx` -> `src/providers/api-client.tsx`
-- `src/Authorisation/useAppAuth.ts` -> `src/providers/use-app-auth.ts`
+- `src/providers/api-client.tsx`
+- `src/providers/use-app-auth.ts`
+- `src/providers/clerk.ts`
 
 Notes:
 
 - This folder is for app wiring and provider-facing integration code.
-- If Clerk config currently lives in a small local module, move that here too.
+
+Status:
+
+- done
 
 ### `src/components/`
 
@@ -127,82 +199,123 @@ Notes:
 - Keep `MoveIcons` here only if it remains genuinely shared.
 - The language-selection components are shared enough today because multiple practice flows depend on them.
 
+Status:
+
+- done structurally
+- TypeScript conversion still pending for most files
+
 ### `src/utils/`
 
-- `src/util/helpers.js` -> `src/utils/helpers.ts`
+- `src/utils/helpers.js`
 
 Notes:
 
 - Keep this for pure shared functions such as `shuffle` and cross-feature filtering helpers.
 - If a helper only belongs to one feature after refactoring, move it into that feature instead.
 
+Status:
+
+- done structurally
+- TypeScript conversion still pending
+
 ### `src/features/home/`
 
-- `src/LearnWords.jsx` -> `src/features/home/HomePage.tsx`
-- `src/LearnWords.css` -> `src/features/home/home.css`
-- `src/LearningModeCard.jsx` -> `src/features/home/LearningModeCard.tsx`
-- `src/Menu/LoggedInButtons.tsx` -> `src/features/home/LoggedInButtons.tsx`
-- `src/Menu/LogInOrRegisterButtons.tsx` -> `src/features/home/LogInOrRegisterButtons.tsx`
+- `src/features/home/LearnWords.jsx`
+- `src/features/home/LearnWords.css`
+- `src/features/home/LearningModeCard.jsx`
+- `src/features/home/LoggedInButtons.tsx`
+- `src/features/home/LogInOrRegisterButtons.tsx`
 
 Notes:
 
 - The menu buttons are feature-level navigation for the current home/app shell experience, so they do not need a separate shared folder.
 - If the top navigation grows into a broader app-level concern later, it can be pulled out then.
 
+Status:
+
+- done structurally
+- naming cleanup like `LearnWords -> HomePage` is still optional future cleanup
+
 ### `src/features/word-groups/`
 
-- `src/ManageTranslations.jsx` -> `src/features/word-groups/ManageTranslationsPage.tsx`
-- `src/TranslationCard.jsx` -> `src/features/word-groups/TranslationCard.tsx`
-- `src/QuickAdd.jsx` -> `src/features/word-groups/QuickAdd.tsx`
-- `src/AddToCollection.jsx` -> `src/features/word-groups/AddToCollection.tsx`
-- `src/api/wordGroups.js` -> `src/features/word-groups/word-groups.api.ts`
+- `src/features/word-groups/ManageTranslations.jsx`
+- `src/features/word-groups/TranslationCard.jsx`
+- `src/features/word-groups/QuickAdd.jsx`
+- `src/features/word-groups/AddToCollection.jsx`
+- `src/features/word-groups/wordGroups.js`
 
 Notes:
 
 - This feature owns CRUD for user-managed word groups.
 - Domain-specific normalization and request shaping for word groups should live here instead of in a generic root API folder.
 
+Status:
+
+- done structurally
+- TypeScript conversion still pending
+
 ### `src/features/ai-generation/`
 
-- `src/AiTranslationGeneratation.jsx` -> `src/features/ai-generation/AiGenerationPage.tsx`
-- `src/hooks/useAiWordGeneration.jsx` -> `src/features/ai-generation/useAiWordGeneration.ts`
-- `src/WordGenerationForm.jsx` -> `src/features/ai-generation/WordGenerationForm.tsx`
-- `src/GeneratedWordsDisplay.jsx` -> `src/features/ai-generation/GeneratedWordsDisplay.tsx`
-- `src/WordTranslationRow.jsx` -> `src/features/ai-generation/WordTranslationRow.tsx`
-- `src/WordTranslationCard.jsx` -> `src/features/ai-generation/WordTranslationCard.tsx`
-- `src/WordInputField.jsx` -> `src/features/ai-generation/WordInputField.tsx`
+- `src/features/ai-generation/AiTranslationGeneratation.jsx`
+- `src/features/ai-generation/useAiWordGeneration.jsx`
+- `src/features/ai-generation/WordGenerationForm.jsx`
+- `src/features/ai-generation/GeneratedWordsDisplay.jsx`
+- `src/features/ai-generation/WordTranslationRow.jsx`
+- `src/features/ai-generation/WordTranslationCard.jsx`
+- `src/features/ai-generation/WordInputField.jsx`
 
 Notes:
 
 - Rename `AiTranslationGeneratation` while moving it. The current filename has a typo.
 - This feature can still depend on word-group API/types where appropriate, but its workflow should live together.
 
+Status:
+
+- done structurally
+- typo cleanup and TypeScript conversion still pending
+
 ### `src/features/flashcards/`
 
-- `src/FlashcardMode.jsx` -> `src/features/flashcards/FlashcardsPage.tsx`
-- `src/Flashcard.jsx` -> `src/features/flashcards/Flashcard.tsx`
-- `src/Flashcard.css` -> `src/features/flashcards/flashcard.css`
+- `src/features/flashcards/FlashcardMode.jsx`
+- `src/features/flashcards/Flashcard.jsx`
+- `src/features/flashcards/Flashcard.css`
+
+Status:
+
+- done structurally
+- TypeScript conversion still pending
 
 ### `src/features/memory-game/`
 
-- `src/MatchingGameMode.jsx` -> `src/features/memory-game/MemoryGamePage.tsx`
-- `src/MatchingGameCard.jsx` -> `src/features/memory-game/MatchingGameCard.tsx`
-- `src/MatchingGameSettings.jsx` -> `src/features/memory-game/MatchingGameSettings.tsx`
+- `src/features/memory-game/MatchingGameMode.jsx`
+- `src/features/memory-game/MatchingGameCard.jsx`
+- `src/features/memory-game/MatchingGameSettings.jsx`
+
+Status:
+
+- done structurally
+- TypeScript conversion still pending
 
 ### `src/features/test-mode/`
 
-- `src/TestMode.jsx` -> `src/features/test-mode/TestModePage.tsx`
-- `src/TestSettings.jsx` -> `src/features/test-mode/TestSettings.tsx`
-- `src/TestItem.jsx` -> `src/features/test-mode/TestItem.tsx`
-- `src/TestEndScreen.jsx` -> `src/features/test-mode/TestEndScreen.tsx`
+- `src/features/test-mode/TestMode.jsx`
+- `src/features/test-mode/TestSettings.jsx`
+- `src/features/test-mode/TestItem.jsx`
+- `src/features/test-mode/TestEndScreen.jsx`
+
+Status:
+
+- done structurally
+- TypeScript conversion still pending
 
 ## Routing Proposal
 
 Keep route assembly easy to find at the root:
 
-- `src/router.tsx` defines route objects or route JSX
-- `src/App.tsx` renders the router and shared top-level shell
-- `src/main.tsx` mounts providers and the app
+- `src/router.(j|t)sx` defines route objects or route JSX
+- `src/App.(j|t)sx` renders the router and shared top-level shell
+- `src/main.(j|t)sx` mounts providers and the app
+- `frontend/vite.config.ts` handles frontend build config and alias resolution
 
 This keeps default React/Vite entry files where most developers expect them.
 
@@ -216,15 +329,23 @@ Before moving a file to a root-level shared folder, check:
 
 If the answer is not clearly yes, keep it in the feature folder.
 
-## TypeScript Migration Order
+## Remaining Work
 
-Suggested order to reduce breakage:
+The main migration work still left is:
 
-1. Convert root entry files: `main`, `App`, `router`
-2. Convert `providers`
-3. Convert `components`
-4. Convert `utils`
-5. Convert feature folders one feature at a time
+1. Convert remaining `.js/.jsx` files to `.ts/.tsx` intentionally
+2. Reuse real domain types instead of introducing `any` or duplicated local shapes
+3. Decide on final naming cleanup where it adds value
+4. Delete legacy code that is no longer used
+5. Review remaining rough edges after the TypeScript migration
+
+Suggested TypeScript conversion order:
+
+1. root files: `main`, `App`, `router`
+2. `providers`
+3. `components`
+4. `utils`
+5. feature folders one feature at a time
 
 Suggested feature order:
 
@@ -242,6 +363,7 @@ Suggested feature order:
 - Replace remaining `.js/.jsx` files with `.ts/.tsx`
 - Move CSS files next to their feature unless they are truly global
 - Revisit whether `MoveIcons` and language selection components still belong in `components/` after the migration
+- Consider rewriting remaining relative imports to `@/` alias imports over time
 
 ## Probably Unused or Legacy
 
