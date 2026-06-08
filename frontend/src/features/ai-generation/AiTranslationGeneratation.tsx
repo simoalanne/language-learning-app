@@ -1,5 +1,5 @@
 import { Tab, Tabs, Box, useMediaQuery, useTheme } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ContentAligner from "../../components/ContentAligner";
 import ToastMessage from "../../components/ToastMessage";
 import GeneratedWordsDisplay from "./GeneratedWordsDisplay";
@@ -17,8 +17,9 @@ const AiTranslationGeneratation = () => {
 		usageLoading,
 		generationHistory,
 		generationHistoryLoading,
+		generateWordsErrorMessage,
 		handleWordGenerationFormChange,
-		handleWordGenerationFormSubmit,
+		handleGenerateWords,
 		handleLoadHistoryGeneration,
 		handleReturnToGenerationForm,
 		generatedWords,
@@ -31,14 +32,11 @@ const AiTranslationGeneratation = () => {
 	const [snackbarMessage, setSnackbarMessage] = useState("");
 	const [activeTab, setActiveTab] = useState<"generate" | "history">("generate");
 
-	const handleGenerate = async () => {
-		try {
-			await handleWordGenerationFormSubmit();
-		} catch (error) {
-			console.error("Generating words failed:", error);
-			setSnackbarMessage("Failed to generate words. Please try again later.");
+	useEffect(() => {
+		if (generateWordsErrorMessage) {
+			setSnackbarMessage(generateWordsErrorMessage);
 		}
-	};
+	}, [generateWordsErrorMessage]);
 
 	const handleSave = async () => {
 		try {
@@ -61,9 +59,14 @@ const AiTranslationGeneratation = () => {
 		<ContentAligner
 			background="url(/style1.png)"
 			centerVertically={false}
-			sx={{ pt: 4 }}
+			sx={{
+				boxSizing: "border-box",
+				width: "100%",
+				px: { xs: 2, sm: 3 },
+				pt: 4,
+			}}
 		>
-			<Box sx={{ width: "100%", maxWidth: 1100, px: 2 }}>
+			<Box sx={{ width: "100%", maxWidth: 1100 }}>
 				<Tabs
 					value={activeTab}
 					onChange={(_event, value: "generate" | "history") =>
@@ -86,7 +89,7 @@ const AiTranslationGeneratation = () => {
 						usageStatus={usageStatus}
 						usageLoading={usageLoading}
 						onChange={handleWordGenerationFormChange}
-						onSubmit={handleGenerate}
+						onGenerate={handleGenerateWords}
 						loading={loading}
 					/>
 				) : (

@@ -22,7 +22,7 @@ import {
 	wordGroupSchema,
 } from "./wordGroups.schemas.ts";
 
-export default contractTools.defineContract({
+export default contractTools.defineContractTree({
 	wordGroups: {
 		public: {
 			list: {

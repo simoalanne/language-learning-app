@@ -31,16 +31,17 @@ const WordTranslationRow = ({
 	return (
 		<Box
 			sx={{
+				boxSizing: "border-box",
+				width: "100%",
 				display: "flex",
 				alignItems: "center",
+				flexWrap: "wrap",
 				gap: 2,
 				py: 1.5,
 				px: 2,
 				mb: 1,
 				borderRadius: 2,
 				backgroundColor: isSelected ? "#e3f2fd" : "#f9f9f9",
-				overflowX: "auto",
-				whiteSpace: "nowrap",
 				boxShadow: "inset 0 0 0 1px #e0e0e0",
 				transition: "background-color 0.2s ease-in-out",
 			}}
@@ -58,7 +59,8 @@ const WordTranslationRow = ({
 						display: "flex",
 						alignItems: "center",
 						gap: 1,
-						flexShrink: 0,
+						flex: { xs: "1 1 100%", sm: "1 1 260px" },
+						minWidth: 0,
 					}}
 				>
 					<LanguageFlag languageName={t.languageName} />
@@ -68,7 +70,7 @@ const WordTranslationRow = ({
 							onChangeTranslation(wordItem.id, t.languageName, e.target.value)
 						}
 						size="small"
-						sx={{ width: "225px" }}
+						sx={{ flex: 1, minWidth: 0 }}
 						slotProps={{
 							input: {
 								endAdornment: (

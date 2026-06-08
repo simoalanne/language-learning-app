@@ -55,6 +55,9 @@ const WordListDisplay = ({
 	return (
 		<Box
 			sx={{
+				boxSizing: "border-box",
+				width: "100%",
+				maxWidth: "1500px",
 				mt: 4,
 				display: "flex",
 				flexDirection: "column",
@@ -65,7 +68,6 @@ const WordListDisplay = ({
 			<Box
 				sx={{
 					width: "100%",
-					maxWidth: "1500px",
 					display: "flex",
 					justifyContent: "flex-start",
 				}}
@@ -102,13 +104,18 @@ const WordListDisplay = ({
 				sx={
 					viewMode === "card"
 						? {
-								display: "flex",
-								flexWrap: "wrap",
-								maxWidth: "1500px",
+								boxSizing: "border-box",
+								width: "100%",
+								display: "grid",
+								gridTemplateColumns:
+									"repeat(auto-fit, minmax(min(100%, 360px), 1fr))",
 								gap: 2,
-								justifyContent: "center",
+								justifyItems: "center",
 							}
-						: {}
+						: {
+								boxSizing: "border-box",
+								width: "100%",
+							}
 				}
 			>
 				{words.map((wordItem, i) =>
@@ -140,6 +147,7 @@ const WordListDisplay = ({
 					gap: 2,
 					justifyContent: "center",
 					alignItems: "center",
+					width: "100%",
 					my: 5,
 				}}
 			>
@@ -152,6 +160,7 @@ const WordListDisplay = ({
 					value={form.topic}
 					onChange={(e) => onFormChange("topic", e.target.value)}
 					size="small"
+					sx={{ width: { xs: "100%", sm: 220 } }}
 				/>
 				<TextField
 					label="Tag2"
@@ -159,6 +168,7 @@ const WordListDisplay = ({
 					value={form.skillLevel}
 					onChange={(e) => onFormChange("skillLevel", e.target.value)}
 					size="small"
+					sx={{ width: { xs: "100%", sm: 220 } }}
 				/>
 				<Button
 					variant="contained"
@@ -166,6 +176,7 @@ const WordListDisplay = ({
 					onClick={onSave}
 					disabled={loading}
 					endIcon={<AddIcon />}
+					sx={{ width: { xs: "100%", sm: "auto" } }}
 				>
 					Save Selected Words
 				</Button>

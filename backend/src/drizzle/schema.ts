@@ -3,7 +3,7 @@ import type {
 	ApiResponse,
 } from "@language-learning-app/contracts";
 import type { wordGroupInputSchema } from "@language-learning-app/contracts/wordGroups.ts";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import * as p from "drizzle-orm/pg-core";
 import type z from "zod";
 
@@ -18,7 +18,7 @@ export const users = p.pgTable("users", {
 		.default(0),
 	ai_generation_reset_at: p.timestamp("ai_generation_reset_at", {
 		withTimezone: true,
-	}),
+	}).default(sql`now() + interval '7 days'`).notNull(),
 });
 
 export const word_groups = p.pgTable("word_groups", {

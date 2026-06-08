@@ -58,7 +58,7 @@ export const paginatedAiGenerationHistoryResponseSchema = z.object({
 	}),
 });
 
-export default contractTools.defineContract({
+export default contractTools.defineContractTree({
 	ai: {
 		getUsage: {
 			method: "GET",
@@ -96,6 +96,23 @@ export default contractTools.defineContract({
 			request: {
 				body: generateWordsInputSchema,
 			},
+			errors: [
+				z.object({
+					code: z.literal("AI_GENERATION_LIMIT_REACHED"),
+					status: z.literal(429),
+					resetsAt: z.iso.datetime(),
+				}),
+				z.object({
+					code: z.literal("AI_PROVIDER_UNAVAILABLE"),
+					status: z.literal(503),
+					message: z.string(),
+				}),
+				z.object({
+					code: z.literal("AI_PROVIDER_INVALID_RESPONSE"),
+					status: z.literal(502),
+					message: z.string(),
+				}),
+			],
 			response: generatedWordsResponseSchema,
 			meta: {
 				requiresAuth: true,

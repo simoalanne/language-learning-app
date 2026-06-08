@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import db from "../../drizzle/db.ts";
 import * as schema from "../../drizzle/schema.ts";
-import { defineService } from "../../initServives.ts";
+import { defineService, throwKnownError } from "../../initServives.ts";
 
 type GenerateWordsInput = ApiRequest<"ai.generateWords">;
 type GenerateWordsResponse = ApiResponse<"ai.generateWords">;
@@ -15,7 +15,7 @@ const openAiModel = process.env.OPENAI_MODEL;
 const openAiBaseUrl =
 	process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
 const aiGenerationLimit = Number(process.env.AI_GENERATION_LIMIT ?? 0);
-const aiGenerationWindowMs = 30 * 24 * 60 * 60 * 1000;
+const aiGenerationWindowMs = 7 * 24 * 60 * 60 * 1000;
 
 const hasOpenAiConfig = Boolean(openAiApiKey && openAiModel);
 const hasAiGenerationLimit =
@@ -27,6 +27,9 @@ const openai = openAiApiKey
 			baseURL: openAiBaseUrl,
 		})
 	: null;
+
+const getNextAiGenerationResetAt = (from: Date) =>
+	new Date(from.getTime() + aiGenerationWindowMs);
 
 const createWordGenerationPrompt = (input: GenerateWordsInput) => {
 	const wordTypes =
@@ -52,14 +55,20 @@ const generateWordsWithOpenAi = async (
 	input: GenerateWordsInput,
 ): Promise<GenerateWordsResponse> => {
 	if (!openai || !openAiModel) {
-		throw new Error(
-			"OpenAI is not configured. Set OPENAI_API_KEY and OPENAI_MODEL in backend/.env.",
-		);
+		return throwKnownError({
+			code: "AI_PROVIDER_UNAVAILABLE",
+			status: 503,
+			message:
+				"OpenAI is not configured. Set OPENAI_API_KEY and OPENAI_MODEL in backend/.env.",
+		});
 	}
 
+	const openAiClient = openai;
+	const model = openAiModel;
+
 	try {
-		const response = await openai.responses.parse({
-			model: openAiModel,
+		const response = await openAiClient.responses.parse({
+			model,
 			input: [
 				{
 					role: "system",
@@ -79,46 +88,31 @@ const generateWordsWithOpenAi = async (
 			},
 		});
 
-		if (!response.output_parsed) {
-			throw new Error(
-				"OpenAI response did not include parsed structured output",
-			);
+		const outputParsed = response.output_parsed;
+
+		if (!outputParsed) {
+			return throwKnownError({
+				code: "AI_PROVIDER_INVALID_RESPONSE",
+				status: 502,
+				message: "OpenAI response did not include parsed structured output.",
+			});
 		}
 
-		return response.output_parsed.items.map((item, index) => ({
+		return outputParsed.items.map((item, index) => ({
 			id: index + 1,
 			translations: item.translations,
 		}));
 	} catch (error) {
 		if (error instanceof OpenAI.APIError) {
-			throw new Error(
-				`OpenAI request failed with status ${error.status ?? "unknown"}: ${error.message}`,
-			);
+			return throwKnownError({
+				code: "AI_PROVIDER_UNAVAILABLE",
+				status: 503,
+				message: `OpenAI request failed with status ${error.status ?? "unknown"}: ${error.message}`,
+			});
 		}
 
 		throw error;
 	}
-};
-
-const getLimitResetError = async (
-	clerkId: string,
-	dbClient: Pick<typeof db, "select"> = db,
-) => {
-	const [existingUser] = await dbClient
-		.select({
-			resetAt: schema.users.ai_generation_reset_at,
-		})
-		.from(schema.users)
-		.where(eq(schema.users.clerk_id, clerkId));
-
-	const resetAtLabel =
-		existingUser?.resetAt instanceof Date
-			? existingUser.resetAt.toISOString()
-			: "the next reset window";
-
-	return new Error(
-		`AI generation limit reached. Try again after ${resetAtLabel}.`,
-	);
 };
 
 const assertCanGenerateWithinLimit = async (clerkId: string) => {
@@ -136,14 +130,19 @@ const assertCanGenerateWithinLimit = async (clerkId: string) => {
 		.where(eq(schema.users.clerk_id, clerkId));
 
 	if (!user) {
+		throw new Error("Authenticated user not found");
+	}
+
+	if (user.resetAt.getTime() <= now.getTime()) {
 		return;
 	}
 
-	const isExpired =
-		!user.resetAt || new Date(user.resetAt).getTime() <= now.getTime();
-
-	if (!isExpired && user.used >= aiGenerationLimit) {
-		throw await getLimitResetError(clerkId);
+	if (user.used >= aiGenerationLimit) {
+		return throwKnownError({
+			code: "AI_GENERATION_LIMIT_REACHED",
+			status: 429,
+			resetsAt: user.resetAt.toISOString(),
+		});
 	}
 };
 
@@ -169,25 +168,42 @@ export const aiService = defineService("ai", {
 			.where(eq(schema.users.clerk_id, context.clerkId));
 
 		if (!user) {
-			return {
-				used: 0,
-				limit: aiGenerationLimit,
-				remaining: aiGenerationLimit,
-				resetsAt: null,
-				canGenerate: true,
-			};
+			throw new Error("Authenticated user not found");
 		}
 
-		const isExpired =
-			!user.resetAt || new Date(user.resetAt).getTime() <= now.getTime();
-		const used = isExpired ? 0 : user.used;
+		let used = user.used;
+		let resetAt = user.resetAt;
+
+		if (resetAt.getTime() <= now.getTime()) {
+			const nextResetAt = getNextAiGenerationResetAt(now);
+
+			const [updatedUser] = await db
+				.update(schema.users)
+				.set({
+					ai_generation_count: 0,
+					ai_generation_reset_at: nextResetAt,
+				})
+				.where(eq(schema.users.clerk_id, context.clerkId))
+				.returning({
+					used: schema.users.ai_generation_count,
+					resetAt: schema.users.ai_generation_reset_at,
+				});
+
+			if (!updatedUser) {
+				throw new Error("AI generation quota reset failed");
+			}
+
+			used = updatedUser.used;
+			resetAt = updatedUser.resetAt;
+		}
+
 		const remaining = Math.max(aiGenerationLimit - used, 0);
 
 		return {
 			used,
 			limit: aiGenerationLimit,
 			remaining,
-			resetsAt: isExpired ? null : (user.resetAt?.toISOString() ?? null),
+			resetsAt: resetAt.toISOString(),
 			canGenerate: remaining > 0,
 		};
 	},
@@ -246,9 +262,12 @@ export const aiService = defineService("ai", {
 	},
 	generateWords: async ({ context, ...input }) => {
 		if (!hasOpenAiConfig) {
-			throw new Error(
-				"OpenAI is not configured. Set OPENAI_API_KEY and OPENAI_MODEL in backend/.env.",
-			);
+			return throwKnownError({
+				code: "AI_PROVIDER_UNAVAILABLE",
+				status: 503,
+				message:
+					"OpenAI is not configured. Set OPENAI_API_KEY and OPENAI_MODEL in backend/.env.",
+			});
 		}
 
 		await assertCanGenerateWithinLimit(context.clerkId);
@@ -266,23 +285,21 @@ export const aiService = defineService("ai", {
 			}
 
 			const now = new Date();
-			const resetAt = new Date(now.getTime() + aiGenerationWindowMs);
+			const resetAt = getNextAiGenerationResetAt(now);
 
 			const [updatedUser] = await tx
 				.update(schema.users)
 				.set({
 					ai_generation_count: sql<number>`
 						case
-							when ${schema.users.ai_generation_reset_at} is null
-								or ${schema.users.ai_generation_reset_at} <= ${now}
+							when ${schema.users.ai_generation_reset_at} <= ${now}
 							then 1
 							else ${schema.users.ai_generation_count} + 1
 						end
 					`,
 					ai_generation_reset_at: sql<Date>`
 						case
-							when ${schema.users.ai_generation_reset_at} is null
-								or ${schema.users.ai_generation_reset_at} <= ${now}
+							when ${schema.users.ai_generation_reset_at} <= ${now}
 							then ${resetAt}
 							else ${schema.users.ai_generation_reset_at}
 						end
@@ -292,8 +309,7 @@ export const aiService = defineService("ai", {
 					and(
 						eq(schema.users.clerk_id, context.clerkId),
 						sql<boolean>`
-							${schema.users.ai_generation_reset_at} is null
-							or ${schema.users.ai_generation_reset_at} <= ${now}
+							${schema.users.ai_generation_reset_at} <= ${now}
 							or ${schema.users.ai_generation_count} < ${aiGenerationLimit}
 						`,
 					),
@@ -306,7 +322,7 @@ export const aiService = defineService("ai", {
 				return;
 			}
 
-			throw await getLimitResetError(context.clerkId, tx);
+			throw new Error("AI generation quota update failed");
 		});
 		return words;
 	},

@@ -12,8 +12,8 @@
 	},
 	"dependencies": {
 		"@clerk/react": "^6.4.5",
-		"@contract-first-api/api-client": "^2.1.1",
-		"@contract-first-api/react-query": "^2.0.0",
+		"@contract-first-api/api-client": "^4.0.0",
+		"@contract-first-api/react-query": "^4.0.0",
 		"@emotion/react": "^11.14.0",
 		"@emotion/styled": "^11.14.1",
 		"@language-learning-app/contracts": "workspace:*",

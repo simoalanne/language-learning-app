@@ -25,7 +25,7 @@ type WordGenerationFormProps = {
 		key: K,
 		value: AiWordGenerationForm[K],
 	) => void;
-	onSubmit: () => void;
+	onGenerate: () => void;
 	loading: boolean;
 };
 
@@ -52,7 +52,7 @@ const WordGenerationForm = ({
 	usageStatus,
 	usageLoading,
 	onChange,
-	onSubmit,
+	onGenerate,
 	loading,
 }: WordGenerationFormProps) => {
 	const hasLimit = typeof usageStatus?.limit === "number";
@@ -61,7 +61,7 @@ const WordGenerationForm = ({
 		loading || usageLoading || usageStatus?.canGenerate === false;
 
 	return (
-		<Box sx={{ mb: 2 }}>
+		<Box sx={{ boxSizing: "border-box", width: "100%", maxWidth: 900, mb: 2 }}>
 			<Typography variant="h5" sx={{ mb: 2, textAlign: "center" }}>
 				Generate Vocabulary
 			</Typography>
@@ -142,7 +142,7 @@ const WordGenerationForm = ({
 				variant="contained"
 				fullWidth
 				sx={{ mt: 2 }}
-				onClick={onSubmit}
+				onClick={onGenerate}
 				disabled={generateDisabled}
 				endIcon={<AutoAwesomeIcon />}
 			>

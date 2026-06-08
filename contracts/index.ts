@@ -11,10 +11,10 @@ export { contractTools } from "./contractTools.ts";
 
 import wordGroupsContracts from "./wordGroups.ts";
 
-export const contracts = contractTools.mergeContracts(
-	wordGroupsContracts,
-	aiContracts,
-);
+export const contracts = contractTools.defineContractTree({
+	...wordGroupsContracts,
+	...aiContracts,
+});
 
 export type AppContracts = typeof contracts;
 export type AppContractPaths = DotPaths<AppContracts>;

@@ -22,8 +22,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.5(express@5.2.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@contract-first-api/express':
-        specifier: ^2.0.0
-        version: 2.0.0(express@5.2.1)
+        specifier: ^4.0.0
+        version: 4.0.0(express@5.2.1)
       '@language-learning-app/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -62,11 +62,15 @@ importers:
   contracts:
     dependencies:
       '@contract-first-api/core':
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^4.0.0
+        version: 4.0.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
 
   frontend:
     dependencies:
@@ -74,11 +78,11 @@ importers:
         specifier: ^6.4.5
         version: 6.4.5(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@contract-first-api/api-client':
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^4.0.0
+        version: 4.0.0
       '@contract-first-api/react-query':
-        specifier: ^2.0.0
-        version: 2.0.0(@tanstack/react-query@5.100.3(react@19.2.5))
+        specifier: ^4.0.0
+        version: 4.0.0(@tanstack/react-query@5.100.3(react@19.2.5))
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.14)(react@19.2.5)
@@ -268,19 +272,19 @@ packages:
       react-dom:
         optional: true
 
-  '@contract-first-api/api-client@2.1.1':
-    resolution: {integrity: sha512-Vd+QKj46dF7I6Zi41yw60Z4dB2UKkk0wucW0pafIqnwqjdxNHeRaAuQUtlTebSI22217DW5cgnsP9rdRfGXnqQ==}
+  '@contract-first-api/api-client@4.0.0':
+    resolution: {integrity: sha512-gZhvwaYXUMELa7xfpBft562l+nMW8jqsJL/4l6RCuvJ6QtKVME0r6UnWlEfrcb/2yIKEzSkjt4vMYG+/uiqKXg==}
 
-  '@contract-first-api/core@2.0.0':
-    resolution: {integrity: sha512-jyuibXvTWJY/l5iPC7HWQao61Bd0RzxwGM+wr9kpApApOZqsMtpqPne3kWG1ewRgv8oUIE3yDx6zYZSS6o3qhg==}
+  '@contract-first-api/core@4.0.0':
+    resolution: {integrity: sha512-QKKWMEYkYTks4GmRQiDIvbHxv0//1Q6qNSROkFEcEy8u0Doyvns3XFLssfEVmvb41408GVv8TlgQ4eXGWsSUSg==}
 
-  '@contract-first-api/express@2.0.0':
-    resolution: {integrity: sha512-cab9r4Bj50MmYHFB98N4SzIIzAjHp+VJ2RVjGaEETxeoLoOI89srtBD8wlCNaAW82amjxIhoMSZ3BbW/OFBi2Q==}
+  '@contract-first-api/express@4.0.0':
+    resolution: {integrity: sha512-UN2RkQNqTCG4cqCiHYV9xk+3X73gRGyBAmMLq/uj1AjP408qpzCGkr8Su0CFKBIKTRKe/cq1PZJoFHmfuI0gTA==}
     peerDependencies:
       express: ^5.0.0
 
-  '@contract-first-api/react-query@2.0.0':
-    resolution: {integrity: sha512-7hhky1aGzA6EE40oCbCZkNam3HxP6HULVeRx1o+29ZzG3ToXHrDeXTbtg9Qrs9vQOFa5OExl63y8eIyF7ITG2g==}
+  '@contract-first-api/react-query@4.0.0':
+    resolution: {integrity: sha512-4r9sS+QfkPdxgv/Y44jYRxNBu5Xw5SjwDxSKyGQtgb32cnSexDhZyz/4R8w+vi4IKJG3UOuFxRgFjRgMixKkuQ==}
     peerDependencies:
       '@tanstack/react-query': ^5.0.0
 
@@ -2065,24 +2069,24 @@ snapshots:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
 
-  '@contract-first-api/api-client@2.1.1':
+  '@contract-first-api/api-client@4.0.0':
     dependencies:
-      '@contract-first-api/core': 2.0.0
+      '@contract-first-api/core': 4.0.0
       zod: 4.3.6
 
-  '@contract-first-api/core@2.0.0':
+  '@contract-first-api/core@4.0.0':
     dependencies:
       zod: 4.3.6
 
-  '@contract-first-api/express@2.0.0(express@5.2.1)':
+  '@contract-first-api/express@4.0.0(express@5.2.1)':
     dependencies:
-      '@contract-first-api/core': 2.0.0
+      '@contract-first-api/core': 4.0.0
       express: 5.2.1
 
-  '@contract-first-api/react-query@2.0.0(@tanstack/react-query@5.100.3(react@19.2.5))':
+  '@contract-first-api/react-query@4.0.0(@tanstack/react-query@5.100.3(react@19.2.5))':
     dependencies:
-      '@contract-first-api/api-client': 2.1.1
-      '@contract-first-api/core': 2.0.0
+      '@contract-first-api/api-client': 4.0.0
+      '@contract-first-api/core': 4.0.0
       '@tanstack/react-query': 5.100.3(react@19.2.5)
 
   '@drizzle-team/brocli@0.10.2': {}

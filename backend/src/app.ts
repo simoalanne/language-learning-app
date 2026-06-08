@@ -1,12 +1,11 @@
 import path, { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { clerkMiddleware } from "@clerk/express";
-import { createExpressRouter } from "@contract-first-api/express";
-import { type ContractMeta, contracts } from "@language-learning-app/contracts";
+import { contracts } from "@language-learning-app/contracts";
 import express from "express";
 import { aiService } from "./features/ai/ai.service.ts";
 import { wordGroupsService } from "./features/wordGroups/wordGroups.service.ts";
-import type { AppRequestContext } from "./initServives.ts";
+import { createRouter } from "./initServives.ts";
 import { mountClerkWebhook } from "./integrations/clerk/clerk.webhook.ts";
 import { attachClerkId } from "./middleware/attachClerkId.ts";
 
@@ -39,7 +38,7 @@ app.get("/api/health", (_, res) => {
 	});
 });
 
-createExpressRouter<typeof contracts, ContractMeta, AppRequestContext>({
+createRouter({
 	app,
 	contracts,
 	services: {
@@ -48,8 +47,8 @@ createExpressRouter<typeof contracts, ContractMeta, AppRequestContext>({
 	},
 	middlewares: [attachClerkId],
 	routePrefix: "/api",
-	createContext: (req): AppRequestContext => ({
-		clerkId: req.clerkId,
+	createContext: (req) => ({
+		clerkId: req.clerkId
 	}),
 });
 

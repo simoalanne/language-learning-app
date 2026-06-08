@@ -36,9 +36,12 @@ const WordTranslationCard = ({
 	return (
 		<Card
 			sx={{
+				boxSizing: "border-box",
+				width: "100%",
+				maxWidth: 420,
 				position: "relative",
 				borderRadius: 2,
-				p: 3,
+				p: { xs: 1.5, sm: 3 },
 				backgroundColor: isSelected ? "#e3f2fd" : "#f9f9f9",
 				transition: "background-color 0.2s ease-in-out",
 			}}
@@ -77,6 +80,7 @@ const WordTranslationCard = ({
 							sx={{
 								display: "flex",
 								alignItems: "center",
+								flexWrap: "wrap",
 								gap: 1,
 							}}
 						>
@@ -91,7 +95,7 @@ const WordTranslationCard = ({
 									)
 								}
 								size="small"
-								sx={{ width: "300px" }}
+								sx={{ flex: "1 1 240px", minWidth: 0 }}
 								slotProps={{
 									input: {
 										endAdornment: (
