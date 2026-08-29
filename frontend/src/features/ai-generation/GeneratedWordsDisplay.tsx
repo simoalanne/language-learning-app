@@ -72,11 +72,7 @@ const WordListDisplay = ({
 					justifyContent: "flex-start",
 				}}
 			>
-				<Button
-					variant="text"
-					onClick={onBack}
-					startIcon={<ArrowBackIcon />}
-				>
+				<Button variant="text" onClick={onBack} startIcon={<ArrowBackIcon />}>
 					Back to Generator
 				</Button>
 			</Box>

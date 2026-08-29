@@ -52,3 +52,7 @@ export const createBulkWordGroupsSchema = z.object({
 export const wordGroupMutationResponseSchema = z.object({
 	id: z.number().int().positive(),
 });
+
+export const createBulkWordGroupsResponseSchema = z.object({
+	ids: z.array(z.number().int().positive()),
+});

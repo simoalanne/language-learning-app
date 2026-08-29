@@ -134,7 +134,5 @@ out
 .yarn/install-state.gz
 .pnp.*
 
-# .http files used for testing
-*.http
-
 .idea/
+.codex/

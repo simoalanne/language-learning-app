@@ -8,13 +8,13 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
+import type { AiUsageStatus } from "@/types/api";
 import ChipSelect from "../../components/ChipSelect";
 import LanguageFlag from "../../components/LanguageFlag";
 import type {
 	AiWordGenerationForm,
 	AiWordGenerationFormConfig,
 } from "./useAiWordGeneration";
-import type { AiUsageStatus } from "@/types/api";
 
 type WordGenerationFormProps = {
 	form: AiWordGenerationForm;

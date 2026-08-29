@@ -1,8 +1,8 @@
 import { clerkClient, getAuth } from "@clerk/express";
+import type { ExtendedExpressMiddleware } from "@rest-rpc/express";
 import { eq } from "drizzle-orm";
 import db from "../drizzle/db.ts";
 import * as schema from "../drizzle/schema.ts";
-import { defineMiddleware } from "../initServives.ts";
 import { upsertClerkUser } from "../integrations/clerk/clerk.webhook.ts";
 
 declare global {
@@ -13,8 +13,13 @@ declare global {
 	}
 }
 
-export const attachClerkId = defineMiddleware(async (req, res, next) => {
-	if (!req.contract.meta?.requiresAuth) return next();
+export const attachClerkId: ExtendedExpressMiddleware = async (
+	req,
+	res,
+	next,
+	route,
+) => {
+	if (route.metadata?.requiresAuth !== true) return next();
 
 	const { isAuthenticated, userId } = getAuth(req);
 
@@ -42,4 +47,4 @@ export const attachClerkId = defineMiddleware(async (req, res, next) => {
 	});
 	req.clerkId = userId;
 	next();
-});
+};

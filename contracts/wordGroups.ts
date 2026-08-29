@@ -1,7 +1,8 @@
+import { noBody, route, router } from "@rest-rpc/core";
 import z from "zod";
-import { contractTools } from "./contractTools.ts";
 
 export {
+	createBulkWordGroupsResponseSchema,
 	createBulkWordGroupsSchema,
 	languageNameSchema,
 	paginatedWordGroupsResponseSchema,
@@ -14,94 +15,72 @@ export {
 } from "./wordGroups.schemas.ts";
 
 import {
+	createBulkWordGroupsResponseSchema,
 	createBulkWordGroupsSchema,
 	paginatedWordGroupsResponseSchema,
 	wordGroupIdParamsSchema,
 	wordGroupInputSchema,
 	wordGroupListQuerySchema,
+	wordGroupMutationResponseSchema,
 	wordGroupSchema,
 } from "./wordGroups.schemas.ts";
 
-export default contractTools.defineContractTree({
+export default router({
 	wordGroups: {
-		public: {
-			list: {
+		public: router({
+			list: route({
 				method: "GET",
 				path: "/word-groups/public",
-				request: {
-					query: wordGroupListQuerySchema,
-				},
+				query: wordGroupListQuerySchema,
 				response: paginatedWordGroupsResponseSchema,
-			},
-		},
-		users: {
-			list: {
-				method: "GET",
-				path: "/word-groups/users",
-				request: {
+			}),
+		}),
+		users: router(
+			{
+				list: route({
+					method: "GET",
+					path: "/word-groups/users",
 					query: wordGroupListQuerySchema,
-				},
-				response: paginatedWordGroupsResponseSchema,
-				meta: {
-					requiresAuth: true,
-				},
-			},
-			getById: {
-				method: "GET",
-				path: "/word-groups/users/:id",
-				request: {
-					params: z.object({ id: z.coerce.number() }),
-				},
-				response: wordGroupSchema,
-				meta: {
-					requiresAuth: true,
-				},
-			},
-			create: {
-				method: "POST",
-				path: "/word-groups/users",
-				request: {
+					response: paginatedWordGroupsResponseSchema,
+				}),
+				getById: route({
+					method: "GET",
+					path: "/word-groups/users/:id",
+					pathParams: z.object({ id: z.coerce.number() }),
+					response: wordGroupSchema,
+				}),
+				create: route({
+					method: "POST",
+					path: "/word-groups/users",
 					body: wordGroupInputSchema,
-				},
-				response: z.int(),
-				meta: {
-					requiresAuth: true,
-				},
-			},
-			createBulk: {
-				method: "POST",
-				path: "/word-groups/users/bulk",
-				request: {
+					response: wordGroupMutationResponseSchema,
+				}),
+				createBulk: route({
+					method: "POST",
+					path: "/word-groups/users/bulk",
 					body: createBulkWordGroupsSchema,
-				},
-				response: z.int().array(),
-				meta: {
-					requiresAuth: true,
-				},
-			},
-			update: {
-				method: "PUT",
-				path: "/word-groups/users/:id",
-				request: {
-					params: wordGroupIdParamsSchema,
+					response: createBulkWordGroupsResponseSchema,
+				}),
+				update: route({
+					method: "PUT",
+					path: "/word-groups/users/:id",
+					pathParams: wordGroupIdParamsSchema,
 					body: wordGroupInputSchema,
-				},
-				response: z.null(),
-				meta: {
+					responses: {
+						204: noBody(),
+					},
+				}),
+				remove: route({
+					method: "DELETE",
+					path: "/word-groups/users/:id",
+					pathParams: wordGroupIdParamsSchema,
+				}),
+			},
+			{
+				metadata: {
 					requiresAuth: true,
 				},
 			},
-			remove: {
-				method: "DELETE",
-				path: "/word-groups/users/:id",
-				request: {
-					params: wordGroupIdParamsSchema,
-				},
-				response: z.null(),
-				meta: {
-					requiresAuth: true,
-				},
-			},
-		},
+		),
 	},
 });

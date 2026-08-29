@@ -1,10 +1,13 @@
+import { contracts } from "@language-learning-app/contracts";
+import { registerRoutes, router } from "@rest-rpc/express";
 import { and, eq, isNull, sql } from "drizzle-orm";
+import { Router } from "express";
 import db from "../../drizzle/db.ts";
 import * as schema from "../../drizzle/schema.ts";
-import { defineService } from "../../initServives.ts";
+import { attachClerkId } from "../../middleware/attachClerkId.ts";
 
-export const wordGroupsService = {
-	public: defineService("wordGroups.public", {
+const wordGroupsService = router(contracts.wordGroups, {
+	public: {
 		list: async ({ offset, limit }) => {
 			const [totalResult] = await db
 				.select({ total: sql`count(*)` })
@@ -32,19 +35,19 @@ export const wordGroupsService = {
 				pagination: { total, limit: 0, offset: 0, pages: 1 },
 			};
 		},
-	}),
-	users: defineService("wordGroups.users", {
+	},
+	users: {
 		list: async ({ context, offset, limit }) => {
 			const [totalResult] = await db
 				.select({ total: sql`count(*)` })
 				.from(schema.word_groups)
-				.where(eq(schema.word_groups.user_id, context.clerkId));
+				.where(eq(schema.word_groups.user_id, context.req.clerkId));
 			const total = Number(totalResult.total);
 
 			const base = db
 				.select()
 				.from(schema.word_groups)
-				.where(eq(schema.word_groups.user_id, context.clerkId))
+				.where(eq(schema.word_groups.user_id, context.req.clerkId))
 				.offset(offset ?? 0);
 
 			const groups = limit ? await base.limit(limit) : await base;
@@ -73,7 +76,7 @@ export const wordGroupsService = {
 				.where(
 					and(
 						eq(schema.word_groups.id, id),
-						eq(schema.word_groups.user_id, context.clerkId),
+						eq(schema.word_groups.user_id, context.req.clerkId),
 					),
 				);
 
@@ -92,7 +95,7 @@ export const wordGroupsService = {
 			const [newGroup] = await db
 				.insert(schema.word_groups)
 				.values({
-					user_id: context.clerkId,
+					user_id: context.req.clerkId,
 					data: {
 						translations,
 						tags,
@@ -100,20 +103,20 @@ export const wordGroupsService = {
 				})
 				.returning({ id: schema.word_groups.id });
 
-			return newGroup.id;
+			return { id: newGroup.id };
 		},
 		createBulk: async ({ context, bulkData }) => {
 			const data = await db
 				.insert(schema.word_groups)
 				.values(
 					bulkData.map((wordGroup) => ({
-						user_id: context.clerkId,
+						user_id: context.req.clerkId,
 						data: wordGroup,
 					})),
 				)
 				.returning({ id: schema.word_groups.id });
 
-			return data.map((d) => d.id);
+			return { ids: data.map((d) => d.id) };
 		},
 		update: async ({ context, id, ...wordGroup }) => {
 			await db
@@ -125,11 +128,9 @@ export const wordGroupsService = {
 				.where(
 					and(
 						eq(schema.word_groups.id, id),
-						eq(schema.word_groups.user_id, context.clerkId),
+						eq(schema.word_groups.user_id, context.req.clerkId),
 					),
 				);
-
-			return null;
 		},
 		remove: async ({ context, id }) => {
 			await db
@@ -137,10 +138,15 @@ export const wordGroupsService = {
 				.where(
 					and(
 						eq(schema.word_groups.id, id),
-						eq(schema.word_groups.user_id, context.clerkId),
+						eq(schema.word_groups.user_id, context.req.clerkId),
 					),
 				);
-			return null;
 		},
-	}),
-};
+	},
+});
+
+export const wordGroupsRouter = Router();
+
+registerRoutes(wordGroupsRouter, wordGroupsService, {
+	middleware: [attachClerkId],
+});

@@ -11,6 +11,7 @@ import {
 	Icon,
 	Typography,
 } from "@mui/material";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	type SyntheticEvent,
 	useCallback,
@@ -67,16 +68,25 @@ const ManageTranslations = () => {
 	const tab = useParams().tab;
 	const [activeTab, setActiveTab] = useState<TabName>("add");
 	const { api } = useApiClient();
+	const queryClient = useQueryClient();
 	const { isAuthenticated, isLoaded } = useAppAuth();
-	const wordGroupsQuery = api.wordGroups.users.list.useQuery(
-		isLoaded && isAuthenticated ? {} : false,
-		{
-			select: (data) => data.wordGroups.map(normalizeWordGroup),
-		},
+	const wordGroupsQuery = useQuery(
+		api.wordGroups.users.list.queryOptions(
+			isLoaded && isAuthenticated ? {} : false,
+			{
+				select: (data) => data.body.wordGroups.map(normalizeWordGroup),
+			},
+		),
 	);
-	const createWordGroup = api.wordGroups.users.create.useMutation();
-	const updateWordGroup = api.wordGroups.users.update.useMutation();
-	const removeWordGroup = api.wordGroups.users.remove.useMutation();
+	const createWordGroup = useMutation(
+		api.wordGroups.users.create.mutationOptions(),
+	);
+	const updateWordGroup = useMutation(
+		api.wordGroups.users.update.mutationOptions(),
+	);
+	const removeWordGroup = useMutation(
+		api.wordGroups.users.remove.mutationOptions(),
+	);
 	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? [];
 	const createEditableTranslation = useCallback(
 		(translation: EditableTranslation): EditableTranslationWithId => ({
@@ -212,7 +222,9 @@ const ManageTranslations = () => {
 		};
 		if (activeTab === "add" || activeTab === "quick-add") {
 			await createWordGroup.mutateAsync(wordGroupObj);
-			void api.wordGroups.users.list.invalidate({});
+			void queryClient.invalidateQueries({
+				queryKey: api.wordGroups.users.list.getKey({}),
+			});
 			setToastMsg("Translation group added successfully.");
 			setToastOpen(true);
 			setToastSeverity("success");
@@ -234,7 +246,9 @@ const ManageTranslations = () => {
 			}
 			const id = wordgroups[editModeIndex].id;
 			await updateWordGroup.mutateAsync({ id, ...wordGroupObj });
-			void api.wordGroups.users.list.invalidate({});
+			void queryClient.invalidateQueries({
+				queryKey: api.wordGroups.users.list.getKey({}),
+			});
 			setToastMsg("Translation group updated successfully.");
 			setToastOpen(true);
 			setToastSeverity("success");
@@ -246,7 +260,9 @@ const ManageTranslations = () => {
 			return;
 		}
 		await removeWordGroup.mutateAsync({ id: wordgroups[editModeIndex].id });
-		void api.wordGroups.users.list.invalidate({});
+		void queryClient.invalidateQueries({
+			queryKey: api.wordGroups.users.list.getKey({}),
+		});
 		const updatedWordGroups = wordgroups.filter((_, i) => i !== editModeIndex);
 
 		if (updatedWordGroups.length === 0) {

@@ -18,8 +18,8 @@
 	"description": "",
 	"dependencies": {
 		"@clerk/express": "^2.1.0",
-		"@contract-first-api/express": "^4.0.0",
 		"@language-learning-app/contracts": "workspace:*",
+		"@rest-rpc/express": "0.1.0-beta.18",
 		"cors": "^2.8.6",
 		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2",

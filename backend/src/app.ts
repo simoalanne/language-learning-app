@@ -1,13 +1,10 @@
 import path, { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { clerkMiddleware } from "@clerk/express";
-import { contracts } from "@language-learning-app/contracts";
 import express from "express";
-import { aiService } from "./features/ai/ai.service.ts";
-import { wordGroupsService } from "./features/wordGroups/wordGroups.service.ts";
-import { createRouter } from "./initServives.ts";
+import { aiRouter } from "./features/ai/ai.service.ts";
+import { wordGroupsRouter } from "./features/wordGroups/wordGroups.service.ts";
 import { mountClerkWebhook } from "./integrations/clerk/clerk.webhook.ts";
-import { attachClerkId } from "./middleware/attachClerkId.ts";
 
 const app = express();
 
@@ -38,19 +35,8 @@ app.get("/api/health", (_, res) => {
 	});
 });
 
-createRouter({
-	app,
-	contracts,
-	services: {
-		wordGroups: wordGroupsService,
-		ai: aiService,
-	},
-	middlewares: [attachClerkId],
-	routePrefix: "/api",
-	createContext: (req) => ({
-		clerkId: req.clerkId
-	}),
-});
+app.use("/api", wordGroupsRouter);
+app.use("/api", aiRouter);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicPath = path.join(__dirname, "../../frontend/dist");

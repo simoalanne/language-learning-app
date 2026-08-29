@@ -1,3 +1,4 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type {
 	AiGenerationHistoryItem,
@@ -9,6 +10,7 @@ import type {
 	WordGroupInput,
 } from "@/types/api";
 import { useApiClient } from "../../providers/api-client";
+import { useAppAuth } from "../../providers/use-app-auth";
 
 export type AiWordGenerationForm = {
 	topic: string;
@@ -93,19 +95,36 @@ export const useAiWordGeneration = () => {
 		SelectableGeneratedWord[]
 	>([]);
 	const { api } = useApiClient();
-	const usageQuery = api.ai.getUsage.useQuery({});
-	const generationHistoryQuery = api.ai.listGenerations.useQuery({});
-	const generateWordsMutation = api.ai.generateWords.useMutation({
-		onSuccess: (words) => {
-			setGeneratedWords(toSelectableGeneratedWords(words));
-			void generationHistoryQuery.refetch();
-		},
-		onSettled: () => {
-			void usageQuery.refetch();
-		},
-	});
-	const createBulkWordGroupsMutation =
-		api.wordGroups.users.createBulk.useMutation();
+	const { isAuthenticated, isLoaded } = useAppAuth();
+	const queryClient = useQueryClient();
+	const usageQuery = useQuery(
+		api.ai.getUsage.queryOptions({
+			enabled: isLoaded && isAuthenticated,
+			select: (data) => data.body,
+		}),
+	);
+	const generationHistoryQuery = useQuery(
+		api.ai.listGenerations.queryOptions(
+			isLoaded && isAuthenticated ? {} : false,
+			{
+				select: (data) => data.body,
+			},
+		),
+	);
+	const generateWordsMutation = useMutation(
+		api.ai.generateWords.mutationOptions({
+			onSuccess: (response) => {
+				setGeneratedWords(toSelectableGeneratedWords(response.body));
+				void generationHistoryQuery.refetch();
+			},
+			onSettled: () => {
+				void usageQuery.refetch();
+			},
+		}),
+	);
+	const createBulkWordGroupsMutation = useMutation(
+		api.wordGroups.users.createBulk.mutationOptions(),
+	);
 
 	const generateWordsErrorMessage = (() => {
 		const error = generateWordsMutation.error;
@@ -114,23 +133,21 @@ export const useAiWordGeneration = () => {
 			return null;
 		}
 
-		switch (error.code) {
-			case "AI_GENERATION_LIMIT_REACHED": {
-				const resetAt = formatResetAt(error.resetsAt);
+		if (error instanceof Error) {
+			return "Failed to generate words. Please try again later.";
+		}
+
+		switch (error.status) {
+			case 429: {
+				const resetAt = formatResetAt(error.body.resetsAt);
 				return resetAt
 					? `Failed to generate words. AI generation limit reached. Try again after ${resetAt}.`
 					: "Failed to generate words. AI generation limit reached. Try again later.";
 			}
-			case "AI_PROVIDER_UNAVAILABLE":
-				return "Failed to generate words. The AI provider is currently unavailable.";
-			case "AI_PROVIDER_INVALID_RESPONSE":
+			case 502:
 				return "Failed to generate words. The AI provider returned an invalid response.";
-			case "unknown":
-				return "Failed to generate words. Please try again later.";
-			default: {
-				const exhaustive: never = error;
-				return exhaustive;
-			}
+			case 503:
+				return "Failed to generate words. The AI provider is currently unavailable.";
 		}
 	})();
 
@@ -200,7 +217,9 @@ export const useAiWordGeneration = () => {
 
 		try {
 			await createBulkWordGroupsMutation.mutateAsync({ bulkData });
-			void api.wordGroups.users.list.invalidate({});
+			void queryClient.invalidateQueries({
+				queryKey: api.wordGroups.users.list.getKey({}),
+			});
 			setGeneratedWords([]);
 			setForm(initialForm);
 		} catch (error) {
@@ -256,9 +275,9 @@ export const useAiWordGeneration = () => {
 		form,
 		formConfig,
 		usageStatus: usageQuery.data,
-		usageLoading: usageQuery.isLoading,
+		usageLoading: !isLoaded || usageQuery.isLoading,
 		generationHistory: generationHistoryQuery.data?.generations ?? [],
-		generationHistoryLoading: generationHistoryQuery.isLoading,
+		generationHistoryLoading: !isLoaded || generationHistoryQuery.isLoading,
 		generateWordsErrorMessage,
 		handleWordGenerationFormChange,
 		handleGenerateWords,

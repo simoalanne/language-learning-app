@@ -1,4 +1,4 @@
-import { Tab, Tabs, Box, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Tab, Tabs, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import ContentAligner from "../../components/ContentAligner";
 import ToastMessage from "../../components/ToastMessage";
@@ -30,7 +30,9 @@ const AiTranslationGeneratation = () => {
 	} = useAiWordGeneration();
 
 	const [snackbarMessage, setSnackbarMessage] = useState("");
-	const [activeTab, setActiveTab] = useState<"generate" | "history">("generate");
+	const [activeTab, setActiveTab] = useState<"generate" | "history">(
+		"generate",
+	);
 
 	useEffect(() => {
 		if (generateWordsErrorMessage) {

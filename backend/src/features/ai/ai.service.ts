@@ -1,14 +1,21 @@
-import type { ApiRequest, ApiResponse } from "@language-learning-app/contracts";
-import { generatedWordsTextFormatSchema } from "@language-learning-app/contracts/ai.ts";
+import { contracts } from "@language-learning-app/contracts";
+import {
+	type generatedWordsResponseSchema,
+	generatedWordsTextFormatSchema,
+	type generateWordsInputSchema,
+} from "@language-learning-app/contracts/ai.ts";
+import { RouteResponseError, registerRoutes, router } from "@rest-rpc/express";
 import { and, eq, sql } from "drizzle-orm";
+import { Router } from "express";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
+import type z from "zod";
 import db from "../../drizzle/db.ts";
 import * as schema from "../../drizzle/schema.ts";
-import { defineService, throwKnownError } from "../../initServives.ts";
+import { attachClerkId } from "../../middleware/attachClerkId.ts";
 
-type GenerateWordsInput = ApiRequest<"ai.generateWords">;
-type GenerateWordsResponse = ApiResponse<"ai.generateWords">;
+type GenerateWordsInput = z.infer<typeof generateWordsInputSchema>;
+type GenerateWordsResponse = z.infer<typeof generatedWordsResponseSchema>;
 
 const openAiApiKey = process.env.OPENAI_API_KEY;
 const openAiModel = process.env.OPENAI_MODEL;
@@ -17,7 +24,6 @@ const openAiBaseUrl =
 const aiGenerationLimit = Number(process.env.AI_GENERATION_LIMIT ?? 0);
 const aiGenerationWindowMs = 7 * 24 * 60 * 60 * 1000;
 
-const hasOpenAiConfig = Boolean(openAiApiKey && openAiModel);
 const hasAiGenerationLimit =
 	Number.isFinite(aiGenerationLimit) && aiGenerationLimit > 0;
 
@@ -55,11 +61,13 @@ const generateWordsWithOpenAi = async (
 	input: GenerateWordsInput,
 ): Promise<GenerateWordsResponse> => {
 	if (!openai || !openAiModel) {
-		return throwKnownError({
-			code: "AI_PROVIDER_UNAVAILABLE",
+		throw new RouteResponseError(contracts.ai.generateWords, {
 			status: 503,
-			message:
-				"OpenAI is not configured. Set OPENAI_API_KEY and OPENAI_MODEL in backend/.env.",
+			body: {
+				code: "AI_PROVIDER_UNAVAILABLE",
+				message:
+					"OpenAI is not configured. Set OPENAI_API_KEY and OPENAI_MODEL in backend/.env.",
+			},
 		});
 	}
 
@@ -91,10 +99,12 @@ const generateWordsWithOpenAi = async (
 		const outputParsed = response.output_parsed;
 
 		if (!outputParsed) {
-			return throwKnownError({
-				code: "AI_PROVIDER_INVALID_RESPONSE",
+			throw new RouteResponseError(contracts.ai.generateWords, {
 				status: 502,
-				message: "OpenAI response did not include parsed structured output.",
+				body: {
+					code: "AI_PROVIDER_INVALID_RESPONSE",
+					message: "OpenAI response did not include parsed structured output.",
+				},
 			});
 		}
 
@@ -104,10 +114,12 @@ const generateWordsWithOpenAi = async (
 		}));
 	} catch (error) {
 		if (error instanceof OpenAI.APIError) {
-			return throwKnownError({
-				code: "AI_PROVIDER_UNAVAILABLE",
+			throw new RouteResponseError(contracts.ai.generateWords, {
 				status: 503,
-				message: `OpenAI request failed with status ${error.status ?? "unknown"}: ${error.message}`,
+				body: {
+					code: "AI_PROVIDER_UNAVAILABLE",
+					message: `OpenAI request failed with status ${error.status ?? "unknown"}: ${error.message}`,
+				},
 			});
 		}
 
@@ -138,15 +150,17 @@ const assertCanGenerateWithinLimit = async (clerkId: string) => {
 	}
 
 	if (user.used >= aiGenerationLimit) {
-		return throwKnownError({
-			code: "AI_GENERATION_LIMIT_REACHED",
+		throw new RouteResponseError(contracts.ai.generateWords, {
 			status: 429,
-			resetsAt: user.resetAt.toISOString(),
+			body: {
+				code: "AI_GENERATION_LIMIT_REACHED",
+				resetsAt: user.resetAt.toISOString(),
+			},
 		});
 	}
 };
 
-export const aiService = defineService("ai", {
+const aiService = router(contracts.ai, {
 	getUsage: async ({ context }) => {
 		if (!hasAiGenerationLimit) {
 			return {
@@ -165,7 +179,7 @@ export const aiService = defineService("ai", {
 				resetAt: schema.users.ai_generation_reset_at,
 			})
 			.from(schema.users)
-			.where(eq(schema.users.clerk_id, context.clerkId));
+			.where(eq(schema.users.clerk_id, context.req.clerkId));
 
 		if (!user) {
 			throw new Error("Authenticated user not found");
@@ -183,7 +197,7 @@ export const aiService = defineService("ai", {
 					ai_generation_count: 0,
 					ai_generation_reset_at: nextResetAt,
 				})
-				.where(eq(schema.users.clerk_id, context.clerkId))
+				.where(eq(schema.users.clerk_id, context.req.clerkId))
 				.returning({
 					used: schema.users.ai_generation_count,
 					resetAt: schema.users.ai_generation_reset_at,
@@ -211,13 +225,13 @@ export const aiService = defineService("ai", {
 		const [totalResult] = await db
 			.select({ total: sql`count(*)` })
 			.from(schema.ai_generations)
-			.where(eq(schema.ai_generations.user_id, context.clerkId));
+			.where(eq(schema.ai_generations.user_id, context.req.clerkId));
 		const total = Number(totalResult.total);
 
 		const base = db
 			.select()
 			.from(schema.ai_generations)
-			.where(eq(schema.ai_generations.user_id, context.clerkId))
+			.where(eq(schema.ai_generations.user_id, context.req.clerkId))
 			.orderBy(sql`${schema.ai_generations.created_at} desc`)
 			.offset(offset ?? 0);
 
@@ -245,7 +259,7 @@ export const aiService = defineService("ai", {
 			.where(
 				and(
 					eq(schema.ai_generations.id, id),
-					eq(schema.ai_generations.user_id, context.clerkId),
+					eq(schema.ai_generations.user_id, context.req.clerkId),
 				),
 			);
 
@@ -261,21 +275,12 @@ export const aiService = defineService("ai", {
 		};
 	},
 	generateWords: async ({ context, ...input }) => {
-		if (!hasOpenAiConfig) {
-			return throwKnownError({
-				code: "AI_PROVIDER_UNAVAILABLE",
-				status: 503,
-				message:
-					"OpenAI is not configured. Set OPENAI_API_KEY and OPENAI_MODEL in backend/.env.",
-			});
-		}
-
-		await assertCanGenerateWithinLimit(context.clerkId);
+		await assertCanGenerateWithinLimit(context.req.clerkId);
 
 		const words = await generateWordsWithOpenAi(input);
 		await db.transaction(async (tx) => {
 			await tx.insert(schema.ai_generations).values({
-				user_id: context.clerkId,
+				user_id: context.req.clerkId,
 				request_data: input,
 				response_data: words,
 			});
@@ -307,7 +312,7 @@ export const aiService = defineService("ai", {
 				})
 				.where(
 					and(
-						eq(schema.users.clerk_id, context.clerkId),
+						eq(schema.users.clerk_id, context.req.clerkId),
 						sql<boolean>`
 							${schema.users.ai_generation_reset_at} <= ${now}
 							or ${schema.users.ai_generation_count} < ${aiGenerationLimit}
@@ -326,4 +331,10 @@ export const aiService = defineService("ai", {
 		});
 		return words;
 	},
+});
+
+export const aiRouter = Router();
+
+registerRoutes(aiRouter, aiService, {
+	middleware: [attachClerkId],
 });

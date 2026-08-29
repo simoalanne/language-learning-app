@@ -1,7 +1,7 @@
 import type {
-	ApiRequest,
-	ApiResponse,
-} from "@language-learning-app/contracts";
+	generatedWordsResponseSchema,
+	generateWordsInputSchema,
+} from "@language-learning-app/contracts/ai.ts";
 import type { wordGroupInputSchema } from "@language-learning-app/contracts/wordGroups.ts";
 import { relations, sql } from "drizzle-orm";
 import * as p from "drizzle-orm/pg-core";
@@ -12,13 +12,13 @@ export const users = p.pgTable("users", {
 	email: p.text("email"),
 	first_name: p.text("first_name"),
 	last_name: p.text("last_name"),
-	ai_generation_count: p
-		.integer("ai_generation_count")
-		.notNull()
-		.default(0),
-	ai_generation_reset_at: p.timestamp("ai_generation_reset_at", {
-		withTimezone: true,
-	}).default(sql`now() + interval '7 days'`).notNull(),
+	ai_generation_count: p.integer("ai_generation_count").notNull().default(0),
+	ai_generation_reset_at: p
+		.timestamp("ai_generation_reset_at", {
+			withTimezone: true,
+		})
+		.default(sql`now() + interval '7 days'`)
+		.notNull(),
 });
 
 export const word_groups = p.pgTable("word_groups", {
@@ -44,11 +44,11 @@ export const ai_generations = p.pgTable("ai_generations", {
 	}),
 	request_data: p
 		.jsonb("request_data")
-		.$type<ApiRequest<"ai.generateWords">>()
+		.$type<z.infer<typeof generateWordsInputSchema>>()
 		.notNull(),
 	response_data: p
 		.jsonb("response_data")
-		.$type<ApiResponse<"ai.generateWords">>()
+		.$type<z.infer<typeof generatedWordsResponseSchema>>()
 		.notNull(),
 	created_at: p
 		.timestamp("created_at", { withTimezone: true })

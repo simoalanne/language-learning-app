@@ -9,7 +9,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@contract-first-api/core": "^4.0.0",
+		"@rest-rpc/core": "0.1.0-beta.18",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {

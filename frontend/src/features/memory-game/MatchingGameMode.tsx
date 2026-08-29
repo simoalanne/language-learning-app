@@ -13,6 +13,7 @@ import {
 	IconButton,
 	Typography,
 } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { WordGroup } from "@/types/api";
@@ -44,17 +45,21 @@ const MatchingGameMode = () => {
 	const [cardScale, setCardScale] = useState(1);
 	const { api } = useApiClient();
 	const { isAuthenticated, isLoaded } = useAppAuth();
-	const publicWordGroupsQuery = api.wordGroups.public.list.useQuery(
-		isLoaded && !isAuthenticated ? {} : false,
-		{
-			select: (data) => data.wordGroups.map(normalizeWordGroup),
-		},
+	const publicWordGroupsQuery = useQuery(
+		api.wordGroups.public.list.queryOptions(
+			isLoaded && !isAuthenticated ? {} : false,
+			{
+				select: (data) => data.body.wordGroups.map(normalizeWordGroup),
+			},
+		),
 	);
-	const userWordGroupsQuery = api.wordGroups.users.list.useQuery(
-		isLoaded && isAuthenticated ? {} : false,
-		{
-			select: (data) => data.wordGroups.map(normalizeWordGroup),
-		},
+	const userWordGroupsQuery = useQuery(
+		api.wordGroups.users.list.queryOptions(
+			isLoaded && isAuthenticated ? {} : false,
+			{
+				select: (data) => data.body.wordGroups.map(normalizeWordGroup),
+			},
+		),
 	);
 	const wordGroupsQuery = isAuthenticated
 		? userWordGroupsQuery

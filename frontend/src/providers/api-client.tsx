@@ -1,21 +1,18 @@
 import { useAuth } from "@clerk/react";
-import { ApiClient } from "@contract-first-api/api-client";
-import createAdapter from "@contract-first-api/react-query";
-import { contracts } from "@language-learning-app/contracts";
+import { type AppContracts, contracts } from "@language-learning-app/contracts";
+import {
+	createTanstackQueryHelpers,
+	type StrictTanstackQueryHelpersFor,
+} from "@rest-rpc/tanstack-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createContext, useContext } from "react";
-
-const apiClient = new ApiClient({
-	contracts,
-	baseUrl: "/api",
-});
+import { createContext, useContext, useMemo } from "react";
 
 const queryClient = new QueryClient();
 
-const api = createAdapter(apiClient.api, queryClient);
+type Api = StrictTanstackQueryHelpersFor<AppContracts>;
 
 type ApiClientContextValue = {
-	api: typeof api;
+	api: Api;
 };
 
 const ApiClientContext = createContext<ApiClientContextValue | null>(null);
@@ -27,12 +24,24 @@ export const ApiClientProvider = ({
 }) => {
 	const { getToken } = useAuth();
 
-	apiClient.setHeaders(async () => {
-		const token = await getToken();
-		return {
-			Authorization: `Bearer ${token}`,
-		};
-	});
+	const api = useMemo(
+		() =>
+			createTanstackQueryHelpers(contracts, {
+				baseUrl: "/api",
+				strictStatusCodes: true,
+				getGlobalHeaders: async () => {
+					const token = await getToken();
+					const headers: Record<string, string> = {};
+
+					if (token) {
+						headers.Authorization = `Bearer ${token}`;
+					}
+
+					return headers;
+				},
+			}),
+		[getToken],
+	);
 
 	return (
 		<QueryClientProvider client={queryClient}>
