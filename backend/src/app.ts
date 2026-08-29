@@ -1,6 +1,7 @@
 import { clerkMiddleware } from "@clerk/express";
 import cors from "cors";
 import express from "express";
+import { accountRouter } from "./features/account/account.service.ts";
 import { aiRouter } from "./features/ai/ai.service.ts";
 import { wordGroupsRouter } from "./features/wordGroups/wordGroups.service.ts";
 
@@ -35,5 +36,6 @@ app.get("/api/health", (_, res) => {
 
 app.use("/", wordGroupsRouter);
 app.use("/", aiRouter);
+app.use("/", accountRouter);
 
 export default app;

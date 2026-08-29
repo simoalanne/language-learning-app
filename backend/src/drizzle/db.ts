@@ -8,7 +8,7 @@ if (!connectionString) {
 	throw new Error("DATABASE_URL is required");
 }
 
-const pool = new Pool({
+export const pool = new Pool({
 	connectionString,
 });
 

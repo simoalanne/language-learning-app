@@ -1,20 +1,46 @@
-import { Box, Button, Menu, MenuItem } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+	Box,
+	Button,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
+	Menu,
+	MenuItem,
+} from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useApiClient } from "../../providers/api-client";
 import { useAppAuth } from "../../providers/use-app-auth";
 
 const LoggedInButtons = () => {
 	const { displayName, signOut } = useAppAuth();
+	const { api } = useApiClient();
 	const navigate = useNavigate();
 	const location = useLocation();
 
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const handleClick = (event: HTMLElement) => {
 		setAnchorEl(event);
 	};
 	const handleClose = () => {
 		setAnchorEl(null);
 	};
+	const deleteAccount = useMutation(
+		api.account.remove.mutationOptions({
+			onSuccess: async () => {
+				setIsDeleteDialogOpen(false);
+				if (location.pathname !== "/learn") {
+					navigate("/learn");
+				}
+				await signOut();
+			},
+		}),
+	);
 
 	return (
 		<Box sx={{ display: "flex", gap: 2 }}>
@@ -78,7 +104,56 @@ const LoggedInButtons = () => {
 				>
 					Logout
 				</MenuItem>
+				<MenuItem
+					onClick={() => {
+						setIsDeleteDialogOpen(true);
+						handleClose();
+					}}
+					sx={{
+						color: "error.main",
+						fontWeight: "bold",
+						gap: 1,
+					}}
+				>
+					<DeleteOutlineIcon fontSize="small" />
+					Delete account
+				</MenuItem>
 			</Menu>
+			<Dialog
+				open={isDeleteDialogOpen}
+				onClose={() => setIsDeleteDialogOpen(false)}
+				aria-labelledby="delete-account-dialog-title"
+			>
+				<DialogTitle id="delete-account-dialog-title">
+					Delete account?
+				</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						This permanently deletes your account and saved translations.
+					</DialogContentText>
+					{deleteAccount.isError ? (
+						<DialogContentText color="error" sx={{ mt: 2 }}>
+							Account deletion failed. Please try again.
+						</DialogContentText>
+					) : null}
+				</DialogContent>
+				<DialogActions>
+					<Button
+						onClick={() => setIsDeleteDialogOpen(false)}
+						disabled={deleteAccount.isPending}
+					>
+						Cancel
+					</Button>
+					<Button
+						color="error"
+						variant="contained"
+						onClick={() => deleteAccount.mutate(undefined)}
+						disabled={deleteAccount.isPending}
+					>
+						Delete
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</Box>
 	);
 };
