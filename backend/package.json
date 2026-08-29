@@ -17,20 +17,20 @@
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
-		"@clerk/express": "^2.1.0",
+		"@clerk/express": "^2.1.64",
 		"@language-learning-app/contracts": "workspace:*",
 		"@rest-rpc/express": "0.1.0-beta.18",
 		"cors": "^2.8.6",
 		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2",
 		"express": "^5.2.1",
-		"openai": "^6.34.0",
-		"pg": "^8.20.0"
+		"openai": "^7.8.0",
+		"pg": "^8.23.0"
 	},
 	"devDependencies": {
 		"@types/express": "^5.0.6",
-		"@types/pg": "^8.20.0",
+		"@types/pg": "^8.23.1",
 		"drizzle-kit": "^0.31.10",
-		"typescript": "^6.0.3"
+		"typescript": "^7.0.2"
 	}
 }

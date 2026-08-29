@@ -2,15 +2,15 @@
 	"name": "language-learning-app",
 	"version": "1.0.0",
 	"private": true,
-	"packageManager": "pnpm@10.30.3",
+	"packageManager": "pnpm@11.24.0",
 	"scripts": {
 		"lint": "biome check --write .",
 		"typecheck": "pnpm -r --parallel --no-bail typecheck"
 	},
 	"dependencies": {
-		"zod": "^4.3.6"
+		"zod": "^4.5.4"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.12"
+		"@biomejs/biome": "2.5.11"
 	}
 }

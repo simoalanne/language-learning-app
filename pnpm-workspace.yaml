@@ -2,3 +2,5 @@ packages:
   - backend
   - frontend
   - contracts
+dangerouslyAllowAllBuilds: true
+minimumReleaseAge: 0
