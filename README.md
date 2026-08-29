@@ -99,47 +99,6 @@ This app helps users expand their vocabulary across multiple languages. It's ide
    pnpm dev:frontend
    ```
 
-5. **Configure Clerk webhook**
+## 🌐 **Deployment**
 
-   Point Clerk user webhooks to:
-
-   ```text
-   /api/auth/clerk/webhooks
-   ```
-
-   Enable the following events:
-
-   ```text
-   user.created
-   user.updated
-   user.deleted
-   ```
-
----
-
-## 📦 **Deployment**
-
-Deploy the frontend and backend as separate services.
-
-### Backend
-
-- Runtime: Node.js, no Dockerfile required.
-- Build command: `pnpm install --frozen-lockfile`
-- Start command: `pnpm --filter backend start`
-- Set backend environment variables from the setup section.
-
-### Frontend
-
-- Build command: `pnpm install --frozen-lockfile && pnpm build:frontend`
-- Publish directory: `frontend/dist`
-- Set `VITE_API_BASE_URL` to the deployed backend API URL, including `/api`, for example:
-
-  ```bash
-  VITE_API_BASE_URL="https://your-backend.example.com/api"
-  ```
-
----
-
-## 🌐 **Cloud**
-
-Deployed project can be checked out here: https://language-learning-app.simoalanne.com
+Deployed project can be checked out here: https://lang-app.simoalanne.com
