@@ -5,6 +5,6 @@ import wordGroupsContracts from "./wordGroups.ts";
 export const contracts = router({
 	...wordGroupsContracts,
 	...aiContracts,
-});
+}, { pathPrefix: "/api" });
 
 export type AppContracts = typeof contracts;

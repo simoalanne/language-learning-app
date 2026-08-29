@@ -4,6 +4,9 @@
 	"private": true,
 	"packageManager": "pnpm@11.24.0",
 	"scripts": {
+		"dev:backend": "pnpm --filter backend start",
+		"dev:frontend": "pnpm --filter frontend dev",
+		"build:frontend": "pnpm --filter frontend build",
 		"lint": "biome check --write .",
 		"typecheck": "pnpm -r --parallel --no-bail typecheck"
 	},

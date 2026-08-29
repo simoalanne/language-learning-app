@@ -7,11 +7,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
 	plugins: [react()],
-	server: {
-		proxy: {
-			"/api": "http://localhost:3000", // Adjust the port to your backend's port
-		},
-	},
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),

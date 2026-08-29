@@ -81,7 +81,6 @@ This app helps users expand their vocabulary across multiple languages. It's ide
    # backend/.env
    DATABASE_URL="your postgres connection string"
    CLERK_SECRET_KEY="your Clerk secret key"
-   CLERK_WEBHOOK_SIGNING_SECRET="your Clerk webhook signing secret"
    OPENAI_API_KEY="your OpenAI API key"
    OPENAI_MODEL="gpt-4o-mini"
    # Optional. Set to a positive number to enforce a per-user rolling 30-day quota.
@@ -91,13 +90,13 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
    # frontend/.env
    VITE_CLERK_PUBLISHABLE_KEY="your Clerk publishable key"
-
+   VITE_API_BASE_URL="http://localhost:3000"
    ```
 
 4. **Run app locally with command**
    ```bash
-   pnpm --filter backend start
-   pnpm --filter frontend dev
+   pnpm dev:backend
+   pnpm dev:frontend
    ```
 
 5. **Configure Clerk webhook**
@@ -120,10 +119,24 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 ## 📦 **Deployment**
 
-The app can also be easily run with docker. Here's how:
+Deploy the frontend and backend as separate services.
 
-1. Build the container using `docker build -t language-learning-app .`
-2. Start the container with `docker run -p 3000:3000 language-learning-app`
+### Backend
+
+- Runtime: Node.js, no Dockerfile required.
+- Build command: `pnpm install --frozen-lockfile`
+- Start command: `pnpm --filter backend start`
+- Set backend environment variables from the setup section.
+
+### Frontend
+
+- Build command: `pnpm install --frozen-lockfile && pnpm build:frontend`
+- Publish directory: `frontend/dist`
+- Set `VITE_API_BASE_URL` to the deployed backend API URL, including `/api`, for example:
+
+  ```bash
+  VITE_API_BASE_URL="https://your-backend.example.com/api"
+  ```
 
 ---
 

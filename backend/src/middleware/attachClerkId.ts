@@ -3,7 +3,38 @@ import type { ExtendedExpressMiddleware } from "@rest-rpc/express";
 import { eq } from "drizzle-orm";
 import db from "../drizzle/db.ts";
 import * as schema from "../drizzle/schema.ts";
-import { upsertClerkUser } from "../integrations/clerk/clerk.webhook.ts";
+
+export const upsertClerkUser = async ({
+	clerkId,
+	email,
+	firstName,
+	lastName,
+}: {
+	clerkId: string;
+	email: string | null;
+	firstName: string | null;
+	lastName: string | null;
+}) => {
+	const [user] = await db
+		.insert(schema.users)
+		.values({
+			clerk_id: clerkId,
+			email,
+			first_name: firstName,
+			last_name: lastName,
+		})
+		.onConflictDoUpdate({
+			target: schema.users.clerk_id,
+			set: {
+				email,
+				first_name: firstName,
+				last_name: lastName,
+			},
+		})
+		.returning();
+
+	return user;
+};
 
 declare global {
 	namespace Express {
