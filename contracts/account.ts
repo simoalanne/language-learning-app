@@ -1,20 +1,10 @@
-import { noBody, route, router } from "@rest-rpc/core";
+import { route } from "@rest-rpc/core";
 
-export default router(
-	{
-		account: {
-			remove: route({
-				method: "DELETE",
-				path: "/account",
-				responses: {
-					204: noBody(),
-				},
-			}),
-		},
+export default {
+	account: {
+		remove: route
+			.delete("/account")
+			.response(204)
+			.withMetadata({ requiresAuth: true }),
 	},
-	{
-		metadata: {
-			requiresAuth: true,
-		},
-	},
-);
+};

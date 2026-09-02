@@ -2,20 +2,19 @@ import { useAuth } from "@clerk/react";
 import { type AppContracts, contracts } from "@language-learning-app/contracts";
 import {
 	createTanstackQueryHelpers,
-	type StrictTanstackQueryHelpersFor,
+	type TanstackQueryHelpersFor,
 } from "@rest-rpc/tanstack-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createContext, useContext, useMemo } from "react";
 
 const queryClient = new QueryClient();
-const apiBaseUrl =
-	import.meta.env.VITE_API_BASE_URL
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 if (!apiBaseUrl) {
 	throw new Error("VITE_API_BASE_URL environment variable is not set");
 }
 
-type Api = StrictTanstackQueryHelpersFor<AppContracts>;
+type Api = TanstackQueryHelpersFor<AppContracts>;
 
 type ApiClientContextValue = {
 	api: Api;
@@ -34,7 +33,6 @@ export const ApiClientProvider = ({
 		() =>
 			createTanstackQueryHelpers(contracts, {
 				baseUrl: apiBaseUrl,
-				strictStatusCodes: true,
 				getGlobalHeaders: async () => {
 					const token = await getToken();
 					const headers: Record<string, string> = {};

@@ -9,7 +9,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@rest-rpc/core": "0.1.0-beta.18",
+		"@rest-rpc/core": "0.1.0-beta.19",
 		"zod": "^4.5.4"
 	},
 	"devDependencies": {

@@ -22,17 +22,17 @@ export const wordGroupInputSchema = z.object({
 
 export const wordGroupSchema = wordGroupInputSchema.extend({
 	id: z.number().int().positive(),
-	createdAt: z.coerce.date(),
-	updatedAt: z.coerce.date(),
+	createdAt: z.coerce.date<Date>(),
+	updatedAt: z.coerce.date<Date>(),
 });
 
 export const wordGroupIdParamsSchema = z.object({
-	id: z.coerce.number().int().positive(),
+	id: z.coerce.number<number>().int().positive(),
 });
 
 export const wordGroupListQuerySchema = z.object({
-	offset: z.coerce.number().int().min(0).optional(),
-	limit: z.coerce.number().int().positive().optional(),
+	offset: z.coerce.number<number>().int().min(0).optional(),
+	limit: z.coerce.number<number>().int().positive().optional(),
 });
 
 export const paginatedWordGroupsResponseSchema = z.object({

@@ -1,4 +1,4 @@
-import { route, router } from "@rest-rpc/core";
+import { route } from "@rest-rpc/core";
 import z from "zod";
 import { languageNameSchema } from "./wordGroups.schemas.ts";
 
@@ -44,8 +44,8 @@ export const aiGenerationHistoryItemSchema = z.object({
 });
 
 export const aiGenerationHistoryListQuerySchema = z.object({
-	offset: z.coerce.number().int().min(0).optional(),
-	limit: z.coerce.number().int().positive().optional(),
+	offset: z.coerce.number<number>().int().min(0).optional(),
+	limit: z.coerce.number<number>().int().positive().optional(),
 });
 
 export const paginatedAiGenerationHistoryResponseSchema = z.object({
@@ -73,42 +73,31 @@ export const aiProviderInvalidResponseErrorSchema = z.object({
 	message: z.string(),
 });
 
-export default router(
-	{
-		ai: {
-			getUsage: route({
-				method: "GET",
-				path: "/ai/usage",
-				response: aiUsageStatusSchema,
-			}),
-			listGenerations: route({
-				method: "GET",
-				path: "/ai/generations",
-				query: aiGenerationHistoryListQuerySchema,
-				response: paginatedAiGenerationHistoryResponseSchema,
-			}),
-			getGenerationById: route({
-				method: "GET",
-				path: "/ai/generations/:id",
-				pathParams: z.object({ id: z.coerce.number().int().positive() }),
-				response: aiGenerationHistoryItemSchema,
-			}),
-			generateWords: route({
-				method: "POST",
-				path: "/ai/generate-words",
-				body: generateWordsInputSchema,
-				responses: {
-					200: generatedWordsResponseSchema,
-					429: aiGenerationLimitReachedErrorSchema,
-					502: aiProviderInvalidResponseErrorSchema,
-					503: aiProviderUnavailableErrorSchema,
-				},
-			}),
-		},
+const apiRoute = route.with({
+	pathPrefix: "/api",
+	metadata: {
+		requiresAuth: true,
 	},
-	{
-		metadata: {
-			requiresAuth: true,
-		},
+	strictStatusCodes: true,
+});
+
+export default {
+	ai: {
+		getUsage: apiRoute.get("ai/usage").response(200, aiUsageStatusSchema),
+		listGenerations: apiRoute
+			.get("ai/generations")
+			.query(aiGenerationHistoryListQuerySchema)
+			.response(200, paginatedAiGenerationHistoryResponseSchema),
+		getGenerationById: apiRoute
+			.get("ai/generations/:id")
+			.params(z.object({ id: z.coerce.number<number>().int().positive() }))
+			.response(200, aiGenerationHistoryItemSchema),
+		generateWords: apiRoute
+			.post("ai/generate-words")
+			.body(generateWordsInputSchema)
+			.response(200, generatedWordsResponseSchema)
+			.response(429, aiGenerationLimitReachedErrorSchema)
+			.response(502, aiProviderInvalidResponseErrorSchema)
+			.response(503, aiProviderUnavailableErrorSchema),
 	},
-);
+};
