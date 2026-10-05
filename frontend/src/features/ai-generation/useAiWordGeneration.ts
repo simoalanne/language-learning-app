@@ -1,5 +1,6 @@
+import { type InferClientError, isDefinedError } from "@orpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
 	AiGenerationHistoryItem,
 	GeneratedWord,
@@ -54,17 +55,20 @@ const initialForm: AiWordGenerationForm = {
 	selectedWordTypes: [],
 };
 
+const toSelectableGeneratedWord = (
+	word: GeneratedWord,
+): SelectableGeneratedWord => ({
+	...word,
+	isSelected: true,
+	translations: word.translations.map((t) => ({
+		...t,
+		word: t.word.slice(0, formConfig.maxWordLength),
+	})),
+});
+
 const toSelectableGeneratedWords = (
 	words: GenerateWordsResponse,
-): SelectableGeneratedWord[] =>
-	words.map((item) => ({
-		...item,
-		isSelected: true,
-		translations: item.translations.map((t) => ({
-			...t,
-			word: t.word.slice(0, formConfig.maxWordLength),
-		})),
-	}));
+): SelectableGeneratedWord[] => words.map(toSelectableGeneratedWord);
 
 const formatResetAt = (value: string | null) => {
 	if (!value) {
@@ -98,30 +102,37 @@ export const useAiWordGeneration = () => {
 	const { isAuthenticated, isLoaded } = useAppAuth();
 	const queryClient = useQueryClient();
 	const usageQuery = useQuery(
-		api.ai.getUsage.queryOptions({
-			enabled: isLoaded && isAuthenticated,
-			select: (data) => data.body,
-		}),
+		api.ai.getUsage.queryOptions({ enabled: isLoaded && isAuthenticated }),
 	);
 	const generationHistoryQuery = useQuery(
-		api.ai.listGenerations.queryOptions(
-			isLoaded && isAuthenticated ? {} : false,
-			{
-				select: (data) => data.body,
-			},
-		),
-	);
-	const generateWordsMutation = useMutation(
-		api.ai.generateWords.mutationOptions({
-			onSuccess: (response) => {
-				setGeneratedWords(toSelectableGeneratedWords(response.body));
-				void generationHistoryQuery.refetch();
-			},
-			onSettled: () => {
-				void usageQuery.refetch();
-			},
+		api.ai.listGenerations.queryOptions({
+			enabled: isLoaded && isAuthenticated,
 		}),
 	);
+	const generationAbortRef = useRef<AbortController | null>(null);
+	const generateWordsMutation = useMutation<
+		void,
+		InferClientError<typeof api.ai.generateWords.call>,
+		GenerateWordsInput
+	>({
+		mutationKey: api.ai.generateWords.mutationKey(),
+		mutationFn: async (input) => {
+			const controller = new AbortController();
+			generationAbortRef.current = controller;
+			const stream = await api.ai.generateWords.call(input, {
+				signal: controller.signal,
+			});
+
+			for await (const word of stream) {
+				setGeneratedWords((prev) => [...prev, toSelectableGeneratedWord(word)]);
+			}
+		},
+		onSettled: () => {
+			void queryClient.invalidateQueries({ queryKey: api.ai.key() });
+		},
+	});
+
+	useEffect(() => () => generationAbortRef.current?.abort(), []);
 	const createBulkWordGroupsMutation = useMutation(
 		api.wordGroups.users.createBulk.mutationOptions(),
 	);
@@ -133,20 +144,24 @@ export const useAiWordGeneration = () => {
 			return null;
 		}
 
-		if (error instanceof Error) {
+		if (generationAbortRef.current?.signal.aborted) {
+			return null;
+		}
+
+		if (!isDefinedError(error)) {
 			return "Failed to generate words. Please try again later.";
 		}
 
-		switch (error.status) {
-			case 429: {
-				const resetAt = formatResetAt(error.body.resetsAt);
+		switch (error.code) {
+			case "AI_GENERATION_LIMIT_REACHED": {
+				const resetAt = formatResetAt(error.data.resetsAt);
 				return resetAt
 					? `Failed to generate words. AI generation limit reached. Try again after ${resetAt}.`
 					: "Failed to generate words. AI generation limit reached. Try again later.";
 			}
-			case 502:
+			case "AI_PROVIDER_INVALID_RESPONSE":
 				return "Failed to generate words. The AI provider returned an invalid response.";
-			case 503:
+			case "AI_PROVIDER_UNAVAILABLE":
 				return "Failed to generate words. The AI provider is currently unavailable.";
 		}
 	})();
@@ -174,6 +189,7 @@ export const useAiWordGeneration = () => {
 		};
 
 		generateWordsMutation.reset();
+		setGeneratedWords([]);
 		generateWordsMutation.mutate(payload);
 	};
 
@@ -189,6 +205,7 @@ export const useAiWordGeneration = () => {
 	};
 
 	const handleReturnToGenerationForm = () => {
+		generationAbortRef.current?.abort();
 		setGeneratedWords([]);
 	};
 
@@ -216,9 +233,9 @@ export const useAiWordGeneration = () => {
 		}));
 
 		try {
-			await createBulkWordGroupsMutation.mutateAsync({ bulkData });
+			await createBulkWordGroupsMutation.mutateAsync(bulkData);
 			void queryClient.invalidateQueries({
-				queryKey: api.wordGroups.users.list.getKey({}),
+				queryKey: api.wordGroups.users.list.key(),
 			});
 			setGeneratedWords([]);
 			setForm(initialForm);
@@ -287,8 +304,8 @@ export const useAiWordGeneration = () => {
 		handleSaveWordsToDatabase,
 		handleWordItemSelectChange,
 		handleWordItemTranslationChange,
-		loading:
-			generateWordsMutation.isPending || createBulkWordGroupsMutation.isPending,
+		generating: generateWordsMutation.isPending,
+		saving: createBulkWordGroupsMutation.isPending,
 	};
 };
 

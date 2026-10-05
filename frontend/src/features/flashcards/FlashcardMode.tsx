@@ -18,20 +18,16 @@ const FlashcardMode = () => {
 	const { api } = useApiClient();
 	const { isAuthenticated, isLoaded } = useAppAuth();
 	const publicWordGroupsQuery = useQuery(
-		api.wordGroups.public.list.queryOptions(
-			isLoaded && !isAuthenticated ? {} : false,
-			{
-				select: (data) => data.body.wordGroups.map(normalizeWordGroup),
-			},
-		),
+		api.wordGroups.public.list.queryOptions({
+			enabled: isLoaded && !isAuthenticated,
+			select: (data) => data.wordGroups.map(normalizeWordGroup),
+		}),
 	);
 	const userWordGroupsQuery = useQuery(
-		api.wordGroups.users.list.queryOptions(
-			isLoaded && isAuthenticated ? {} : false,
-			{
-				select: (data) => data.body.wordGroups.map(normalizeWordGroup),
-			},
-		),
+		api.wordGroups.users.list.queryOptions({
+			enabled: isLoaded && isAuthenticated,
+			select: (data) => data.wordGroups.map(normalizeWordGroup),
+		}),
 	);
 	const wordGroupsQuery = isAuthenticated
 		? userWordGroupsQuery

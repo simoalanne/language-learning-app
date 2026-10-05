@@ -1,11 +1,11 @@
 {
 	"version": 1,
 	"skills": {
-		"rest-rpc": {
-			"source": "rest-rpc/rest-rpc",
+		"orpc": {
+			"source": "middleapi/orpc",
 			"sourceType": "github",
-			"skillPath": "skills/rest-rpc/SKILL.md",
-			"computedHash": "22b92fca0a9da27d660ef25f679895d8b1647fc4c50adb067aa9fcfbb0e418c3"
+			"skillPath": "skills/orpc/SKILL.md",
+			"computedHash": "24aeb625eeb54572e2dc862648085a4f2270c9a0a6167162b7fc53290bb3acb2"
 		}
 	}
 }

@@ -48,11 +48,14 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 - **React**
 - **Material UI**
+- **TanStack Query** + **oRPC client**
 
 ### Backend:
 
 - **Node.js**
 - **Express**
+- **oRPC** (end-to-end typesafe RPC, types inferred from the server router)
+- **AI SDK** (streamed structured output; OpenAI in production, Ollama locally)
 
 ### Database:
 
@@ -81,19 +84,30 @@ This app helps users expand their vocabulary across multiple languages. It's ide
    # backend/.env
    DATABASE_URL="your postgres connection string"
    CLERK_SECRET_KEY="your Clerk secret key"
-   OPENAI_API_KEY="your OpenAI API key"
-   OPENAI_MODEL="gpt-4o-mini"
-   # Optional. Set to a positive number to enforce a per-user rolling 30-day quota.
+   # Model id for the active provider: OpenAI when NODE_ENV=production, local Ollama otherwise.
+   LLM_MODEL="qwen3.5:9b" # for prod any openai model, for dev any local model ollama can serve
+   # Optional. Set to a positive number to enforce a per-user rolling 7-day quota.
    AI_GENERATION_LIMIT="25"
+   # Production only (OpenAI)
+   OPENAI_API_KEY="your OpenAI API key"
    # Optional, defaults to https://api.openai.com/v1
    OPENAI_BASE_URL="https://api.openai.com/v1"
+   # Development only (Ollama). Optional, defaults to http://127.0.0.1:11434
+   OLLAMA_BASE_URL="http://127.0.0.1:11434"
 
    # frontend/.env
    VITE_CLERK_PUBLISHABLE_KEY="your Clerk publishable key"
    VITE_API_BASE_URL="http://localhost:3000"
    ```
 
-4. **Run app locally with command**
+4. **Start a local model** (development uses [Ollama](https://ollama.com))
+
+   ```bash
+   ollama serve
+   ollama pull qwen3.5:9b
+   ```
+
+5. **Run app locally with command**
    ```bash
    pnpm dev:backend
    pnpm dev:frontend

@@ -2,14 +2,14 @@ import "dotenv/config";
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-	languageNameSchema,
-	wordGroupInputSchema,
-} from "@language-learning-app/contracts/wordGroups.schemas.ts";
 import { isNull } from "drizzle-orm";
 import z from "zod";
 import db from "../../src/drizzle/db.ts";
 import * as schema from "../../src/drizzle/schema.ts";
+import {
+	languageNameSchema,
+	wordGroupInputSchema,
+} from "../../src/features/wordGroups/wordGroups.schemas.ts";
 
 const csvRowSchema = z.object({
 	language: languageNameSchema,

@@ -2,11 +2,13 @@
 	"name": "backend",
 	"version": "1.0.0",
 	"private": true,
-	"main": "index.js",
+	"exports": {
+		"./router": "./src/router.ts"
+	},
 	"type": "module",
 	"scripts": {
 		"lint": "biome check --write .",
-		"test": "node --test src/**/*.test.ts",
+		"test": "node --test --experimental-test-module-mocks 'src/**/*.test.ts'",
 		"typecheck": "tsc --noEmit",
 		"start": "node src/index.ts",
 		"db:generate": "drizzle-kit push",
@@ -17,23 +19,24 @@
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
+		"@ai-sdk/openai": "^4.0.83",
 		"@clerk/express": "^2.1.65",
-		"@language-learning-app/contracts": "workspace:*",
-		"@rest-rpc/express": "0.1.0-beta.19",
+		"@orpc/server": "2.0.0-beta.42",
+		"ai": "^7.0.127",
+		"ai-sdk-ollama": "^4.4.0",
 		"cors": "^2.8.6",
 		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2",
 		"express": "^5.2.1",
-		"openai": "^7.9.0",
-		"pg": "^8.23.0"
+		"pg": "^8.23.0",
+		"zod": "^4.5.4"
 	},
 	"devDependencies": {
+		"@orpc/client": "2.0.0-beta.42",
 		"@types/cors": "^2.8.19",
 		"@types/express": "^5.0.6",
 		"@types/pg": "^8.23.1",
-		"@types/supertest": "^7.2.1",
 		"drizzle-kit": "^0.31.10",
-		"supertest": "^7.2.2",
 		"typescript": "^7.0.2"
 	}
 }

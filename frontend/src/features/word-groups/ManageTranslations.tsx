@@ -71,12 +71,10 @@ const ManageTranslations = () => {
 	const queryClient = useQueryClient();
 	const { isAuthenticated, isLoaded } = useAppAuth();
 	const wordGroupsQuery = useQuery(
-		api.wordGroups.users.list.queryOptions(
-			isLoaded && isAuthenticated ? {} : false,
-			{
-				select: (data) => data.body.wordGroups.map(normalizeWordGroup),
-			},
-		),
+		api.wordGroups.users.list.queryOptions({
+			enabled: isLoaded && isAuthenticated,
+			select: (data) => data.wordGroups.map(normalizeWordGroup),
+		}),
 	);
 	const createWordGroup = useMutation(
 		api.wordGroups.users.create.mutationOptions(),
@@ -223,7 +221,7 @@ const ManageTranslations = () => {
 		if (activeTab === "add" || activeTab === "quick-add") {
 			await createWordGroup.mutateAsync(wordGroupObj);
 			void queryClient.invalidateQueries({
-				queryKey: api.wordGroups.users.list.getKey({}),
+				queryKey: api.wordGroups.users.list.key(),
 			});
 			setToastMsg("Translation group added successfully.");
 			setToastOpen(true);
@@ -247,7 +245,7 @@ const ManageTranslations = () => {
 			const id = wordgroups[editModeIndex].id;
 			await updateWordGroup.mutateAsync({ id, ...wordGroupObj });
 			void queryClient.invalidateQueries({
-				queryKey: api.wordGroups.users.list.getKey({}),
+				queryKey: api.wordGroups.users.list.key(),
 			});
 			setToastMsg("Translation group updated successfully.");
 			setToastOpen(true);
@@ -261,7 +259,7 @@ const ManageTranslations = () => {
 		}
 		await removeWordGroup.mutateAsync({ id: wordgroups[editModeIndex].id });
 		void queryClient.invalidateQueries({
-			queryKey: api.wordGroups.users.list.getKey({}),
+			queryKey: api.wordGroups.users.list.key(),
 		});
 		const updatedWordGroups = wordgroups.filter((_, i) => i !== editModeIndex);
 

@@ -1,10 +1,10 @@
 import { useAuth } from "@clerk/react";
-import { type AppContracts, contracts } from "@language-learning-app/contracts";
-import {
-	createTanstackQueryHelpers,
-	type TanstackQueryHelpersFor,
-} from "@rest-rpc/tanstack-query";
+import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import type { RouterClient } from "@orpc/server";
+import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { AppRouter } from "backend/router";
 import { createContext, useContext, useMemo } from "react";
 
 const queryClient = new QueryClient();
@@ -14,10 +14,21 @@ if (!apiBaseUrl) {
 	throw new Error("VITE_API_BASE_URL environment variable is not set");
 }
 
-type Api = TanstackQueryHelpersFor<AppContracts>;
+const createApi = (getToken: () => Promise<string | null>) => {
+	const link = new RPCLink({
+		origin: apiBaseUrl,
+		url: "/rpc",
+		headers: async (): Promise<Record<string, string>> => {
+			const token = await getToken();
+			return token ? { authorization: `Bearer ${token}` } : {};
+		},
+	});
+	const client: RouterClient<AppRouter> = createORPCClient(link);
+	return createTanstackQueryUtils(client);
+};
 
 type ApiClientContextValue = {
-	api: Api;
+	api: ReturnType<typeof createApi>;
 };
 
 const ApiClientContext = createContext<ApiClientContextValue | null>(null);
@@ -29,23 +40,7 @@ export const ApiClientProvider = ({
 }) => {
 	const { getToken } = useAuth();
 
-	const api = useMemo(
-		() =>
-			createTanstackQueryHelpers(contracts, {
-				baseUrl: apiBaseUrl,
-				getGlobalHeaders: async () => {
-					const token = await getToken();
-					const headers: Record<string, string> = {};
-
-					if (token) {
-						headers.Authorization = `Bearer ${token}`;
-					}
-
-					return headers;
-				},
-			}),
-		[getToken],
-	);
+	const api = useMemo(() => createApi(getToken), [getToken]);
 
 	return (
 		<QueryClientProvider client={queryClient}>

@@ -1,11 +1,11 @@
-import type {
-	generatedWordsResponseSchema,
-	generateWordsInputSchema,
-} from "@language-learning-app/contracts/ai.ts";
-import type { wordGroupInputSchema } from "@language-learning-app/contracts/wordGroups.ts";
 import { relations, sql } from "drizzle-orm";
 import * as p from "drizzle-orm/pg-core";
 import type z from "zod";
+import type {
+	generatedWordsSchema,
+	generateWordsInputSchema,
+} from "../features/ai/ai.schemas.ts";
+import type { wordGroupInputSchema } from "../features/wordGroups/wordGroups.schemas.ts";
 
 export const users = p.pgTable("users", {
 	clerk_id: p.text("clerk_id").primaryKey(),
@@ -48,7 +48,7 @@ export const ai_generations = p.pgTable("ai_generations", {
 		.notNull(),
 	response_data: p
 		.jsonb("response_data")
-		.$type<z.infer<typeof generatedWordsResponseSchema>>()
+		.$type<z.infer<typeof generatedWordsSchema>>()
 		.notNull(),
 	created_at: p
 		.timestamp("created_at", { withTimezone: true })

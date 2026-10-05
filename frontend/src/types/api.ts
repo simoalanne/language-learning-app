@@ -1,30 +1,19 @@
-import type { contracts } from "@language-learning-app/contracts";
-import type {
-	RouteMutationVariables,
-	RouteQueryData,
-} from "@rest-rpc/tanstack-query";
+import type { InferRouterInputs, InferRouterOutputs } from "@orpc/server";
+import type { AppRouter } from "backend/router";
 
-export type WordGroup = RouteQueryData<
-	typeof contracts.wordGroups.public.list
->["body"]["wordGroups"][number];
+type Inputs = InferRouterInputs<AppRouter>;
+type Outputs = InferRouterOutputs<AppRouter>;
+
+export type WordGroup =
+	Outputs["wordGroups"]["public"]["list"]["wordGroups"][number];
 export type WordGroupTranslation = WordGroup["translations"][number];
 export type LanguageName = WordGroupTranslation["languageName"];
-export type WordGroupInput = RouteMutationVariables<
-	typeof contracts.wordGroups.users.create
->;
-export type GenerateWordsInput = RouteMutationVariables<
-	typeof contracts.ai.generateWords
->;
-export type GenerateWordsResponse = RouteQueryData<
-	typeof contracts.ai.generateWords
->["body"];
-export type AiUsageStatus = RouteQueryData<
-	typeof contracts.ai.getUsage
->["body"];
-export type AiGenerationHistoryResponse = RouteQueryData<
-	typeof contracts.ai.listGenerations
->["body"];
+export type WordGroupInput = Inputs["wordGroups"]["users"]["create"];
+export type GenerateWordsInput = Inputs["ai"]["generateWords"];
+export type AiUsageStatus = Outputs["ai"]["getUsage"];
+export type AiGenerationHistoryResponse = Outputs["ai"]["listGenerations"];
 export type AiGenerationHistoryItem =
 	AiGenerationHistoryResponse["generations"][number];
+export type GenerateWordsResponse = AiGenerationHistoryItem["response"];
 export type GeneratedWord = GenerateWordsResponse[number];
 export type GeneratedWordTranslation = GeneratedWord["translations"][number];

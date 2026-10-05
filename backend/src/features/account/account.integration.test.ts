@@ -1,12 +1,28 @@
 import "dotenv/config";
 import assert from "node:assert/strict";
+import type { AddressInfo } from "node:net";
 import { after, afterEach, beforeEach, describe, test } from "node:test";
 import { clerkClient } from "@clerk/express";
+import { createORPCClient } from "@orpc/client";
+import { RPCLink } from "@orpc/client/fetch";
+import type { RouterClient } from "@orpc/server";
 import { eq } from "drizzle-orm";
-import request from "supertest";
 import app from "../../app.ts";
 import db, { pool } from "../../drizzle/db.ts";
 import * as schema from "../../drizzle/schema.ts";
+import type { AppRouter } from "../../router.ts";
+
+const server = app.listen(0);
+const { port } = server.address() as AddressInfo;
+
+const createClient = (token: string): RouterClient<AppRouter> =>
+	createORPCClient(
+		new RPCLink({
+			origin: `http://localhost:${port}`,
+			url: "/rpc",
+			headers: { authorization: `Bearer ${token}` },
+		}),
+	);
 
 const createdClerkUserIds = new Set<string>();
 
@@ -37,6 +53,7 @@ describe("account deletion", () => {
 
 	after(async () => {
 		await Promise.all([...createdClerkUserIds].map(deleteClerkUserIfPresent));
+		server.close();
 		await pool.end();
 	});
 
@@ -59,17 +76,15 @@ describe("account deletion", () => {
 		});
 		const token = await clerkClient.sessions.getToken(session.id);
 
-		await request(app)
-			.post("/api/word-groups/users")
-			.set("Authorization", `Bearer ${token.jwt}`)
-			.send({
-				translations: [
-					{ languageName: "English", word: "hello" },
-					{ languageName: "Finnish", word: "hei" },
-				],
-				tags: ["integration-test"],
-			})
-			.expect(201);
+		const client = createClient(token.jwt);
+
+		await client.wordGroups.users.create({
+			translations: [
+				{ languageName: "English", word: "hello" },
+				{ languageName: "Finnish", word: "hei" },
+			],
+			tags: ["integration-test"],
+		});
 
 		const usersBeforeDeletion = await db
 			.select()
@@ -83,10 +98,7 @@ describe("account deletion", () => {
 			.where(eq(schema.word_groups.user_id, clerkUser.id));
 		assert.equal(wordGroupsBeforeDeletion.length, 1);
 
-		await request(app)
-			.delete("/api/account")
-			.set("Authorization", `Bearer ${token.jwt}`)
-			.expect(204);
+		await client.account.remove();
 
 		const usersAfterDeletion = await db
 			.select()

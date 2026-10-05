@@ -36,7 +36,8 @@ type GeneratedWordsDisplayProps = {
 	) => void;
 	onBack: () => void;
 	onSave: () => void;
-	loading: boolean;
+	generating: boolean;
+	saving: boolean;
 };
 
 const WordListDisplay = ({
@@ -47,7 +48,8 @@ const WordListDisplay = ({
 	onFormChange,
 	onBack,
 	onSave,
-	loading,
+	generating,
+	saving,
 }: GeneratedWordsDisplayProps) => {
 	const [viewMode, setViewMode] = useState<"row" | "card">("row");
 	const selectedWordsCount = words.filter((word) => word.isSelected).length;
@@ -96,6 +98,14 @@ const WordListDisplay = ({
 			</ToggleButtonGroup>
 
 			<Typography variant="h6">Generated Words:</Typography>
+			{generating && (
+				<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+					<CircularProgress size={20} />
+					<Typography variant="body1">
+						Generating words... {words.length}/{form.wordCount}
+					</Typography>
+				</Box>
+			)}
 			<Box
 				sx={
 					viewMode === "card"
@@ -170,13 +180,13 @@ const WordListDisplay = ({
 					variant="contained"
 					color="success"
 					onClick={onSave}
-					disabled={loading}
+					disabled={generating || saving}
 					endIcon={<AddIcon />}
 					sx={{ width: { xs: "100%", sm: "auto" } }}
 				>
 					Save Selected Words
 				</Button>
-				{loading && (
+				{saving && (
 					<Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
 						<Typography variant="body1">Saving words...</Typography>
 						<CircularProgress size={24} />

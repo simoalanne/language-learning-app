@@ -6,7 +6,7 @@
 	"scripts": {
 		"lint": "biome check --write .",
 		"dev": "vite",
-		"build": "tsc --noEmit && vite build",
+		"build": "vite build",
 		"typecheck": "tsc --noEmit",
 		"preview": "vite preview"
 	},
@@ -14,19 +14,21 @@
 		"@clerk/react": "^6.14.8",
 		"@emotion/react": "^11.14.0",
 		"@emotion/styled": "^11.14.1",
-		"@language-learning-app/contracts": "workspace:*",
 		"@mui/icons-material": "^9.4.0",
 		"@mui/material": "^9.4.0",
-		"@rest-rpc/tanstack-query": "0.1.0-beta.19",
+		"@orpc/client": "2.0.0-beta.42",
+		"@orpc/tanstack-query": "2.0.0-beta.42",
 		"@tanstack/react-query": "^5.102.8",
 		"react": "^19.2.8",
 		"react-dom": "^19.2.8",
 		"react-router-dom": "^7.18.3"
 	},
 	"devDependencies": {
+		"@orpc/server": "2.0.0-beta.42",
 		"@types/react": "^19.2.18",
 		"@types/react-dom": "^19.2.5",
 		"@vitejs/plugin-react": "^6.1.1",
+		"backend": "workspace:*",
 		"typescript": "^7.0.2",
 		"vite": "^8.2.2"
 	}
