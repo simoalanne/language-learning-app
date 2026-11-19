@@ -71,12 +71,10 @@ const ManageTranslations = () => {
 	const queryClient = useQueryClient();
 	const { isAuthenticated, isLoaded } = useAppAuth();
 	const wordGroupsQuery = useQuery(
-		api.wordGroups.users.list.queryOptions(
-			isLoaded && isAuthenticated ? {} : false,
-			{
-				select: (data) => data.body.wordGroups.map(normalizeWordGroup),
-			},
-		),
+		api.wordGroups.users.list.queryOptions({
+			enabled: isLoaded && isAuthenticated,
+			select: (data) => data.body.wordGroups.map(normalizeWordGroup),
+		}),
 	);
 	const createWordGroup = useMutation(
 		api.wordGroups.users.create.mutationOptions(),
@@ -221,9 +219,9 @@ const ManageTranslations = () => {
 			tags: tags.map((tag) => tag?.trim()),
 		};
 		if (activeTab === "add" || activeTab === "quick-add") {
-			await createWordGroup.mutateAsync(wordGroupObj);
+			await createWordGroup.mutateAsync({ body: wordGroupObj });
 			void queryClient.invalidateQueries({
-				queryKey: api.wordGroups.users.list.getKey({}),
+				queryKey: api.wordGroups.users.list.queryKey(),
 			});
 			setToastMsg("Translation group added successfully.");
 			setToastOpen(true);
@@ -245,9 +243,9 @@ const ManageTranslations = () => {
 				return;
 			}
 			const id = wordgroups[editModeIndex].id;
-			await updateWordGroup.mutateAsync({ id, ...wordGroupObj });
+			await updateWordGroup.mutateAsync({ body: { id, ...wordGroupObj } });
 			void queryClient.invalidateQueries({
-				queryKey: api.wordGroups.users.list.getKey({}),
+				queryKey: api.wordGroups.users.list.queryKey(),
 			});
 			setToastMsg("Translation group updated successfully.");
 			setToastOpen(true);
@@ -259,9 +257,9 @@ const ManageTranslations = () => {
 		if (editModeIndex === null) {
 			return;
 		}
-		await removeWordGroup.mutateAsync({ id: wordgroups[editModeIndex].id });
+		await removeWordGroup.mutateAsync({ body: { id: wordgroups[editModeIndex].id } });
 		void queryClient.invalidateQueries({
-			queryKey: api.wordGroups.users.list.getKey({}),
+			queryKey: api.wordGroups.users.list.queryKey(),
 		});
 		const updatedWordGroups = wordgroups.filter((_, i) => i !== editModeIndex);
 

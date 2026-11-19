@@ -26,7 +26,8 @@ const AiTranslationGeneratation = () => {
 		handleSaveWordsToDatabase,
 		handleWordItemSelectChange,
 		handleWordItemTranslationChange,
-		loading,
+		generating,
+		saving,
 	} = useAiWordGeneration();
 
 	const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -88,11 +89,11 @@ const AiTranslationGeneratation = () => {
 					<WordGenerationForm
 						form={form}
 						formConfig={formConfig}
-						usageStatus={usageStatus}
+						usageStatus={usageStatus?.body}
 						usageLoading={usageLoading}
 						onChange={handleWordGenerationFormChange}
 						onGenerate={handleGenerateWords}
-						loading={loading}
+						loading={generating}
 					/>
 				) : (
 					<GeneratedWordsDisplay
@@ -103,7 +104,8 @@ const AiTranslationGeneratation = () => {
 						onChangeTranslation={handleWordItemTranslationChange}
 						onBack={handleReturnToGenerationForm}
 						onSave={handleSave}
-						loading={loading}
+						generating={generating}
+						saving={saving}
 					/>
 				)
 			) : (
