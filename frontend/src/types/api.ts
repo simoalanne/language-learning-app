@@ -1,4 +1,4 @@
-import type { InferClientRequest, InferClientResponse } from "@rest-rpc/server";
+import type { InferClientRequest, InferClientResponse } from "@rest-rpc/core";
 import type { getBaseClient } from "../providers/api-client.tsx";
 
 type Requests = InferClientRequest<ReturnType<typeof getBaseClient>>;
