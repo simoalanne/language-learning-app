@@ -1,5 +1,0 @@
-packages:
-  - backend
-  - frontend
-dangerouslyAllowAllBuilds: true
-minimumReleaseAge: 0

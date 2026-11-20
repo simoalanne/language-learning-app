@@ -74,7 +74,7 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 2. **Install dependencies**
 
    ```bash
-   pnpm install
+   bun install
    ```
 
 3. **Create `backend/.env`**
@@ -106,13 +106,13 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 5. **Run app locally with command**
    ```bash
-   pnpm dev
+   bun dev
    ```
 
 ## 🌐 **Deployment**
 
 Deployed on Vercel as one project from the repository root (`vercel.json`):
-`pnpm build` bundles the frontend into `dist/`, served statically, and
+`bun run build` bundles the frontend into `dist/`, served statically, and
 `api/server.ts` runs the API as a Bun Function that `/api/*` is rewritten to.
 Set the same variables as `backend/.env` in the Vercel project.
 
