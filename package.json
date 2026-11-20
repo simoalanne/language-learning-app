@@ -12,13 +12,20 @@
 		"build": "bun run build:web && bun run build:api",
 		"build:web": "rm -rf dist && bun build ./frontend/index.html --outdir dist --minify --public-path / --env 'BUN_PUBLIC_*' && cp -r frontend/public/. dist/",
 		"build:api": "bun build backend/src/vercel.ts --target bun --outfile api/_server.js --external pg-native",
-		"lint": "biome check --write .",
-		"typecheck": "bun --filter '*' typecheck"
+		"typecheck": "bun --filter '*' typecheck",
+		"lint": "oxlint",
+		"format": "oxfmt",
+		"check": "oxfmt --check && oxlint",
+		"fix": "oxfmt && oxlint --fix",
+		"prepare": "lefthook install"
 	},
 	"dependencies": {
 		"zod": "^4.6.7"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.11"
+		"lefthook": "^2.2.2",
+		"oxfmt": "^0.79.0",
+		"oxlint": "^1.94.0",
+		"oxlint-tsgolint": "^7.0.2007"
 	}
 }

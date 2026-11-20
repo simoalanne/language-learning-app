@@ -119,12 +119,18 @@ export const useAiWordGeneration = () => {
 		mutationFn: async (input) => {
 			const controller = new AbortController();
 			generationAbortRef.current = controller;
-			const stream = await rawApi.ai.generateWords({ body: input }, {
-				signal: controller.signal,
-			});
+			const stream = await rawApi.ai.generateWords(
+				{ body: input },
+				{
+					signal: controller.signal,
+				},
+			);
 
 			for await (const word of stream.body) {
-				setGeneratedWords((prev) => [...prev, toSelectableGeneratedWord(word.data)]);
+				setGeneratedWords((prev) => [
+					...prev,
+					toSelectableGeneratedWord(word.data),
+				]);
 			}
 		},
 		onSettled: () => {

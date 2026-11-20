@@ -11,7 +11,8 @@ export type LanguageName = WordGroupTranslation["languageName"];
 export type WordGroupInput = Requests["wordGroups"]["users"]["create"]["body"];
 export type GenerateWordsInput = Requests["ai"]["generateWords"]["body"];
 export type AiUsageStatus = Responses["ai"]["getUsage"]["body"];
-export type AiGenerationHistoryResponse = Responses["ai"]["listGenerations"]["body"];
+export type AiGenerationHistoryResponse =
+	Responses["ai"]["listGenerations"]["body"];
 export type AiGenerationHistoryItem =
 	AiGenerationHistoryResponse["generations"][number];
 export type GenerateWordsResponse = AiGenerationHistoryItem["response"];
