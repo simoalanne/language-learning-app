@@ -85,7 +85,7 @@ This app helps users expand their vocabulary across multiple languages. It's ide
    CLERK_SECRET_KEY="your Clerk secret key"
    # Inlined into the frontend bundle as well
    BUN_PUBLIC_CLERK_PUBLISHABLE_KEY="your Clerk publishable key"
-   # Model id for the active provider: OpenAI when NODE_ENV=production, local Ollama otherwise.
+   # Model id for the active provider: OpenAI when OPENAI_API_KEY is set, local Ollama otherwise.
    LLM_MODEL="qwen3.5:9b" # for prod any openai model, for dev any local model ollama can serve
    # Optional. Set to a positive number to enforce a per-user rolling 7-day quota.
    AI_GENERATION_LIMIT="25"

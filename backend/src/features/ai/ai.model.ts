@@ -2,11 +2,12 @@ import { createOpenAI } from "@ai-sdk/openai";
 import type { LanguageModel } from "ai";
 import { createOllama } from "ai-sdk-ollama";
 
-const isProduction = process.env.NODE_ENV === "production";
+// OpenAI when an API key is configured (production), local Ollama otherwise.
+const openAiApiKey = process.env.OPENAI_API_KEY;
 
-export const missingModelConfigMessage = isProduction
-	? "OpenAI is not configured. Set OPENAI_API_KEY and LLM_MODEL in backend/.env."
-	: "Ollama is not configured. Set LLM_MODEL in backend/.env.";
+export const missingModelConfigMessage = openAiApiKey
+	? "OpenAI is not configured. Set LLM_MODEL."
+	: "No model configured. Set LLM_MODEL, plus OPENAI_API_KEY to use OpenAI instead of Ollama.";
 
 const getLanguageModel = (): LanguageModel | null => {
 	const modelId = process.env.LLM_MODEL;
@@ -15,11 +16,11 @@ const getLanguageModel = (): LanguageModel | null => {
 		return null;
 	}
 
-	if (isProduction) {
-		const apiKey = process.env.OPENAI_API_KEY;
-		return apiKey
-			? createOpenAI({ apiKey, baseURL: process.env.OPENAI_BASE_URL })(modelId)
-			: null;
+	if (openAiApiKey) {
+		return createOpenAI({
+			apiKey: openAiApiKey,
+			baseURL: process.env.OPENAI_BASE_URL,
+		})(modelId);
 	}
 
 	// Thinking adds a long silent delay before the first streamed word on local models.
