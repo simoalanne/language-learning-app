@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "pnpm --filter backend dev",
 		"start": "pnpm --filter backend start",
+		"build": "rm -rf dist && bun build ./frontend/index.html --outdir dist --minify --public-path / --env 'BUN_PUBLIC_*' && cp -r frontend/public/. dist/",
 		"lint": "biome check --write .",
 		"typecheck": "pnpm -r --parallel --no-bail typecheck"
 	},

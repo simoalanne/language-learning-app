@@ -1,15 +1,8 @@
+// Local server: API plus the frontend bundled on the fly through Bun's HTML import.
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { createApp, onError } from "@rest-rpc/server";
 import index from "../../frontend/index.html";
-import db from "./drizzle/db.ts";
-import { router } from "./router.ts";
-
-const api = createApp(router, {
-	mountPath: "/api",
-	context: (request) => ({ request, db }),
-	interceptors: [onError((error) => console.error(error))],
-});
+import { api } from "./api.ts";
 
 const publicDir = join(import.meta.dir, "../../frontend/public");
 const publicFiles = Object.fromEntries(

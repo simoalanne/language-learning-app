@@ -111,4 +111,9 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 ## 🌐 **Deployment**
 
+Deployed on Vercel as one project from the repository root (`vercel.json`):
+`pnpm build` bundles the frontend into `dist/`, served statically, and
+`api/server.ts` runs the API as a Bun Function that `/api/*` is rewritten to.
+Set the same variables as `backend/.env` in the Vercel project.
+
 Deployed project can be checked out here: https://lang-app.simoalanne.com
