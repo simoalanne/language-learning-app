@@ -8,11 +8,11 @@
 	"type": "module",
 	"scripts": {
 		"lint": "biome check --write .",
-		"test": "node --test --experimental-test-module-mocks 'src/**/*.test.ts'",
+		"test": "bun test",
 		"typecheck": "tsc --noEmit",
 		"start": "bun src/server.ts",
-		"db:generate": "drizzle-kit push",
-		"db:seed": "node scripts/seeding/seed.ts",
+		"db:generate": "bun --bun drizzle-kit push",
+		"db:seed": "bun scripts/seeding/seed.ts",
 		"dev": "bun --hot src/server.ts"
 	},
 	"keywords": [],
@@ -25,7 +25,6 @@
 		"@rest-rpc/server": "^0.5.0",
 		"ai": "^7.0.127",
 		"ai-sdk-ollama": "^4.4.0",
-		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2",
 		"pg": "^8.23.0",
 		"zod": "^4.6.7"

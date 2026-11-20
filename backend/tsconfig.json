@@ -1,14 +1,16 @@
 {
 	"compilerOptions": {
 		"target": "esnext",
-		"module": "nodenext",
-		"rewriteRelativeImportExtensions": true,
+		"module": "preserve",
 		"erasableSyntaxOnly": true,
 		"verbatimModuleSyntax": true,
 		"strictNullChecks": true,
 		"skipLibCheck": true,
 		"strict": true,
-		"types": ["bun"]
+		"types": ["bun"],
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"noEmit": true
 	},
 	"exclude": ["**/*.test.ts"]
 }

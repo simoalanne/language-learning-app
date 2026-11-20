@@ -52,8 +52,7 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 ### Backend:
 
-- **Node.js**
-- **Express**
+- **Bun** (`Bun.serve` serves the API and bundles the React app)
 - **rest-rpc** (end-to-end typesafe HTTP API, types inferred from the server router)
 - **AI SDK** (streamed structured output; OpenAI in production, Ollama locally)
 
@@ -78,12 +77,14 @@ This app helps users expand their vocabulary across multiple languages. It's ide
    pnpm install
    ```
 
-3. **Create `.env` files**
+3. **Create `backend/.env`**
 
    ```bash
    # backend/.env
    DATABASE_URL="your postgres connection string"
    CLERK_SECRET_KEY="your Clerk secret key"
+   # Inlined into the frontend bundle as well
+   BUN_PUBLIC_CLERK_PUBLISHABLE_KEY="your Clerk publishable key"
    # Model id for the active provider: OpenAI when NODE_ENV=production, local Ollama otherwise.
    LLM_MODEL="qwen3.5:9b" # for prod any openai model, for dev any local model ollama can serve
    # Optional. Set to a positive number to enforce a per-user rolling 7-day quota.
@@ -94,10 +95,6 @@ This app helps users expand their vocabulary across multiple languages. It's ide
    OPENAI_BASE_URL="https://api.openai.com/v1"
    # Development only (Ollama). Optional, defaults to http://127.0.0.1:11434
    OLLAMA_BASE_URL="http://127.0.0.1:11434"
-
-   # frontend/.env
-   VITE_CLERK_PUBLISHABLE_KEY="your Clerk publishable key"
-   VITE_API_BASE_URL="http://localhost:3000"
    ```
 
 4. **Start a local model** (development uses [Ollama](https://ollama.com))
@@ -109,8 +106,7 @@ This app helps users expand their vocabulary across multiple languages. It's ide
 
 5. **Run app locally with command**
    ```bash
-   pnpm dev:backend
-   pnpm dev:frontend
+   pnpm dev
    ```
 
 ## 🌐 **Deployment**

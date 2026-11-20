@@ -1,7 +1,4 @@
-import "dotenv/config";
-import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { isNull } from "drizzle-orm";
 import z from "zod";
 import db from "../../src/drizzle/db.ts";
@@ -16,9 +13,6 @@ const csvRowSchema = z.object({
 	word: z.string().trim().min(1),
 	groupId: z.coerce.number().int().positive(),
 });
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const parseCSV = (csvContent: string) => {
 	const [headerLine, ...dataLines] = csvContent
@@ -98,8 +92,8 @@ export const seedDatabase = async () => {
 	try {
 		console.log("Starting database seeding...");
 
-		const csvPath = join(__dirname, "data.csv");
-		const csvContent = await readFile(csvPath, "utf-8");
+		const csvPath = join(import.meta.dir, "data.csv");
+		const csvContent = await Bun.file(csvPath).text();
 		const rows = parseCSV(csvContent);
 		const wordGroups = buildWordGroups(rows);
 
