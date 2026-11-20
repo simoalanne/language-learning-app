@@ -45,11 +45,7 @@ declare module "@rest-rpc/server" {
 }
 
 const requireAuth = route.middleware(async ({ context, next }) => {
-	const requestState = await clerkClient.authenticateRequest(context.request, {
-		authorizedParties: process.env.APP_ORIGIN
-			? [process.env.APP_ORIGIN]
-			: undefined,
-	});
+	const requestState = await clerkClient.authenticateRequest(context.request);
 	const userId = requestState.toAuth()?.userId;
 
 	if (!requestState.isAuthenticated || !userId) {
