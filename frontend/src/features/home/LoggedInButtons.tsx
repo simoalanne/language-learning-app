@@ -35,7 +35,7 @@ const LoggedInButtons = () => {
 			onSuccess: async () => {
 				setIsDeleteDialogOpen(false);
 				if (location.pathname !== "/learn") {
-					navigate("/learn");
+					void navigate("/learn");
 				}
 				await signOut();
 			},
@@ -62,7 +62,7 @@ const LoggedInButtons = () => {
 			<Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
 				<MenuItem
 					onClick={() => {
-						navigate(
+						void navigate(
 							`${
 								location.pathname === "/learn"
 									? "/manage-translations/add"
@@ -81,7 +81,7 @@ const LoggedInButtons = () => {
 				</MenuItem>
 				<MenuItem
 					onClick={() => {
-						navigate("/ai-translation-generation");
+						void navigate("/ai-translation-generation");
 						handleClose();
 					}}
 					sx={{
@@ -93,9 +93,9 @@ const LoggedInButtons = () => {
 				<MenuItem
 					onClick={() => {
 						if (location.pathname !== "/learn") {
-							navigate("/learn");
+							void navigate("/learn");
 						}
-						signOut();
+						void signOut();
 						handleClose();
 					}}
 					sx={{

@@ -119,18 +119,26 @@ export const useAiWordGeneration = () => {
 		mutationFn: async (input) => {
 			const controller = new AbortController();
 			generationAbortRef.current = controller;
-			const stream = await rawApi.ai.generateWords(
-				{ body: input },
-				{
-					signal: controller.signal,
-				},
-			);
+			try {
+				const stream = await rawApi.ai.generateWords(
+					{ body: input },
+					{
+						signal: controller.signal,
+					},
+				);
 
-			for await (const word of stream.body) {
-				setGeneratedWords((prev) => [
-					...prev,
-					toSelectableGeneratedWord(word.data),
-				]);
+				for await (const word of stream.body) {
+					setGeneratedWords((prev) => [
+						...prev,
+						toSelectableGeneratedWord(word.data),
+					]);
+				}
+			} catch (error) {
+				// a cancelled generation is not an error to show
+				if (controller.signal.aborted) {
+					return;
+				}
+				throw error;
 			}
 		},
 		onSettled: () => {
@@ -147,10 +155,6 @@ export const useAiWordGeneration = () => {
 		const error = generateWordsMutation.error;
 
 		if (!error) {
-			return null;
-		}
-
-		if (generationAbortRef.current?.signal.aborted) {
 			return null;
 		}
 

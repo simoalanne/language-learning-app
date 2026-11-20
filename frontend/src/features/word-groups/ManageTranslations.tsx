@@ -12,13 +12,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	type SyntheticEvent,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { type SyntheticEvent, useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type {
 	LanguageName,
@@ -35,7 +29,7 @@ import { useAppAuth } from "../../providers/use-app-auth";
 import AddToCollection from "./AddToCollection";
 import QuickAdd from "./QuickAdd";
 import TranslationCard from "./TranslationCard";
-import { normalizeWordGroup } from "./wordGroups";
+import { NO_WORD_GROUPS, normalizeWordGroup } from "./wordGroups";
 
 type EditableTranslation = WordGroupTranslation;
 type TabName = "add" | "quick-add" | "edit";
@@ -63,10 +57,10 @@ const ManageTranslations = () => {
 	const [toastOpen, setToastOpen] = useState(false);
 	const [toastMsg, setToastMsg] = useState("");
 	const [toastSeverity, setToastSeverity] = useState<AlertColor>("success");
-	const translationIdRef = useRef(0);
 	const navigate = useNavigate();
 	const tab = useParams().tab;
-	const [activeTab, setActiveTab] = useState<TabName>("add");
+	const activeTab: TabName =
+		tab === "quick-add" || tab === "edit" ? tab : "add";
 	const { api } = useApiClient();
 	const queryClient = useQueryClient();
 	const { isAuthenticated, isLoaded } = useAppAuth();
@@ -85,11 +79,11 @@ const ManageTranslations = () => {
 	const removeWordGroup = useMutation(
 		api.wordGroups.users.remove.mutationOptions(),
 	);
-	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? [];
+	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? NO_WORD_GROUPS;
 	const createEditableTranslation = useCallback(
 		(translation: EditableTranslation): EditableTranslationWithId => ({
 			...translation,
-			localId: `translation-${translationIdRef.current++}`,
+			localId: crypto.randomUUID(),
 		}),
 		[],
 	);
@@ -122,13 +116,9 @@ const ManageTranslations = () => {
 	);
 
 	useEffect(() => {
-		if (tab === "add" || tab === "quick-add" || tab === "edit") {
-			setActiveTab(tab);
-		}
-	}, [tab]);
-
-	useEffect(() => {
 		if (tab === "edit" && wordgroups.length > 0 && editModeIndex === null) {
+			// load the first group into the form once the data arrives
+			// oxlint-disable-next-line react/set-state-in-effect
 			handleIndexChange(0);
 		}
 	}, [tab, wordgroups, editModeIndex, handleIndexChange]);
@@ -206,7 +196,7 @@ const ManageTranslations = () => {
 		if (nextTab === "edit") {
 			handleIndexChange(0);
 		}
-		navigate(`/manage-translations/${nextTab}`);
+		void navigate(`/manage-translations/${nextTab}`);
 	};
 
 	const onSubmit = async () => {
@@ -299,141 +289,133 @@ const ManageTranslations = () => {
 		setTranslations(newTranslations);
 	};
 
-	const NothingToEdit = () => {
-		return (
-			<div style={{ display: "flex", justifyContent: "center" }}>
-				<Card sx={{ width: "85%", maxWidth: 600, bgcolor: "#fafafa" }}>
-					<CardContent>
+	const nothingToEdit = (
+		<div style={{ display: "flex", justifyContent: "center" }}>
+			<Card sx={{ width: "85%", maxWidth: 600, bgcolor: "#fafafa" }}>
+				<CardContent>
+					<Box
+						sx={{
+							display: "flex",
+							justifyContent: "center",
+							flexDirection: "column",
+							gap: 2,
+						}}
+					>
+						<Typography variant="h6" sx={{ textAlign: "center" }}>
+							No translation groups to edit...
+						</Typography>
 						<Box
 							sx={{
 								display: "flex",
 								justifyContent: "center",
-								flexDirection: "column",
 								gap: 2,
+								flexWrap: "wrap",
 							}}
 						>
-							<Typography variant="h6" sx={{ textAlign: "center" }}>
-								No translation groups to edit...
-							</Typography>
-							<Box
-								sx={{
-									display: "flex",
-									justifyContent: "center",
-									gap: 2,
-									flexWrap: "wrap",
-								}}
+							<Button
+								onClick={() => handleTabChange("add")}
+								variant="contained"
+								sx={{ bgcolor: "green" }}
+								startIcon={<AddIcon />}
 							>
-								<Button
-									onClick={() => handleTabChange("add")}
-									variant="contained"
-									sx={{ bgcolor: "green" }}
-									startIcon={<AddIcon />}
-								>
-									Add group
-								</Button>
-								<Button
-									onClick={() => handleTabChange("quick-add")}
-									variant="contained"
-									sx={{ bgcolor: "blue" }}
-									startIcon={<FlashOnIcon />}
-								>
-									Quick add
-								</Button>
-							</Box>
+								Add group
+							</Button>
+							<Button
+								onClick={() => handleTabChange("quick-add")}
+								variant="contained"
+								sx={{ bgcolor: "blue" }}
+								startIcon={<FlashOnIcon />}
+							>
+								Quick add
+							</Button>
 						</Box>
-					</CardContent>
-				</Card>
-			</div>
-		);
-	};
-
-	const DetailsCard = () => {
-		return (
-			<Card sx={{ width: 300, bgcolor: "#fafafa" }}>
-				<CardHeader
-					sx={{ display: "flex", bgcolor: "#87CEEB" }}
-					title="Group Details"
-				/>
-				<CardContent>
-					<p
-						style={{ fontWeight: "bold" }}
-					>{`Translations: ${translations.length}/${LANGUAGE_NAMES.length}`}</p>
-					{missingTranslations().length > 0 && (
-						<p
-							style={{ fontWeight: "bold" }}
-						>{`Missing translations for: ${missingTranslations().join(
-							", ",
-						)}`}</p>
-					)}
-					<Button
-						onClick={addTranslation}
-						variant="contained"
-						color="primary"
-						size="small"
-						disabled={translations.length === LANGUAGE_NAMES.length}
-					>
-						Add new translation
-					</Button>
-					<p style={{ fontWeight: "bold" }}>Options:</p>
-					<ToggleOption
-						label="Hide synonyms"
-						value={hideSynonyms}
-						setValue={setHideSynonyms}
-					/>
-					<ToggleOption
-						label="Hide language selections"
-						value={hideLanguageSelections}
-						setValue={setHideLanguageSelections}
-					/>
-					{activeTab === "add" && (
-						<ToggleOption
-							label="Reset tags on submit"
-							value={resetTagsOnSubmit}
-							setValue={setResetTagsOnSubmit}
-						/>
-					)}
-					<AddToCollection
-						collection={tags}
-						onCollectionChange={setTags}
-						itemName={"tag"}
-						collectionLimit={3}
-						existingItems={allTags}
-						invalidInputFunction={(tag) => tag?.length > 30}
-					/>
-					<Button
-						onClick={onSubmit}
-						variant="contained"
-						color="primary"
-						fullWidth
-						sx={{ mt: 2, bgcolor: "green" }}
-						disabled={
-							!isValidForm() || (activeTab === "edit" && !dataChanged())
-						}
-					>
-						{activeTab === "add" ? "Submit translation group" : "Save changes"}
-					</Button>
-					{activeTab === "edit" && (
-						<Button
-							onClick={onDeleteTranslationGroup}
-							variant="contained"
-							color="error"
-							fullWidth
-							sx={{ mt: 2 }}
-						>
-							Delete group
-						</Button>
-					)}
-					{activeTab === "edit" && editModeIndex !== null && (
-						<MoveIcons
-							currentIndex={editModeIndex}
-							maxIndex={wordgroups.length - 1}
-							onClick={(index: number) => handleIndexChange(index)}
-						/>
-					)}
+					</Box>
 				</CardContent>
 			</Card>
-		);
-	};
+		</div>
+	);
+
+	const detailsCard = (
+		<Card sx={{ width: 300, bgcolor: "#fafafa" }}>
+			<CardHeader
+				sx={{ display: "flex", bgcolor: "#87CEEB" }}
+				title="Group Details"
+			/>
+			<CardContent>
+				<p
+					style={{ fontWeight: "bold" }}
+				>{`Translations: ${translations.length}/${LANGUAGE_NAMES.length}`}</p>
+				{missingTranslations().length > 0 && (
+					<p
+						style={{ fontWeight: "bold" }}
+					>{`Missing translations for: ${missingTranslations().join(", ")}`}</p>
+				)}
+				<Button
+					onClick={addTranslation}
+					variant="contained"
+					color="primary"
+					size="small"
+					disabled={translations.length === LANGUAGE_NAMES.length}
+				>
+					Add new translation
+				</Button>
+				<p style={{ fontWeight: "bold" }}>Options:</p>
+				<ToggleOption
+					label="Hide synonyms"
+					value={hideSynonyms}
+					setValue={setHideSynonyms}
+				/>
+				<ToggleOption
+					label="Hide language selections"
+					value={hideLanguageSelections}
+					setValue={setHideLanguageSelections}
+				/>
+				{activeTab === "add" && (
+					<ToggleOption
+						label="Reset tags on submit"
+						value={resetTagsOnSubmit}
+						setValue={setResetTagsOnSubmit}
+					/>
+				)}
+				<AddToCollection
+					collection={tags}
+					onCollectionChange={setTags}
+					itemName={"tag"}
+					collectionLimit={3}
+					existingItems={allTags}
+					invalidInputFunction={(tag) => tag?.length > 30}
+				/>
+				<Button
+					onClick={onSubmit}
+					variant="contained"
+					color="primary"
+					fullWidth
+					sx={{ mt: 2, bgcolor: "green" }}
+					disabled={!isValidForm() || (activeTab === "edit" && !dataChanged())}
+				>
+					{activeTab === "add" ? "Submit translation group" : "Save changes"}
+				</Button>
+				{activeTab === "edit" && (
+					<Button
+						onClick={onDeleteTranslationGroup}
+						variant="contained"
+						color="error"
+						fullWidth
+						sx={{ mt: 2 }}
+					>
+						Delete group
+					</Button>
+				)}
+				{activeTab === "edit" && editModeIndex !== null && (
+					<MoveIcons
+						currentIndex={editModeIndex}
+						maxIndex={wordgroups.length - 1}
+						onClick={(index: number) => handleIndexChange(index)}
+					/>
+				)}
+			</CardContent>
+		</Card>
+	);
 
 	// Animation code was written by AI
 	const tabStyle = (isActive: boolean): SxProps<Theme> => ({
@@ -523,7 +505,7 @@ const ManageTranslations = () => {
 					<Typography variant="body1">Edit</Typography>
 				</Box>
 			</Box>
-			{activeTab === "edit" && wordgroups.length === 0 && <NothingToEdit />}
+			{activeTab === "edit" && wordgroups.length === 0 && nothingToEdit}
 			{(activeTab === "add" ||
 				(activeTab === "edit" && wordgroups.length > 0)) && (
 				<Box
@@ -573,7 +555,7 @@ const ManageTranslations = () => {
 							/>
 						))}
 					</Box>
-					<DetailsCard />
+					{detailsCard}
 				</Box>
 			)}
 			{activeTab === "quick-add" && (

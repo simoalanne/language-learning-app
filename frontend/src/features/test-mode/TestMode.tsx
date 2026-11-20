@@ -9,11 +9,44 @@ import type { WordGroup } from "@/types/api";
 import ContentAligner from "../../components/ContentAligner";
 import { useApiClient } from "../../providers/api-client";
 import { useAppAuth } from "../../providers/use-app-auth";
-import { normalizeWordGroup } from "../word-groups/wordGroups";
+import { NO_WORD_GROUPS, normalizeWordGroup } from "../word-groups/wordGroups";
 import { filterWordGroupsByLanguagesAndTags } from "./filters";
 import TestEndScreen from "./TestEndScreen";
 import TestItem from "./TestItem";
 import TestSettings, { type TestModeState } from "./TestSettings";
+
+const Hearts = ({
+	totalHearts,
+	heartsLeft,
+}: {
+	totalHearts: number;
+	heartsLeft: number;
+}) => {
+	const heartArray = Array.from({ length: totalHearts }, (_, i) => i);
+	return (
+		<Box sx={{ display: "flex", gap: 2 }}>
+			{heartArray.map((heartIndex) => (
+				<FavoriteIcon
+					key={heartIndex}
+					sx={{
+						color: "red",
+						opacity: heartIndex < heartsLeft ? 1 : 0.2,
+						fontSize: 50,
+						animation:
+							heartIndex === 0 && heartsLeft === 1
+								? "pulse 1s infinite"
+								: "none",
+						"@keyframes pulse": {
+							"0%": { transform: "scale(1)" },
+							"50%": { transform: "scale(1.2)" },
+							"100%": { transform: "scale(1)" },
+						},
+					}}
+				/>
+			))}
+		</Box>
+	);
+};
 
 const TestMode = () => {
 	const navigate = useNavigate();
@@ -34,7 +67,7 @@ const TestMode = () => {
 	const wordGroupsQuery = isAuthenticated
 		? userWordGroupsQuery
 		: publicWordGroupsQuery;
-	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? [];
+	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? NO_WORD_GROUPS;
 	const loading = !isLoaded || wordGroupsQuery.isLoading;
 	const [testObject, setTestObject] = useState<TestModeState>({
 		test: {
@@ -144,36 +177,6 @@ const TestMode = () => {
 		}));
 	};
 
-	const Hearts = () => {
-		const heartArray = Array.from(
-			{ length: testObject.totalHearts },
-			(_, i) => i,
-		);
-		return (
-			<Box sx={{ display: "flex", gap: 2 }}>
-				{heartArray.map((heartIndex) => (
-					<FavoriteIcon
-						key={heartIndex}
-						sx={{
-							color: "red",
-							opacity: heartIndex < testObject.heartsLeft ? 1 : 0.2,
-							fontSize: 50,
-							animation:
-								heartIndex === 0 && testObject.heartsLeft === 1
-									? "pulse 1s infinite"
-									: "none",
-							"@keyframes pulse": {
-								"0%": { transform: "scale(1)" },
-								"50%": { transform: "scale(1.2)" },
-								"100%": { transform: "scale(1)" },
-							},
-						}}
-					/>
-				))}
-			</Box>
-		);
-	};
-
 	if (loading) return null;
 	return (
 		<ContentAligner>
@@ -226,7 +229,10 @@ const TestMode = () => {
 					<Typography variant="h5">
 						Question {testIndex + 1} / {testObject.totalQuestions}
 					</Typography>
-					<Hearts />
+					<Hearts
+						totalHearts={testObject.totalHearts}
+						heartsLeft={testObject.heartsLeft}
+					/>
 					{testObject.test.questions
 						.filter((_, index) => index === testIndex)
 						.map((question) => (

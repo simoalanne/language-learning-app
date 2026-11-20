@@ -19,17 +19,19 @@ const ContentAligner = ({
 	sx,
 }: ContentAlignerProps) => (
 	<Box
-		sx={{
-			display: "flex",
-			flexDirection: "column",
-			flexGrow: 1,
-			alignItems: "center",
-			justifyContent: centerVertically ? "center" : "flex-start",
-			gap: gap || 0,
-			background,
-			bgcolor,
-			...sx,
-		}}
+		sx={[
+			{
+				display: "flex",
+				flexDirection: "column",
+				flexGrow: 1,
+				alignItems: "center",
+				justifyContent: centerVertically ? "center" : "flex-start",
+				gap: gap || 0,
+				background,
+				bgcolor,
+			},
+			...(Array.isArray(sx) ? sx : [sx]),
+		]}
 	>
 		{children}
 	</Box>

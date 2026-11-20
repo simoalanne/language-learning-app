@@ -21,7 +21,7 @@ import ContentAligner from "../../components/ContentAligner";
 import { useApiClient } from "../../providers/api-client";
 import { useAppAuth } from "../../providers/use-app-auth";
 import { shuffle } from "../../utils/shuffle";
-import { normalizeWordGroup } from "../word-groups/wordGroups";
+import { NO_WORD_GROUPS, normalizeWordGroup } from "../word-groups/wordGroups";
 import MatchingGameCard from "./MatchingGameCard";
 import MatchingGameSettings, {
 	type MatchingGameSettingsState,
@@ -60,7 +60,7 @@ const MatchingGameMode = () => {
 	const wordGroupsQuery = isAuthenticated
 		? userWordGroupsQuery
 		: publicWordGroupsQuery;
-	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? [];
+	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? NO_WORD_GROUPS;
 	const loading = !isLoaded || wordGroupsQuery.isLoading;
 	const [settings, setSettings] = useState<MatchingGameSettingsState>({
 		open: true,
@@ -114,8 +114,9 @@ const MatchingGameMode = () => {
 	useEffect(() => {
 		if (loading) return;
 
-		// initialize settings only once
+		// initialize settings only once, after the word groups load
 		if (!settings.initialized) {
+			// oxlint-disable-next-line react/set-state-in-effect
 			setSettings((prevSettings) => ({
 				...prevSettings,
 				pairs: Math.min(10, wordgroups.length),
@@ -253,7 +254,7 @@ const MatchingGameMode = () => {
 	};
 
 	const handleExitToApp = () => {
-		navigate("/learn");
+		void navigate("/learn");
 	};
 
 	if (loading) return null;

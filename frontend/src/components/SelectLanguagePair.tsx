@@ -9,10 +9,6 @@ type SelectLanguagePairProps = {
 	allowSameLanguages?: boolean;
 };
 
-type DropDownMenuProps = {
-	index: 0 | 1;
-};
-
 const SelectLanguagePair = ({
 	languageNames = [
 		"English",
@@ -28,9 +24,9 @@ const SelectLanguagePair = ({
 	allowSameLanguages = false,
 }: SelectLanguagePairProps) => {
 	if (languageNames.length === 0) return null;
-	const DropDownMenu = ({ index }: DropDownMenuProps) => {
+	const renderDropDown = (index: 0 | 1) => {
 		return (
-			<FormControl fullWidth>
+			<FormControl fullWidth key={index}>
 				<InputLabel id={`language-select-label-${index}`}>
 					{index === 0 ? labels[0] : labels[1]}
 				</InputLabel>
@@ -52,7 +48,7 @@ const SelectLanguagePair = ({
 						.filter(
 							(lang) =>
 								allowSameLanguages ||
-								!selectedLanguages[index === 0 ? 1 : 0].includes(lang),
+								selectedLanguages[index === 0 ? 1 : 0] !== lang,
 						)
 						.map((language) => (
 							<MenuItem key={language} value={language}>
@@ -65,8 +61,8 @@ const SelectLanguagePair = ({
 	};
 	return (
 		<>
-			<DropDownMenu index={0} />
-			<DropDownMenu index={1} />
+			{renderDropDown(0)}
+			{renderDropDown(1)}
 		</>
 	);
 };

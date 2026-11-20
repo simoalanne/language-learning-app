@@ -1,5 +1,10 @@
 import { Box, Typography } from "@mui/material";
-import { type MutableRefObject, useRef, useState } from "react";
+import {
+	type MutableRefObject,
+	useImperativeHandle,
+	useRef,
+	useState,
+} from "react";
 import "./Flashcard.css";
 import type { WordGroupTranslation } from "@/types/api";
 
@@ -16,16 +21,18 @@ const Flashcard = ({ translations, resetIndexesRef }: FlashcardProps) => {
 	const [isFlipping, setIsFlipping] = useState(false);
 	const disableTransition = useRef(false);
 
-	if (resetIndexesRef) {
-		resetIndexesRef.current = () => {
+	useImperativeHandle(
+		resetIndexesRef,
+		() => () => {
 			disableTransition.current = true;
 			setFrontIndex(0);
 			setBackIndex(0);
 			setIndex(0);
 			setFlipState(0);
 			setTimeout(() => (disableTransition.current = false), 0);
-		};
-	}
+		},
+		[],
+	);
 
 	const handleFlip = () => {
 		if (isFlipping) return;
@@ -93,6 +100,9 @@ const Flashcard = ({ translations, resetIndexesRef }: FlashcardProps) => {
 					className="cardInner"
 					style={{
 						transform: `rotateY(${flipState}deg)`,
+						// A ref, not state: as state, restoring the transition would re-render
+						// before paint and animate the reset. The next flip's render reads it.
+						// oxlint-disable-next-line react/refs
 						transition: disableTransition.current ? "none" : "transform 0.6s",
 					}}
 				>

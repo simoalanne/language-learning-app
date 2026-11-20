@@ -1,8 +1,9 @@
 import type { LanguageName, WordGroup } from "@/types/api";
 
-export const normalizeLanguageName = (
-	languageName: unknown,
-): LanguageName | unknown => {
+// stable fallback for `query.data ?? NO_WORD_GROUPS`, so hook deps don't change every render
+export const NO_WORD_GROUPS: WordGroup[] = [];
+
+export const normalizeLanguageName = (languageName: unknown): unknown => {
 	if (typeof languageName !== "string" || languageName.length === 0) {
 		return languageName;
 	}

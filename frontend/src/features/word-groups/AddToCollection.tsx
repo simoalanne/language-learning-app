@@ -1,5 +1,5 @@
 import { Autocomplete, Button, Chip, TextField } from "@mui/material";
-import { type MutableRefObject, useState } from "react";
+import { type MutableRefObject, useImperativeHandle, useState } from "react";
 
 type AddToCollectionProps = {
 	collection: string[];
@@ -45,7 +45,7 @@ const AddToCollection = ({
 	};
 
 	// returns a function that clears the text field. used for clearing the text field in TranslationCard
-	if (clearTextFieldRef) clearTextFieldRef.current = () => setCurrentItem("");
+	useImperativeHandle(clearTextFieldRef, () => () => setCurrentItem(""), []);
 
 	return (
 		<>

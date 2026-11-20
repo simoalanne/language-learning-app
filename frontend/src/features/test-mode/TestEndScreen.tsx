@@ -15,7 +15,7 @@ const TestEndScreen = ({
 	onQuit,
 	ranOutOfHearts,
 }: TestEndScreenProps) => {
-	const GradeRenderer = () => {
+	const grade = (() => {
 		const percentage = `${Math.round((score / totalQuestions) * 100)}%`;
 		if (score === totalQuestions) {
 			return `Grade: A+ (${percentage})`;
@@ -30,7 +30,7 @@ const TestEndScreen = ({
 		} else {
 			return `Grade: F (${percentage})`;
 		}
-	};
+	})();
 	return (
 		<Box
 			sx={{
@@ -54,7 +54,7 @@ const TestEndScreen = ({
 					bgcolor: "rgba(0, 0, 0, 0.1)",
 				}}
 			>
-				<GradeRenderer />
+				{grade}
 			</Typography>
 			<Button variant="contained" onClick={onRestart} sx={{ bgcolor: "green" }}>
 				Restart

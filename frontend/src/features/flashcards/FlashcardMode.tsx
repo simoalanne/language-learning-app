@@ -8,7 +8,7 @@ import ContentAligner from "../../components/ContentAligner";
 import MoveIcons from "../../components/MoveIcons";
 import { useApiClient } from "../../providers/api-client";
 import { useAppAuth } from "../../providers/use-app-auth";
-import { normalizeWordGroup } from "../word-groups/wordGroups";
+import { NO_WORD_GROUPS, normalizeWordGroup } from "../word-groups/wordGroups";
 import Flashcard from "./Flashcard";
 
 const FlashcardMode = () => {
@@ -32,7 +32,7 @@ const FlashcardMode = () => {
 	const wordGroupsQuery = isAuthenticated
 		? userWordGroupsQuery
 		: publicWordGroupsQuery;
-	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? [];
+	const wordgroups: WordGroup[] = wordGroupsQuery.data ?? NO_WORD_GROUPS;
 	const loading = !isLoaded || wordGroupsQuery.isLoading;
 	const resetIndexesRef = useRef<(() => void) | null>(null);
 	const [inputIndex, setInputIndex] = useState("");

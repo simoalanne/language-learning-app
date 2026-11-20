@@ -57,24 +57,31 @@ const ChipSelect = ({
 	if (options.length === 0) return null;
 
 	return (
-		<Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", ...boxSx }}>
+		<Box
+			sx={[
+				{ display: "flex", gap: 1, flexWrap: "wrap" },
+				...(Array.isArray(boxSx) ? boxSx : [boxSx]),
+			]}
+		>
 			{options.map((option, i) => (
 				<Chip
 					sx={chipSx}
 					key={option}
 					label={
 						<Box
-							sx={{
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-								flexDirection: iconsOnLeft ? "row-reverse" : "row",
-								gap: 1,
-								...labelSx,
-							}}
+							sx={[
+								{
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									flexDirection: iconsOnLeft ? "row-reverse" : "row",
+									gap: 1,
+								},
+								...(Array.isArray(labelSx) ? labelSx : [labelSx]),
+							]}
 						>
 							{labels[i] || option}
-							{icons[i] && icons[i]}
+							{icons[i]}
 						</Box>
 					}
 					onClick={() => handleClick(option)}

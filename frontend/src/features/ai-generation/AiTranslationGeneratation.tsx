@@ -37,6 +37,8 @@ const AiTranslationGeneratation = () => {
 
 	useEffect(() => {
 		if (generateWordsErrorMessage) {
+			// show each new generation error; the snackbar is dismissable state
+			// oxlint-disable-next-line react/set-state-in-effect
 			setSnackbarMessage(generateWordsErrorMessage);
 		}
 	}, [generateWordsErrorMessage]);

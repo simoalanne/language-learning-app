@@ -4,6 +4,11 @@
 	"categories": {
 		"correctness": "error"
 	},
-	"options": { "typeAware": true },
-	"ignorePatterns": ["**/dist/**", "**/build/**", "**/coverage/**"]
+	"options": {
+		"typeAware": true
+	},
+	"ignorePatterns": ["**/dist/**", "**/build/**", "**/coverage/**"],
+	"rules": {
+		"typescript/unbound-method": "off"
+	}
 }

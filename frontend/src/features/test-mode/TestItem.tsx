@@ -13,6 +13,25 @@ type TestItemProps = {
 	answerLanguage: LanguageName;
 };
 
+const POSITIVE_MESSAGES = [
+	"Awesome!",
+	"Great job!",
+	"Well done!",
+	"Keep it up!",
+	"Good work!",
+];
+
+const NEGATIVE_MESSAGES = [
+	"Oops!",
+	"Wrong",
+	"Try again!",
+	"Incorrect",
+	"That's not right",
+];
+
+const pickRandom = (messages: string[]) =>
+	messages[Math.floor(Math.random() * messages.length)];
+
 const TestItem = ({
 	question,
 	correctAnswer,
@@ -22,11 +41,16 @@ const TestItem = ({
 	const [userAnswer, setUserAnswer] = useState("");
 	const [answerSubmitted, setAnswerSubmitted] = useState(false);
 	const [isCorrect, setIsCorrect] = useState(false);
+	const [feedbackMessage, setFeedbackMessage] = useState("");
 
 	const normalize = (str?: string) => (str ? str.toLowerCase().trim() : "");
 	const handleSubmit = () => {
-		setIsCorrect(
-			correctAnswer.some((ans) => normalize(ans) === normalize(userAnswer)),
+		const correct = correctAnswer.some(
+			(ans) => normalize(ans) === normalize(userAnswer),
+		);
+		setIsCorrect(correct);
+		setFeedbackMessage(
+			pickRandom(correct ? POSITIVE_MESSAGES : NEGATIVE_MESSAGES),
 		);
 		setAnswerSubmitted(true);
 	};
@@ -37,22 +61,6 @@ const TestItem = ({
 		setAnswerSubmitted(false);
 		onNextQuestion(true);
 	};
-
-	const positiveMessages = [
-		"Awesome!",
-		"Great job!",
-		"Well done!",
-		"Keep it up!",
-		"Good work!",
-	];
-
-	const negativeMessages = [
-		"Oops!",
-		"Wrong",
-		"Try again!",
-		"Incorrect",
-		"That's not right",
-	];
 
 	return (
 		<>
@@ -189,15 +197,7 @@ const TestItem = ({
 									color: isCorrect ? "green" : "red",
 								}}
 							>
-								{isCorrect
-									? positiveMessages[
-											Math.floor(Math.random() * positiveMessages.length)
-										]
-									: `${
-											negativeMessages[
-												Math.floor(Math.random() * negativeMessages.length)
-											]
-										}`}
+								{feedbackMessage}
 							</Typography>
 							{!isCorrect && (
 								<Typography
