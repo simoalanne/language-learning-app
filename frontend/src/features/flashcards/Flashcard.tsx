@@ -80,7 +80,7 @@ const Flashcard = ({ translations, resetIndexesRef }: FlashcardProps) => {
 		const languageName = translations[index].languageName;
 		const capitalized =
 			languageName.charAt(0).toUpperCase() + languageName.slice(1);
-		return `url(${capitalized}.svg)`;
+		return `url(/${capitalized}.svg)`;
 	};
 
 	return (

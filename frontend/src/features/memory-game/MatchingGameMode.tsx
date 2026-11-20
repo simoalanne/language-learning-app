@@ -258,7 +258,7 @@ const MatchingGameMode = () => {
 
 	if (loading) return null;
 	return (
-		<ContentAligner background="url(style1.png)" sx={{ gap: 1 }}>
+		<ContentAligner background="url(/style1.png)" sx={{ gap: 1 }}>
 			<Box
 				sx={{
 					display: "flex",

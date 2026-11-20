@@ -1,5 +1,5 @@
-import { clerkClient } from "@clerk/express";
 import { eq } from "drizzle-orm";
+import { clerkClient } from "../../clerk.ts";
 import * as schema from "../../drizzle/schema.ts";
 import { authed } from "../../rest-rpc.ts";
 

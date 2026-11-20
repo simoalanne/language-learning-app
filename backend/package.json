@@ -10,9 +10,10 @@
 		"lint": "biome check --write .",
 		"test": "node --test --experimental-test-module-mocks 'src/**/*.test.ts'",
 		"typecheck": "tsc --noEmit",
-		"start": "node src/index.ts",
+		"start": "bun src/server.ts",
 		"db:generate": "drizzle-kit push",
-		"db:seed": "node scripts/seeding/seed.ts"
+		"db:seed": "node scripts/seeding/seed.ts",
+		"dev": "bun --hot src/server.ts"
 	},
 	"keywords": [],
 	"author": "",
@@ -20,20 +21,17 @@
 	"description": "",
 	"dependencies": {
 		"@ai-sdk/openai": "^4.0.83",
-		"@clerk/express": "^2.1.65",
+		"@clerk/backend": "^3.31.2",
 		"@rest-rpc/server": "^0.5.0",
 		"ai": "^7.0.127",
 		"ai-sdk-ollama": "^4.4.0",
-		"cors": "^2.8.6",
 		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2",
-		"express": "^5.2.1",
 		"pg": "^8.23.0",
 		"zod": "^4.6.7"
 	},
 	"devDependencies": {
-		"@types/cors": "^2.8.19",
-		"@types/express": "^5.0.6",
+		"@types/bun": "^1.4.5",
 		"@types/pg": "^8.23.1",
 		"drizzle-kit": "^0.31.10",
 		"typescript": "^7.0.2"

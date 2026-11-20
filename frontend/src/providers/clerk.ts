@@ -1,2 +1,2 @@
 export const clerkPublishableKey =
-	import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+	process.env.BUN_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";

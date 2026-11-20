@@ -6,15 +6,8 @@ import { createContext, useContext, useMemo } from "react";
 import { getApi } from "../contract.ts" with { type: "macro" };
 
 const queryClient = new QueryClient();
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-if (!apiBaseUrl) {
-  throw new Error("VITE_API_BASE_URL environment variable is not set");
-}
-
 export const getBaseClient = (getToken: () => Promise<string | null>) => {
 	const client = createClient(getApi(), {
-		origin: apiBaseUrl,
 		mountPath: "/api",
 		globalHeaders: {
 			authorization: async () => {
@@ -27,34 +20,40 @@ export const getBaseClient = (getToken: () => Promise<string | null>) => {
 };
 
 const createApi = (getToken: () => Promise<string | null>) => {
-  return createTanstackQueryUtils(getBaseClient(getToken));
+	return createTanstackQueryUtils(getBaseClient(getToken));
 };
 
 type ApiClientContextValue = {
-  api: ReturnType<typeof createApi>;
-  rawApi: ReturnType<typeof getBaseClient>;
+	api: ReturnType<typeof createApi>;
+	rawApi: ReturnType<typeof getBaseClient>;
 };
 
 const ApiClientContext = createContext<ApiClientContextValue | null>(null);
 
-export const ApiClientProvider = ({ children }: { children: React.ReactNode }) => {
-  const { getToken } = useAuth();
-  const rawApi = useMemo(() => getBaseClient(getToken), [getToken]);
-  const api = useMemo(() => createApi(getToken), [getToken]);
+export const ApiClientProvider = ({
+	children,
+}: {
+	children: React.ReactNode;
+}) => {
+	const { getToken } = useAuth();
+	const rawApi = useMemo(() => getBaseClient(getToken), [getToken]);
+	const api = useMemo(() => createApi(getToken), [getToken]);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ApiClientContext.Provider value={{ api, rawApi }}>{children}</ApiClientContext.Provider>
-    </QueryClientProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<ApiClientContext.Provider value={{ api, rawApi }}>
+				{children}
+			</ApiClientContext.Provider>
+		</QueryClientProvider>
+	);
 };
 
 export const useApiClient = () => {
-  const context = useContext(ApiClientContext);
+	const context = useContext(ApiClientContext);
 
-  if (!context) {
-    throw new Error("useApiClient must be used within an ApiClientProvider");
-  }
+	if (!context) {
+		throw new Error("useApiClient must be used within an ApiClientProvider");
+	}
 
-  return context;
+	return context;
 };

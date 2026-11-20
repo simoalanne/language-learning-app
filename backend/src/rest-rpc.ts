@@ -1,8 +1,7 @@
-import { clerkClient, getAuth } from "@clerk/express";
+import { RouteError, route } from "@rest-rpc/server";
 import { eq } from "drizzle-orm";
-import type { Request } from "express";
+import { clerkClient } from "./clerk.ts";
 import * as schema from "./drizzle/schema.ts";
-import { route, RouteError } from "@rest-rpc/server";
 
 export const upsertClerkUser = async ({
 	db,
@@ -38,18 +37,22 @@ export const upsertClerkUser = async ({
 	return user;
 };
 
-
 declare module "@rest-rpc/server" {
 	interface DefaultContext {
 		db: typeof import("./drizzle/db.ts").default;
-		req: Request;
+		request: Request;
 	}
 }
 
 const requireAuth = route.middleware(async ({ context, next }) => {
-	const { isAuthenticated, userId } = getAuth(context.req);
+	const requestState = await clerkClient.authenticateRequest(context.request, {
+		authorizedParties: process.env.APP_ORIGIN
+			? [process.env.APP_ORIGIN]
+			: undefined,
+	});
+	const userId = requestState.toAuth()?.userId;
 
-	if (!isAuthenticated) {
+	if (!requestState.isAuthenticated || !userId) {
 		throw new RouteError("UNAUTHORIZED");
 	}
 
