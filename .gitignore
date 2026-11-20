@@ -47,6 +47,7 @@ build/Release
 node_modules/
 jspm_packages/
 /dist
+/api/_server.js
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
@@ -104,6 +105,7 @@ out
 
 # vuepress build output
 .vuepress/dist
+/api/_server.js
 
 # vuepress v2.x temp and cache directory
 .temp
@@ -136,3 +138,6 @@ out
 
 .idea/
 .codex/
+
+.vercel
+.env*

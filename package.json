@@ -9,7 +9,9 @@
 	"scripts": {
 		"dev": "bun --filter backend dev",
 		"start": "bun --filter backend start",
-		"build": "rm -rf dist && bun build ./frontend/index.html --outdir dist --minify --public-path / --env 'BUN_PUBLIC_*' && cp -r frontend/public/. dist/",
+		"build": "bun run build:web && bun run build:api",
+		"build:web": "rm -rf dist && bun build ./frontend/index.html --outdir dist --minify --public-path / --env 'BUN_PUBLIC_*' && cp -r frontend/public/. dist/",
+		"build:api": "bun build backend/src/vercel.ts --target bun --outfile api/_server.js --external pg-native",
 		"lint": "biome check --write .",
 		"typecheck": "bun --filter '*' typecheck"
 	},

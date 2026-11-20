@@ -1,6 +1,7 @@
-// Vercel Function entrypoint. Vercel serves the static frontend from dist/
-// and rewrites /api/* here; HTML imports are not supported on Vercel.
-import { api } from "../backend/src/api.ts";
+// Vercel Function entry, bundled into api/_server.js by `bun run build`.
+// Vercel serves the static frontend from dist/ and rewrites /api/* to the
+// function; HTML imports are not supported there.
+import { api } from "./api.ts";
 
 Bun.serve({
 	fetch(request) {
