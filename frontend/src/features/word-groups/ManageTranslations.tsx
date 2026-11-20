@@ -243,7 +243,10 @@ const ManageTranslations = () => {
 				return;
 			}
 			const id = wordgroups[editModeIndex].id;
-			await updateWordGroup.mutateAsync({ body: { id, ...wordGroupObj } });
+			await updateWordGroup.mutateAsync({
+				params: { id },
+				body: wordGroupObj,
+			});
 			void queryClient.invalidateQueries({
 				queryKey: api.wordGroups.users.list.queryKey(),
 			});
@@ -257,7 +260,9 @@ const ManageTranslations = () => {
 		if (editModeIndex === null) {
 			return;
 		}
-		await removeWordGroup.mutateAsync({ body: { id: wordgroups[editModeIndex].id } });
+		await removeWordGroup.mutateAsync({
+			params: { id: wordgroups[editModeIndex].id },
+		});
 		void queryClient.invalidateQueries({
 			queryKey: api.wordGroups.users.list.queryKey(),
 		});

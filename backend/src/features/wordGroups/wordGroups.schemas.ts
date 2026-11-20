@@ -20,13 +20,11 @@ export const wordGroupInputSchema = z.object({
 	tags: z.array(z.string()).optional().default([]),
 });
 
-export const wordGroupIdSchema = z.object({
-	id: z.number().int().positive(),
+export const idParamsSchema = z.object({
+	id: z.coerce.number().int().positive(),
 });
 
-export const paginationInputSchema = z
-	.object({
-		offset: z.number().int().min(0).optional(),
-		limit: z.number().int().positive().optional(),
-	})
-	.default({});
+export const paginationQuerySchema = z.object({
+	offset: z.coerce.number().int().min(0).optional(),
+	limit: z.coerce.number().int().positive().optional(),
+});

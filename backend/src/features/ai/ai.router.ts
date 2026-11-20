@@ -1,3 +1,4 @@
+import type { DefaultContext } from "@rest-rpc/server";
 import { RouteError } from "@rest-rpc/server";
 import {
 	JSONParseError,
@@ -12,8 +13,8 @@ import type z from "zod";
 import * as schema from "../../drizzle/schema.ts";
 import { authed } from "../../rest-rpc.ts";
 import {
-	paginationInputSchema,
-	wordGroupIdSchema,
+	idParamsSchema,
+	paginationQuerySchema,
 } from "../wordGroups/wordGroups.schemas.ts";
 import { languageModel, missingModelConfigMessage } from "./ai.model.ts";
 import {
@@ -24,7 +25,6 @@ import {
 	type generatedWordsSchema,
 	generateWordsInputSchema,
 } from "./ai.schemas.ts";
-import type { DefaultContext } from "@rest-rpc/server";
 
 type GenerateWordsInput = z.infer<typeof generateWordsInputSchema>;
 type GenerateWordsResponse = z.infer<typeof generatedWordsSchema>;
@@ -149,7 +149,7 @@ const toProviderError = (error: unknown) => {
 };
 
 export const aiRouter = {
-	getUsage: authed.handler(async ({ context }) => {
+	getUsage: authed.get("/ai/usage").handler(async ({ context }) => {
 		if (!hasAiGenerationLimit) {
 			return {
 				used: 0,
@@ -210,8 +210,9 @@ export const aiRouter = {
 		};
 	}),
 	listGenerations: authed
-		.body(paginationInputSchema)
-		.handler(async ({ context, body: { offset, limit } }) => {
+		.get("/ai/generations")
+		.query(paginationQuerySchema)
+		.handler(async ({ context, query: { offset, limit } }) => {
 			const [totalResult] = await context.db
 				.select({ total: sql`count(*)` })
 				.from(schema.ai_generations)
@@ -243,8 +244,9 @@ export const aiRouter = {
 			};
 		}),
 	getGenerationById: authed
-		.body(wordGroupIdSchema)
-		.handler(async ({ context, body: { id } }) => {
+		.get("/ai/generations/:id")
+		.params(idParamsSchema)
+		.handler(async ({ context, params: { id } }) => {
 			const [row] = await context.db
 				.select()
 				.from(schema.ai_generations)
@@ -257,6 +259,7 @@ export const aiRouter = {
 
 			if (!row) {
 				throw new RouteError("NOT_FOUND", {
+					status: 404,
 					message: "AI generation not found",
 				});
 			}
@@ -269,6 +272,7 @@ export const aiRouter = {
 			};
 		}),
 	generateWords: authed
+		.post("/ai/generations")
 		.error(AiGenerationLimitReachedError)
 		.error(AiProviderUnavailableError)
 		.error(AiProviderInvalidResponseError)

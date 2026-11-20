@@ -3,8 +3,8 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import * as schema from "../../drizzle/schema.ts";
 import { authed, base } from "../../rest-rpc.ts";
 import {
-	paginationInputSchema,
-	wordGroupIdSchema,
+	idParamsSchema,
+	paginationQuerySchema,
 	wordGroupInputSchema,
 } from "./wordGroups.schemas.ts";
 
@@ -18,8 +18,9 @@ const toWordGroup = (group: typeof schema.word_groups.$inferSelect) => ({
 export const wordGroupsRouter = {
 	public: {
 		list: base
-			.body(paginationInputSchema)
-			.handler(async ({ body: { offset, limit }, context }) => {
+			.get("/word-groups/public")
+			.query(paginationQuerySchema)
+			.handler(async ({ query: { offset, limit }, context }) => {
 				const [totalResult] = await context.db
 					.select({ total: sql`count(*)` })
 					.from(schema.word_groups)
@@ -43,8 +44,9 @@ export const wordGroupsRouter = {
 	},
 	users: {
 		list: authed
-			.body(paginationInputSchema)
-			.handler(async ({ context, body: { offset, limit } }) => {
+			.get("/word-groups")
+			.query(paginationQuerySchema)
+			.handler(async ({ context, query: { offset, limit } }) => {
 				const [totalResult] = await context.db
 					.select({ total: sql`count(*)` })
 					.from(schema.word_groups)
@@ -70,20 +72,22 @@ export const wordGroupsRouter = {
 				};
 			}),
 		getById: authed
-			.body(wordGroupIdSchema)
-			.handler(async ({ context, body }) => {
+			.get("/word-groups/:id")
+			.params(idParamsSchema)
+			.handler(async ({ context, params }) => {
 				const [group] = await context.db
 					.select()
 					.from(schema.word_groups)
 					.where(
 						and(
-							eq(schema.word_groups.id, body.id),
+							eq(schema.word_groups.id, params.id),
 							eq(schema.word_groups.user_id, context.clerkId),
 						),
 					);
 
 				if (!group) {
 					throw new RouteError("NOT_FOUND", {
+						status: 404,
 						message: "Word group not found",
 					});
 				}
@@ -91,6 +95,7 @@ export const wordGroupsRouter = {
 				return toWordGroup(group);
 			}),
 		create: authed
+			.post("/word-groups")
 			.body(wordGroupInputSchema)
 			.handler(async ({ context, body }) => {
 				const [newGroup] = await context.db
@@ -101,6 +106,7 @@ export const wordGroupsRouter = {
 				return { id: newGroup.id };
 			}),
 		createBulk: authed
+			.post("/word-groups/bulk")
 			.body(wordGroupInputSchema.array().min(1))
 			.handler(async ({ context, body }) => {
 				const rows = await context.db
@@ -116,26 +122,29 @@ export const wordGroupsRouter = {
 				return { ids: rows.map((row) => row.id) };
 			}),
 		update: authed
-			.body(wordGroupInputSchema.extend(wordGroupIdSchema.shape))
-			.handler(async ({ context, body: { id, ...wordGroup } }) => {
+			.put("/word-groups/:id")
+			.params(idParamsSchema)
+			.body(wordGroupInputSchema)
+			.handler(async ({ context, params, body }) => {
 				await context.db
 					.update(schema.word_groups)
-					.set({ data: wordGroup, updated_at: new Date() })
+					.set({ data: body, updated_at: new Date() })
 					.where(
 						and(
-							eq(schema.word_groups.id, id),
+							eq(schema.word_groups.id, params.id),
 							eq(schema.word_groups.user_id, context.clerkId),
 						),
 					);
 			}),
 		remove: authed
-			.body(wordGroupIdSchema)
-			.handler(async ({ context, body }) => {
+			.delete("/word-groups/:id")
+			.params(idParamsSchema)
+			.handler(async ({ context, params }) => {
 				await context.db
 					.delete(schema.word_groups)
 					.where(
 						and(
-							eq(schema.word_groups.id, body.id),
+							eq(schema.word_groups.id, params.id),
 							eq(schema.word_groups.user_id, context.clerkId),
 						),
 					);

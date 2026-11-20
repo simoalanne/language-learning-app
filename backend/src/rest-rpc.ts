@@ -53,7 +53,7 @@ const requireAuth = route.middleware(async ({ context, next }) => {
 	const userId = requestState.toAuth()?.userId;
 
 	if (!requestState.isAuthenticated || !userId) {
-		throw new RouteError("UNAUTHORIZED");
+		throw new RouteError("UNAUTHORIZED", { status: 401 });
 	}
 
 	const [userInDb] = await context.db

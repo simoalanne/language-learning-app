@@ -42,9 +42,12 @@ export const AiGenerationLimitReachedError = routeError(
 	},
 );
 
-export const AiProviderUnavailableError = routeError("AI_PROVIDER_UNAVAILABLE", {
-	message: "AI provider is unavailable",
-});
+export const AiProviderUnavailableError = routeError(
+	"AI_PROVIDER_UNAVAILABLE",
+	{
+		message: "AI provider is unavailable",
+	},
+);
 
 export const AiProviderInvalidResponseError = routeError(
 	"AI_PROVIDER_INVALID_RESPONSE",
