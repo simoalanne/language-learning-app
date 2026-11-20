@@ -16,8 +16,7 @@
 		"lint": "oxlint",
 		"format": "oxfmt",
 		"check": "oxfmt --check && oxlint",
-		"fix": "oxfmt && oxlint --fix",
-		"prepare": "lefthook install"
+		"fix": "oxfmt && oxlint --fix"
 	},
 	"dependencies": {
 		"zod": "^4.6.7"
